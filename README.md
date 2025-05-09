@@ -1,16 +1,77 @@
-# oly_app
+# OlyApp 📱
 
-An application for OlyDorf
+**Your Digital Companion for Life in Olydorf**
 
-## Getting Started
+OlyApp is a mobile app built by and for residents of the Olympiadorf (Olydorf) in Munich. Whether you’re a newcomer or a long-time resident, OlyApp helps you stay connected, organized, and involved in the community.
 
-This project is a starting point for a Flutter application.
+---
 
-A few resources to get you started if this is your first Flutter project:
+## 🚀 Features
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+### ✅ Calendar (Live)
+- View events, parties, meetings, and administrative deadlines.
+- Server integration for dynamic event loading (in progress).
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### ✅ Item Exchange (Mockup)
+- A scrollable list of items you can give away or grab.
+- Add new listings (to be integrated with backend soon).
+
+### ✅ Maintenance Requests
+- Submit issues in your room or building directly from the app.
+- Simple form with subject and description.
+
+---
+
+## 🛠️ Tech Stack
+
+- **Flutter** for cross-platform mobile development (Android + iOS)
+- **Dart** as the main programming language
+- Planned backend: Node.js / Express + MongoDB (TBD)
+
+---
+
+## 📦 Getting Started
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-repo/olyapp.git
+   cd olyapp
+   ```
+
+2. Install dependencies:
+   ```bash
+   flutter pub get
+   ```
+
+3. Run the app:
+   ```bash
+   flutter run
+   ```
+
+---
+
+## 📲 Coming Soon
+
+- User authentication
+- Admin-only management of events and reports
+- Laundry monitor
+- Push notifications for announcements
+- Server API integration for events, item exchange, and maintenance
+
+---
+
+## 🤝 Community-Driven
+
+OlyApp is built with feedback from Olydorf residents and managed by students who live here. Contributions, suggestions, and ideas are welcome!
+
+---
+
+## 📣 Contact
+
+Questions? Ideas? Want to contribute?
+
+Reach out to the team or open an issue on GitHub.
+
+---
+
+**Made with ❤️ in Olydorf**
