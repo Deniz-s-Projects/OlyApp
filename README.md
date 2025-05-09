@@ -75,3 +75,6 @@ Reach out to the team or open an issue on GitHub.
 ---
 
 **Made with ❤️ in Olydorf**
+
+![image](https://github.com/user-attachments/assets/f2c2701d-2c1c-44ef-940b-1acb52945c04)
+
