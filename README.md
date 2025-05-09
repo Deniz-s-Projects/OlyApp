@@ -34,7 +34,7 @@ OlyApp is a mobile app built by and for residents of the Olympiadorf (Olydorf) i
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-repo/olyapp.git
+   git clone https://github.com/DenizOzturk95/OlyApp
    cd olyapp
    ```
 
