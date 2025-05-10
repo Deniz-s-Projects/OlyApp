@@ -47,12 +47,10 @@ OlyApp is a mobile app built by and for residents of the Olympiadorf (Olydorf) i
    ```bash
    flutter run
    ```
-
 ---
 
 ## 📲 Coming Soon
 
-- User authentication
 - Admin-only management of events and reports
 - Laundry monitor
 - Push notifications for announcements
