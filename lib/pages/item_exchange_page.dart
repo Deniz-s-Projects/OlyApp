@@ -59,7 +59,8 @@ class _ItemExchangePageState extends State<ItemExchangePage> {
                 prefixIcon: const Icon(Icons.search),
                 hintText: 'Search items…',
                 filled: true,
-                fillColor: Theme.of(context).colorScheme.surfaceVariant,
+                fillColor:
+                    Theme.of(context).colorScheme.surfaceContainerHighest,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: BorderSide.none,

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class CalendarPage extends StatefulWidget {
-  const CalendarPage({Key? key}) : super(key: key);
+  const CalendarPage({super.key});
 
   @override
   State<CalendarPage> createState() => _CalendarPageState();
@@ -140,7 +140,7 @@ Future<void> _showAddEventDialog(
     BuildContext context,
     void Function(String title, DateTime date) onConfirm,
     ) async {
-  final _textCtrl = TextEditingController();
+  final textCtrl = TextEditingController();
   DateTime selectedDate = DateTime.now();
   await showDialog(
     context: context,
@@ -150,7 +150,7 @@ Future<void> _showAddEventDialog(
         mainAxisSize: MainAxisSize.min,
         children: [
           TextField(
-            controller: _textCtrl,
+            controller: textCtrl,
             decoration: const InputDecoration(labelText: 'Title'),
           ),
           const SizedBox(height: 8),
@@ -176,8 +176,8 @@ Future<void> _showAddEventDialog(
             child: const Text('Cancel')),
         ElevatedButton(
           onPressed: () {
-            if (_textCtrl.text.isNotEmpty) {
-              onConfirm(_textCtrl.text, selectedDate);
+            if (textCtrl.text.isNotEmpty) {
+              onConfirm(textCtrl.text, selectedDate);
               Navigator.pop(ctx);
             }
           },

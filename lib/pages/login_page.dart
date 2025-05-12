@@ -7,7 +7,8 @@ import '../models/models.dart';
 /// A simple login page with email/password and placeholder Google/Apple login buttons.
 class LoginPage extends StatefulWidget {
   final VoidCallback onLoginSuccess;
-  const LoginPage({Key? key, required this.onLoginSuccess}) : super(key: key);
+
+  const LoginPage({super.key, required this.onLoginSuccess});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -120,7 +121,7 @@ class _LoginPageState extends State<LoginPage> {
                   decoration: InputDecoration(
                     labelText: 'Email',
                     filled: true,
-                    fillColor: cs.surfaceVariant,
+                    fillColor: cs.surfaceContainerHighest,
                     prefixIcon: const Icon(Icons.email),
                   ),
                   keyboardType: TextInputType.emailAddress,
@@ -132,7 +133,7 @@ class _LoginPageState extends State<LoginPage> {
                   decoration: InputDecoration(
                     labelText: 'Password',
                     filled: true,
-                    fillColor: cs.surfaceVariant,
+                    fillColor: cs.surfaceContainerHighest,
                     prefixIcon: const Icon(Icons.lock),
                     suffixIcon: IconButton(
                       icon: Icon(

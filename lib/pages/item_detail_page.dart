@@ -40,7 +40,7 @@ class ItemDetailPage extends StatelessWidget {
             )
                 : Container(
               height: 200,
-              color: colorScheme.surfaceVariant,
+              color: colorScheme.surfaceContainerHighest,
               child: Icon(
                 Icons.image_not_supported,
                 size: 64,

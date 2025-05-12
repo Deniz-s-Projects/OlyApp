@@ -119,7 +119,6 @@ class _TabButton extends StatelessWidget {
   final bool selected;
   final VoidCallback onTap;
   const _TabButton({
-    super.key,
     required this.label,
     required this.selected,
     required this.onTap,
