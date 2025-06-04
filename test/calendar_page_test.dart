@@ -16,6 +16,12 @@ class FakeEventService extends EventService {
   }
 }
 
+class ErrorEventService extends EventService {
+  @override
+  Future<List<CalendarEvent>> fetchEvents() async =>
+      throw Exception('fail');
+}
+
 void main() {
   testWidgets('Add event displays in list', (tester) async {
     final service = FakeEventService();
@@ -32,5 +38,14 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Meeting'), findsOneWidget);
+  });
+
+  testWidgets('Shows snackbar on load error', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(home: CalendarPage(service: ErrorEventService())),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Failed to load events'), findsOneWidget);
   });
 }
