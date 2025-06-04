@@ -3,10 +3,11 @@ import 'calendar_page.dart';
 import 'item_exchange_page.dart';
 import 'maintenance_page.dart';
 import 'admin/admin_home_page.dart';
-import 'map_page.dart';
+import 'map_page.dart'; 
+import 'profile_page.dart'; 
 import 'post_item_page.dart';
 import '../models/models.dart';
-import '../services/event_service.dart';
+import '../services/event_service.dart'; 
 
 class MainPage extends StatefulWidget {
   final CalendarPage? calendarPage;
@@ -60,21 +61,29 @@ class _MainPageState extends State<MainPage> {
         foregroundColor: colorScheme.onPrimaryContainer,
         elevation: 2,
         actions: [
-          if (widget.onLogout != null)
-            PopupMenuButton<String>(
-              onSelected: (val) {
-                if (val == 'logout') widget.onLogout!();
-              },
-              itemBuilder: (context) => const [
-                PopupMenuItem(value: 'logout', child: Text('Logout')),
-              ],
-            ),
+          PopupMenuButton<String>(
+            onSelected: (val) async {
+              if (val == 'profile') {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ProfilePage()),
+                );
+              } else if (val == 'logout' && widget.onLogout != null) {
+                widget.onLogout!();
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(value: 'profile', child: Text('Profile')),
+              if (widget.onLogout != null)
+                const PopupMenuItem(value: 'logout', child: Text('Logout')),
+            ],
+          ),
         ],
       ),
       body: _pages[_currentIndex],
       floatingActionButton: _fabCallback() != null
-          ? FloatingActionButton(
-              onPressed: _fabCallback(),
+          ? FloatingActionButton( 
+              onPressed: _fabCallback(), 
               backgroundColor: colorScheme.secondary,
               foregroundColor: colorScheme.onSecondary,
               child: Icon(_fabIcon()),
