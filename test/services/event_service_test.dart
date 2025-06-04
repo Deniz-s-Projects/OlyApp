@@ -12,14 +12,19 @@ void main() {
       final mockClient = MockClient((request) async {
         expect(request.method, equals('GET'));
         expect(request.url.path, '/api/events');
-        return http.Response(jsonEncode([
-          {
-            'id': 1,
-            'title': 'Party',
-            'date': 0,
-            'description': 'fun'
-          }
-        ]), 200);
+        return http.Response(
+          jsonEncode({
+            'data': [
+              {
+                'id': 1,
+                'title': 'Party',
+                'date': '1970-01-01T00:00:00.000Z',
+                'description': 'fun'
+              }
+            ]
+          }),
+          200,
+        );
       });
 
       final service = EventService(client: mockClient);
@@ -29,7 +34,10 @@ void main() {
     });
 
     test('createEvent sends POST and parses event', () async {
-      final input = CalendarEvent(title: 'Meet', date: DateTime.fromMillisecondsSinceEpoch(0));
+      final input = CalendarEvent(
+        title: 'Meet',
+        date: DateTime.fromMillisecondsSinceEpoch(0),
+      );
       final mockClient = MockClient((request) async {
         expect(request.method, equals('POST'));
         expect(request.url.path, '/api/events');
@@ -37,8 +45,10 @@ void main() {
         expect(body['title'], input.title);
         return http.Response(
           jsonEncode({
-            'id': 2,
-            ...input.toJson(),
+            'data': {
+              'id': 2,
+              ...input.toJson(),
+            }
           }),
           201,
         );

@@ -6,14 +6,17 @@ class EventService extends ApiService {
 
   Future<List<CalendarEvent>> fetchEvents() async {
     return get('/events', (json) {
-      final list = json as List<dynamic>;
-      return list.map((e) => CalendarEvent.fromJson(e as Map<String, dynamic>)).toList();
+      final list = (json['data'] as List<dynamic>);
+      return list
+          .map((e) => CalendarEvent.fromJson(e as Map<String, dynamic>))
+          .toList();
     });
   }
 
   Future<CalendarEvent> createEvent(CalendarEvent event) async {
-    return post('/events', event.toJson(),
-        (json) => CalendarEvent.fromJson(json as Map<String, dynamic>));
+    return post('/events', event.toJson(), (json) {
+      return CalendarEvent.fromJson(json['data'] as Map<String, dynamic>);
+    });
   }
 
   Future<CalendarEvent> updateEvent(CalendarEvent event) async {

@@ -50,7 +50,7 @@ void main() {
       'userId': 3,
       'subject': 'Leaky faucet',
       'description': 'Kitchen sink leaks',
-      'createdAt': created.millisecondsSinceEpoch,
+      'createdAt': created.toIso8601String(),
       'status': 'open',
     };
 
@@ -83,7 +83,7 @@ void main() {
       'requestId': 10,
       'senderId': 4,
       'content': 'Hello world',
-      'timestamp': timestamp.millisecondsSinceEpoch,
+      'timestamp': timestamp.toIso8601String(),
     };
 
     test('toMap/fromMap round trip', () {
@@ -112,7 +112,7 @@ void main() {
     final eventMap = {
       'id': 4,
       'title': 'Meeting',
-      'date': eventDate.millisecondsSinceEpoch,
+      'date': eventDate.toIso8601String(),
       'description': 'Project discussion',
     };
 
@@ -151,9 +151,9 @@ void main() {
       'description': 'Comfy chair',
       'imageUrl': 'https://example.com/chair.png',
       'price': 20.5,
-      'isFree': 0,
-      'category': ItemCategory.furniture.index,
-      'createdAt': created.millisecondsSinceEpoch,
+      'isFree': false,
+      'category': ItemCategory.furniture.name,
+      'createdAt': created.toIso8601String(),
     };
 
     test('toMap/fromMap round trip', () {

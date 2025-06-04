@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'calendar_page.dart';
 import 'item_exchange_page.dart';
-import 'maintenance_page.dart';
-import 'admin/admin_home_page.dart';
+import 'maintenance_page.dart'; 
+import 'admin/admin_home_page.dart'; 
+import 'map_page.dart'; 
 
 class MainPage extends StatefulWidget {
   final CalendarPage? calendarPage;
@@ -19,6 +20,7 @@ class _MainPageState extends State<MainPage> {
 
   static const List<String> _titles = [
     'Dashboard',
+    'Map',
     'Calendar',
     'Item Exchange',
     'Maintenance',
@@ -29,8 +31,9 @@ class _MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
-    _pages = [
-      DashboardPage(onNavigate: _onDashboardNavigate, isAdmin: widget.isAdmin),
+    _pages = [ 
+      DashboardPage(onNavigate: _onDashboardNavigate),
+      const MapPage(), 
       widget.calendarPage ?? const CalendarPage(),
       const ItemExchangePage(),
       widget.maintenancePage ?? const MaintenancePage(),
@@ -48,7 +51,7 @@ class _MainPageState extends State<MainPage> {
         elevation: 2,
       ),
       body: _pages[_currentIndex],
-      floatingActionButton: _currentIndex != 3
+      floatingActionButton: _currentIndex != 4
           ? FloatingActionButton(
         onPressed: () {
           // TODO: implement quick actions per tab
@@ -64,6 +67,7 @@ class _MainPageState extends State<MainPage> {
         height: 60,
         destinations: const [
           NavigationDestination(icon: Icon(Icons.home), label: 'Home'),
+          NavigationDestination(icon: Icon(Icons.map), label: 'Map'),
           NavigationDestination(icon: Icon(Icons.calendar_today), label: 'Calendar'),
           NavigationDestination(icon: Icon(Icons.swap_horiz), label: 'Exchange'),
           NavigationDestination(icon: Icon(Icons.build), label: 'Maintenance'),
@@ -77,8 +81,10 @@ class _MainPageState extends State<MainPage> {
       case 0:
         return Icons.notifications;
       case 1:
-        return Icons.event;
+        return Icons.place;
       case 2:
+        return Icons.event;
+      case 3:
         return Icons.add_shopping_cart;
       default:
         return Icons.add;
@@ -139,22 +145,28 @@ class DashboardPage extends StatelessWidget {
               physics: const NeverScrollableScrollPhysics(),
               children: [
                 DashboardCard(
+                  icon: Icons.map,
+                  label: 'Map',
+                  colorScheme: colorScheme,
+                  onTap: () => _navigate(1),
+                ),
+                DashboardCard(
                   icon: Icons.calendar_today,
                   label: 'Calendar',
                   colorScheme: colorScheme,
-                  onTap: () => _navigate(1),
+                  onTap: () => _navigate(2),
                 ),
                 DashboardCard(
                   icon: Icons.swap_horiz,
                   label: 'Exchange',
                   colorScheme: colorScheme,
-                  onTap: () => _navigate(2),
+                  onTap: () => _navigate(3),
                 ),
                 DashboardCard(
                   icon: Icons.build,
                   label: 'Maintenance',
                   colorScheme: colorScheme,
-                  onTap: () => _navigate(3),
+                  onTap: () => _navigate(4),
                 ),
                 if (isAdmin)
                   DashboardCard(

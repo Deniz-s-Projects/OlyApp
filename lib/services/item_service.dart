@@ -6,13 +6,37 @@ class ItemService extends ApiService {
 
   Future<List<Item>> fetchItems() async {
     return get('/items', (json) {
-      final list = json as List<dynamic>;
-      return list.map((e) => Item.fromJson(e as Map<String, dynamic>)).toList();
+  /// Retrieves messages for the item with [itemId].
+  /// Sends a chat [message] for its associated item.
+      final list = (json['data'] as List<dynamic>);
+      return list
+          .map((e) => Item.fromJson(e as Map<String, dynamic>))
+          .toList();
     });
   }
 
-  Future<Item> createItem(Item item) async {
-    return post('/items', item.toJson(),
-        (json) => Item.fromJson(json as Map<String, dynamic>));
+  Future<Item> createItem(Item item) async 
+    return post(
+      '/items',
+      item.toJson(),
+      (json) => Item.fromJson(json as Map<String, dynamic>),
+    );
+  }
+
+  Future<List<Message>> fetchMessages(int itemId) async {
+    return get('/items/$itemId/messages', (json) {
+      final list = json as List<dynamic>;
+      return list
+          .map((e) => Message.fromJson(e as Map<String, dynamic>))
+          .toList();
+    });
+  }
+
+  Future<Message> sendMessage(Message message) async {
+    return post(
+      '/items/${message.requestId}/messages',
+      message.toJson(),
+      (json) => Message.fromJson(json as Map<String, dynamic>),
+    );
   }
 }

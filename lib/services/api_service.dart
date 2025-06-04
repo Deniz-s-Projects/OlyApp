@@ -6,7 +6,8 @@ class ApiService {
   ApiService({http.Client? client}) : _client = client ?? http.Client();
 
   final http.Client _client;
-  static const String baseUrl = 'https://example.com/api';
+  // Base URL of the Node.js/Express backend
+  static const String baseUrl = 'http://localhost:3000';
 
   Uri buildUri(String path, [Map<String, dynamic>? query]) {
     return Uri.parse(baseUrl).replace(path: '/api$path', queryParameters: query);

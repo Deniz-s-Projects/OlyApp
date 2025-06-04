@@ -4,6 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:http/http.dart' as http;
 import '../models/models.dart';
 import '../utils/validators.dart';
+import '../services/api_service.dart';
 
 /// A simple login page with email/password and placeholder Google/Apple login buttons.
 class LoginPage extends StatefulWidget {
@@ -16,7 +17,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  static const bool useMock = true; // Toggle between mock and real API
+  static const bool useMock = false; // Toggle between mock and real API
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -41,8 +42,7 @@ class _LoginPageState extends State<LoginPage> {
       };
     }
 
-    // TODO: Replace with real api call
-    final uri = Uri.parse('https://example.com/api/login');
+    final uri = ApiService().buildUri('/auth/login');
     final response = await http.post(
       uri,
       headers: {'Content-Type': 'application/json'},
