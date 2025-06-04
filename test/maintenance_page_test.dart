@@ -10,6 +10,12 @@ class FakeMaintenanceService extends MaintenanceService {
   Future<List<MaintenanceRequest>> fetchRequests() async => [];
 }
 
+class ErrorMaintenanceService extends MaintenanceService {
+  @override
+  Future<List<MaintenanceRequest>> fetchRequests() async =>
+      throw Exception('fail');
+}
+
 void main() {
   testWidgets('Switches between request and conversations tabs', (tester) async {
     final service = FakeMaintenanceService();
@@ -23,5 +29,14 @@ void main() {
     await tester.tap(find.text('Conversations'));
     await tester.pumpAndSettle();
     expect(find.text('No conversations yet.'), findsOneWidget);
+  });
+
+  testWidgets('Shows snackbar on ticket load error', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(home: MaintenancePage(service: ErrorMaintenanceService())),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Failed to load tickets'), findsOneWidget);
   });
 }

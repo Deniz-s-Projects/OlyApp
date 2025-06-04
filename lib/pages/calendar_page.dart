@@ -34,15 +34,23 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 
   Future<void> _loadEvents() async {
-    final events = await _service.fetchEvents();
-    setState(() {
-      _events.clear();
-      for (final e in events) {
-        final key = DateTime(e.date.year, e.date.month, e.date.day);
-        _events.putIfAbsent(key, () => []).add(e);
-      }
-      _selectedEvents.value = _getEventsForDay(_selectedDay);
-    });
+    try {
+      final events = await _service.fetchEvents();
+      if (!mounted) return;
+      setState(() {
+        _events.clear();
+        for (final e in events) {
+          final key = DateTime(e.date.year, e.date.month, e.date.day);
+          _events.putIfAbsent(key, () => []).add(e);
+        }
+        _selectedEvents.value = _getEventsForDay(_selectedDay);
+      });
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to load events')),
+      );
+    }
   }
 
   List<CalendarEvent> _getEventsForDay(DateTime day) {

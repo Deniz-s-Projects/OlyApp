@@ -27,8 +27,16 @@ class _MaintenancePageState extends State<MaintenancePage> {
   }
 
   Future<void> _loadTickets() async {
-    final tickets = await _service.fetchRequests();
-    setState(() => _tickets = tickets);
+    try {
+      final tickets = await _service.fetchRequests();
+      if (!mounted) return;
+      setState(() => _tickets = tickets);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to load tickets')),
+      );
+    }
   }
 
   @override
