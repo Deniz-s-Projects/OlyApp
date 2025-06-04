@@ -1,16 +1,26 @@
 import 'package:flutter/material.dart';
 import 'calendar_page.dart';
 import 'item_exchange_page.dart';
-import 'maintenance_page.dart'; 
-import 'admin/admin_home_page.dart'; 
+import 'maintenance_page.dart';
+import 'admin/admin_home_page.dart';
 import 'map_page.dart'; 
+import 'profile_page.dart'; 
+import 'post_item_page.dart';
+import '../models/models.dart';
+import '../services/event_service.dart'; 
 
 class MainPage extends StatefulWidget {
   final CalendarPage? calendarPage;
   final MaintenancePage? maintenancePage;
   final bool isAdmin;
   final VoidCallback? onLogout;
-  const MainPage({super.key, this.calendarPage, this.maintenancePage, this.isAdmin = false, this.onLogout});
+  const MainPage({
+    super.key,
+    this.calendarPage,
+    this.maintenancePage,
+    this.isAdmin = false,
+    this.onLogout,
+  });
 
   @override
   State<MainPage> createState() => _MainPageState();
@@ -33,10 +43,7 @@ class _MainPageState extends State<MainPage> {
   void initState() {
     super.initState();
     _pages = [
-      DashboardPage(
-        onNavigate: _onDashboardNavigate,
-        isAdmin: widget.isAdmin,
-      ),
+      DashboardPage(onNavigate: _onDashboardNavigate, isAdmin: widget.isAdmin),
       const MapPage(),
       widget.calendarPage ?? const CalendarPage(),
       const ItemExchangePage(),
@@ -54,27 +61,33 @@ class _MainPageState extends State<MainPage> {
         foregroundColor: colorScheme.onPrimaryContainer,
         elevation: 2,
         actions: [
-          if (widget.onLogout != null)
-            PopupMenuButton<String>(
-              onSelected: (val) {
-                if (val == 'logout') widget.onLogout!();
-              },
-              itemBuilder: (context) => const [
-                PopupMenuItem(value: 'logout', child: Text('Logout')),
-              ],
-            ),
+          PopupMenuButton<String>(
+            onSelected: (val) async {
+              if (val == 'profile') {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ProfilePage()),
+                );
+              } else if (val == 'logout' && widget.onLogout != null) {
+                widget.onLogout!();
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(value: 'profile', child: Text('Profile')),
+              if (widget.onLogout != null)
+                const PopupMenuItem(value: 'logout', child: Text('Logout')),
+            ],
+          ),
         ],
       ),
       body: _pages[_currentIndex],
-      floatingActionButton: _currentIndex != 4
-          ? FloatingActionButton(
-        onPressed: () {
-          // TODO: implement quick actions per tab
-        },
-        backgroundColor: colorScheme.secondary,
-        foregroundColor: colorScheme.onSecondary,
-        child: Icon(_fabIcon()),
-      )
+      floatingActionButton: _fabCallback() != null
+          ? FloatingActionButton( 
+              onPressed: _fabCallback(), 
+              backgroundColor: colorScheme.secondary,
+              foregroundColor: colorScheme.onSecondary,
+              child: Icon(_fabIcon()),
+            )
           : null,
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
@@ -83,8 +96,14 @@ class _MainPageState extends State<MainPage> {
         destinations: const [
           NavigationDestination(icon: Icon(Icons.home), label: 'Home'),
           NavigationDestination(icon: Icon(Icons.map), label: 'Map'),
-          NavigationDestination(icon: Icon(Icons.calendar_today), label: 'Calendar'),
-          NavigationDestination(icon: Icon(Icons.swap_horiz), label: 'Exchange'),
+          NavigationDestination(
+            icon: Icon(Icons.calendar_today),
+            label: 'Calendar',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.swap_horiz),
+            label: 'Exchange',
+          ),
           NavigationDestination(icon: Icon(Icons.build), label: 'Maintenance'),
         ],
       ),
@@ -106,6 +125,39 @@ class _MainPageState extends State<MainPage> {
     }
   }
 
+  VoidCallback? _fabCallback() {
+    switch (_currentIndex) {
+      case 0:
+        return () {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('No notifications')));
+        };
+      case 1:
+        return () {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('No map action')));
+        };
+      case 2:
+        return () async {
+          await showAddEventDialog(context, (title, date) async {
+            final service = EventService();
+            await service.createEvent(CalendarEvent(title: title, date: date));
+          });
+        };
+      case 3:
+        return () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const PostItemPage()),
+          );
+        };
+      default:
+        return null;
+    }
+  }
+
   void _onDashboardNavigate(int index) {
     setState(() => _currentIndex = index);
   }
@@ -114,7 +166,11 @@ class _MainPageState extends State<MainPage> {
 class DashboardPage extends StatelessWidget {
   final ValueChanged<int> onNavigate;
   final bool isAdmin;
-  const DashboardPage({super.key, required this.onNavigate, this.isAdmin = false});
+  const DashboardPage({
+    super.key,
+    required this.onNavigate,
+    this.isAdmin = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -190,9 +246,7 @@ class DashboardPage extends StatelessWidget {
                     colorScheme: colorScheme,
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => const AdminHomePage(),
-                      ),
+                      MaterialPageRoute(builder: (_) => const AdminHomePage()),
                     ),
                   ),
               ],
@@ -238,10 +292,9 @@ class StatusCard extends StatelessWidget {
             Expanded(
               child: Text(
                 label,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(color: textColor),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: textColor),
               ),
             ),
           ],
@@ -281,10 +334,9 @@ class DashboardCard extends StatelessWidget {
               const SizedBox(height: 12),
               Text(
                 label,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyLarge
-                    ?.copyWith(color: colorScheme.onSurfaceVariant),
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
           ),

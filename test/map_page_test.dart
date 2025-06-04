@@ -15,8 +15,30 @@ class FakeMapService extends MapService {
 void main() {
   testWidgets('Map loads and displays pins', (tester) async {
     final service = FakeMapService([
-      MapPin(id: '1', title: 'Test', lat: 0, lon: 0, type: 'building'),
-      MapPin(id: '2', title: 'Another', lat: 1, lon: 1, type: 'venue'),
+      MapPin(
+          id: '1',
+          title: 'Test',
+          lat: 0,
+          lon: 0,
+          category: MapPinCategory.building),
+      MapPin(
+          id: '2',
+          title: 'Another',
+          lat: 1,
+          lon: 1,
+          category: MapPinCategory.venue),
+      MapPin(
+          id: '3',
+          title: 'Playground',
+          lat: 2,
+          lon: 2,
+          category: MapPinCategory.recreation),
+      MapPin(
+          id: '4',
+          title: 'Cafe',
+          lat: 3,
+          lon: 3,
+          category: MapPinCategory.food),
     ]);
 
     await tester.pumpWidget(
@@ -25,6 +47,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(FlutterMap), findsOneWidget);
-    expect(find.byType(MarkerLayer), findsOneWidget);
+    final markerLayerFinder = find.byType(MarkerLayer);
+    expect(markerLayerFinder, findsOneWidget);
+    final layer = tester.widget<MarkerLayer>(markerLayerFinder);
+    expect(layer.markers.length, 4);
   });
 }

@@ -6,11 +6,15 @@ import 'package:http/testing.dart';
 import 'package:oly_app/services/maintenance_service.dart';
 import 'package:oly_app/models/models.dart';
 
+const apiUrl =
+    String.fromEnvironment('API_URL', defaultValue: 'http://localhost:3000');
+
 void main() {
   group('MaintenanceService', () {
     test('fetchRequests parses list correctly', () async {
       final mockClient = MockClient((request) async {
         expect(request.method, equals('GET'));
+        expect(request.url.origin, Uri.parse(apiUrl).origin);
         expect(request.url.path, '/api/maintenance');
         return http.Response(
           jsonEncode({
@@ -39,6 +43,7 @@ void main() {
       final input = MaintenanceRequest(userId: 1, subject: 'Leak', description: 'Water');
       final mockClient = MockClient((request) async {
         expect(request.method, equals('POST'));
+        expect(request.url.origin, Uri.parse(apiUrl).origin);
         expect(request.url.path, '/api/maintenance');
         final body = jsonDecode(request.body) as Map<String, dynamic>;
         expect(body['subject'], input.subject);
@@ -61,6 +66,7 @@ void main() {
     test('fetchMessages parses list correctly', () async {
       final mockClient = MockClient((request) async {
         expect(request.method, equals('GET'));
+        expect(request.url.origin, Uri.parse(apiUrl).origin);
         expect(request.url.path, '/api/maintenance/1/messages');
         return http.Response(
           jsonEncode({
@@ -88,6 +94,7 @@ void main() {
       final input = Message(requestId: 1, senderId: 2, content: 'Hi');
       final mockClient = MockClient((request) async {
         expect(request.method, equals('POST'));
+        expect(request.url.origin, Uri.parse(apiUrl).origin);
         expect(request.url.path, '/api/maintenance/1/messages');
         final body = jsonDecode(request.body) as Map<String, dynamic>;
         expect(body['content'], input.content);
@@ -110,6 +117,7 @@ void main() {
     test('updateStatus posts update', () async {
       final mockClient = MockClient((request) async {
         expect(request.method, equals('POST'));
+        expect(request.url.origin, Uri.parse(apiUrl).origin);
         expect(request.url.path, '/api/maintenance/1');
         final body = jsonDecode(request.body) as Map<String, dynamic>;
         expect(body['status'], 'closed');
