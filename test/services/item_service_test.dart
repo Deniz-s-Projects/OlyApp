@@ -6,11 +6,15 @@ import 'package:http/testing.dart';
 import 'package:oly_app/services/item_service.dart';
 import 'package:oly_app/models/models.dart';
 
+const apiUrl =
+    String.fromEnvironment('API_URL', defaultValue: 'http://localhost:3000');
+
 void main() {
   group('ItemService', () {
     test('fetchItems parses list correctly', () async {
       final mockClient = MockClient((request) async {
         expect(request.method, equals('GET'));
+        expect(request.url.origin, Uri.parse(apiUrl).origin);
         expect(request.url.path, '/api/items');
         return http.Response(
           jsonEncode({
@@ -43,6 +47,7 @@ void main() {
       final itemInput = Item(ownerId: 1, title: 'Table');
       final mockClient = MockClient((request) async {
         expect(request.method, equals('POST'));
+        expect(request.url.origin, Uri.parse(apiUrl).origin);
         expect(request.url.path, '/api/items');
         final body = jsonDecode(request.body) as Map<String, dynamic>;
         expect(body['title'], itemInput.title);
@@ -66,6 +71,7 @@ void main() {
     test('fetchMessages parses list correctly', () async {
       final mockClient = MockClient((request) async {
         expect(request.method, equals('GET'));
+        expect(request.url.origin, Uri.parse(apiUrl).origin);
         expect(request.url.path, '/api/items/1/messages');
         return http.Response(
           jsonEncode([
@@ -91,6 +97,7 @@ void main() {
       final input = Message(requestId: 1, senderId: 1, content: 'Hello');
       final mockClient = MockClient((request) async {
         expect(request.method, equals('POST'));
+        expect(request.url.origin, Uri.parse(apiUrl).origin);
         expect(request.url.path, '/api/items/1/messages');
         final body = jsonDecode(request.body) as Map<String, dynamic>;
         expect(body['content'], input.content);
