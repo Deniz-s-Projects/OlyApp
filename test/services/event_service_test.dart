@@ -50,6 +50,21 @@ void main() {
       expect(event.title, 'Meet');
     });
 
+    test('updateEvent posts to event id', () async {
+      final input = CalendarEvent(id: 1, title: 'Edit', date: DateTime.fromMillisecondsSinceEpoch(0));
+      final mockClient = MockClient((request) async {
+        expect(request.method, equals('POST'));
+        expect(request.url.path, '/api/events/1');
+        final body = jsonDecode(request.body) as Map<String, dynamic>;
+        expect(body['title'], input.title);
+        return http.Response(jsonEncode(input.toJson()), 200);
+      });
+
+      final service = EventService(client: mockClient);
+      final event = await service.updateEvent(input);
+      expect(event.title, 'Edit');
+    });
+
     test('fetchEvents throws on error', () async {
       final mockClient = MockClient((_) async => http.Response('err', 404));
       final service = EventService(client: mockClient);

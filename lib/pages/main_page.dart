@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'calendar_page.dart';
 import 'item_exchange_page.dart';
 import 'maintenance_page.dart';
+import 'admin/admin_home_page.dart';
 
 class MainPage extends StatefulWidget {
   final CalendarPage? calendarPage;
   final MaintenancePage? maintenancePage;
-  const MainPage({super.key, this.calendarPage, this.maintenancePage});
+  final bool isAdmin;
+  const MainPage({super.key, this.calendarPage, this.maintenancePage, this.isAdmin = false});
 
   @override
   State<MainPage> createState() => _MainPageState();
@@ -28,7 +30,7 @@ class _MainPageState extends State<MainPage> {
   void initState() {
     super.initState();
     _pages = [
-      DashboardPage(onNavigate: _onDashboardNavigate),
+      DashboardPage(onNavigate: _onDashboardNavigate, isAdmin: widget.isAdmin),
       widget.calendarPage ?? const CalendarPage(),
       const ItemExchangePage(),
       widget.maintenancePage ?? const MaintenancePage(),
@@ -90,7 +92,8 @@ class _MainPageState extends State<MainPage> {
 
 class DashboardPage extends StatelessWidget {
   final ValueChanged<int> onNavigate;
-  const DashboardPage({super.key, required this.onNavigate});
+  final bool isAdmin;
+  const DashboardPage({super.key, required this.onNavigate, this.isAdmin = false});
 
   @override
   Widget build(BuildContext context) {
@@ -153,7 +156,18 @@ class DashboardPage extends StatelessWidget {
                   colorScheme: colorScheme,
                   onTap: () => _navigate(3),
                 ),
-                // add more cards here
+                if (isAdmin)
+                  DashboardCard(
+                    icon: Icons.admin_panel_settings,
+                    label: 'Admin',
+                    colorScheme: colorScheme,
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const AdminHomePage(),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ],

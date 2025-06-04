@@ -32,4 +32,9 @@ class MaintenanceService extends ApiService {
     return post('/maintenance/${message.requestId}/messages', message.toJson(),
         (json) => Message.fromJson(json as Map<String, dynamic>));
   }
+
+  Future<MaintenanceRequest> updateStatus(int id, String status) async {
+    return post('/maintenance/$id', {'status': status},
+        (json) => MaintenanceRequest.fromJson(json as Map<String, dynamic>));
+  }
 }
