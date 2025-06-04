@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:oly_app/pages/calendar_page.dart';
 import 'package:oly_app/pages/main_page.dart';
 import 'package:oly_app/pages/maintenance_page.dart';
-import 'package:oly_app/pages/admin/admin_home_page.dart';
 import 'package:oly_app/models/models.dart';
 import 'package:oly_app/services/event_service.dart';
 import 'package:oly_app/services/maintenance_service.dart';

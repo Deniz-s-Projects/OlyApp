@@ -1,28 +1,30 @@
 import '../models/models.dart';
 import 'api_service.dart';
 
+/// Service for item-related API calls.
 class ItemService extends ApiService {
   ItemService({super.client});
 
+  /// Fetches all marketplace items.
   Future<List<Item>> fetchItems() async {
     return get('/items', (json) {
-  /// Retrieves messages for the item with [itemId].
-  /// Sends a chat [message] for its associated item.
-      final list = (json['data'] as List<dynamic>);
+      final list = json['data'] as List<dynamic>;
       return list
           .map((e) => Item.fromJson(e as Map<String, dynamic>))
           .toList();
     });
   }
 
-  Future<Item> createItem(Item item) async 
+  /// Creates a new item listing.
+  Future<Item> createItem(Item item) async {
     return post(
       '/items',
       item.toJson(),
-      (json) => Item.fromJson(json as Map<String, dynamic>),
+      (json) => Item.fromJson(json['data'] as Map<String, dynamic>),
     );
   }
 
+  /// Retrieves messages for the item with [itemId].
   Future<List<Message>> fetchMessages(int itemId) async {
     return get('/items/$itemId/messages', (json) {
       final list = json as List<dynamic>;
@@ -32,6 +34,7 @@ class ItemService extends ApiService {
     });
   }
 
+  /// Sends a chat [message] for its associated item.
   Future<Message> sendMessage(Message message) async {
     return post(
       '/items/${message.requestId}/messages',
