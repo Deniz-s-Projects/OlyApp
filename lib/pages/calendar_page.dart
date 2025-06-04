@@ -47,9 +47,9 @@ class _CalendarPageState extends State<CalendarPage> {
       });
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to load events')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Failed to load events')));
     }
   }
 
@@ -74,11 +74,15 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 
   void _addEvent() async {
-    await _showAddEventDialog(context, (title, date) async {
+    await showAddEventDialog(context, (title, date) async {
       final event = await _service.createEvent(
         CalendarEvent(title: title, date: date),
       );
-      final dayKey = DateTime(event.date.year, event.date.month, event.date.day);
+      final dayKey = DateTime(
+        event.date.year,
+        event.date.month,
+        event.date.day,
+      );
       if (_events.containsKey(dayKey)) {
         _events[dayKey]!.add(event);
       } else {
@@ -92,7 +96,6 @@ class _CalendarPageState extends State<CalendarPage> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Scaffold(
-
       body: Column(
         children: [
           TableCalendar<CalendarEvent>(
@@ -117,11 +120,17 @@ class _CalendarPageState extends State<CalendarPage> {
             ),
             calendarStyle: CalendarStyle(
               todayDecoration: BoxDecoration(
-                  color: cs.primaryContainer, shape: BoxShape.circle),
+                color: cs.primaryContainer,
+                shape: BoxShape.circle,
+              ),
               selectedDecoration: BoxDecoration(
-                  color: cs.secondary, shape: BoxShape.circle),
+                color: cs.secondary,
+                shape: BoxShape.circle,
+              ),
               markerDecoration: BoxDecoration(
-                  color: cs.secondaryContainer, shape: BoxShape.circle),
+                color: cs.secondaryContainer,
+                shape: BoxShape.circle,
+              ),
             ),
           ),
           const SizedBox(height: 8),
@@ -157,11 +166,10 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 }
 
-
-Future<void> _showAddEventDialog(
-    BuildContext context,
-    void Function(String title, DateTime date) onConfirm,
-    ) async {
+Future<void> showAddEventDialog(
+  BuildContext context,
+  void Function(String title, DateTime date) onConfirm,
+) async {
   final textCtrl = TextEditingController();
   DateTime selectedDate = DateTime.now();
   await showDialog(
@@ -179,7 +187,8 @@ Future<void> _showAddEventDialog(
           TextButton.icon(
             icon: const Icon(Icons.calendar_today),
             label: Text(
-                '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}'),
+              '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
+            ),
             onPressed: () async {
               final picked = await showDatePicker(
                 context: ctx,
@@ -194,8 +203,9 @@ Future<void> _showAddEventDialog(
       ),
       actions: [
         TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel')),
+          onPressed: () => Navigator.pop(ctx),
+          child: const Text('Cancel'),
+        ),
         ElevatedButton(
           onPressed: () {
             if (textCtrl.text.isNotEmpty) {

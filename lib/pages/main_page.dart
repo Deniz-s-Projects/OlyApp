@@ -3,8 +3,11 @@ import 'calendar_page.dart';
 import 'item_exchange_page.dart';
 import 'maintenance_page.dart';
 import 'admin/admin_home_page.dart';
-import 'map_page.dart';
-import 'profile_page.dart';
+import 'map_page.dart'; 
+import 'profile_page.dart'; 
+import 'post_item_page.dart';
+import '../models/models.dart';
+import '../services/event_service.dart'; 
 
 class MainPage extends StatefulWidget {
   final CalendarPage? calendarPage;
@@ -78,11 +81,9 @@ class _MainPageState extends State<MainPage> {
         ],
       ),
       body: _pages[_currentIndex],
-      floatingActionButton: _currentIndex != 4
-          ? FloatingActionButton(
-              onPressed: () {
-                // TODO: implement quick actions per tab
-              },
+      floatingActionButton: _fabCallback() != null
+          ? FloatingActionButton( 
+              onPressed: _fabCallback(), 
               backgroundColor: colorScheme.secondary,
               foregroundColor: colorScheme.onSecondary,
               child: Icon(_fabIcon()),
@@ -121,6 +122,39 @@ class _MainPageState extends State<MainPage> {
         return Icons.add_shopping_cart;
       default:
         return Icons.add;
+    }
+  }
+
+  VoidCallback? _fabCallback() {
+    switch (_currentIndex) {
+      case 0:
+        return () {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('No notifications')));
+        };
+      case 1:
+        return () {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('No map action')));
+        };
+      case 2:
+        return () async {
+          await showAddEventDialog(context, (title, date) async {
+            final service = EventService();
+            await service.createEvent(CalendarEvent(title: title, date: date));
+          });
+        };
+      case 3:
+        return () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const PostItemPage()),
+          );
+        };
+      default:
+        return null;
     }
   }
 
