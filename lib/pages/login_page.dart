@@ -37,6 +37,7 @@ class _LoginPageState extends State<LoginPage> {
           'name': 'Mock User',
           'email': email,
           'avatarUrl': null,
+          'isAdmin': email == 'admin@example.com',
         }
       };
     }

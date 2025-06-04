@@ -19,12 +19,15 @@ class User {
   final String email;
   @HiveField(3)
   final String? avatarUrl;
+  @HiveField(4)
+  final bool isAdmin;
 
   User({
     this.id,
     required this.name,
     required this.email,
     this.avatarUrl,
+    this.isAdmin = false,
   });
 
   factory User.fromMap(Map<String, dynamic> map) => User(
@@ -32,6 +35,7 @@ class User {
     name: map['name'] as String,
     email: map['email'] as String,
     avatarUrl: map['avatarUrl'] as String?,
+    isAdmin: (map['isAdmin'] ?? false) as bool,
   );
 
   Map<String, dynamic> toMap() => {
@@ -39,6 +43,7 @@ class User {
     'name': name,
     'email': email,
     'avatarUrl': avatarUrl,
+    'isAdmin': isAdmin,
   };
 
   factory User.fromJson(Map<String, dynamic> json) => User.fromMap(json);

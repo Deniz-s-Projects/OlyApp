@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:oly_app/pages/calendar_page.dart';
 import 'package:oly_app/pages/main_page.dart';
 import 'package:oly_app/pages/maintenance_page.dart';
+import 'package:oly_app/pages/admin/admin_home_page.dart';
 import 'package:oly_app/models/models.dart';
 import 'package:oly_app/services/event_service.dart';
 import 'package:oly_app/services/maintenance_service.dart';
@@ -57,5 +58,18 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.widgetWithText(AppBar, 'Maintenance'), findsOneWidget);
     expect(find.byType(FloatingActionButton), findsNothing);
+  });
+
+  testWidgets('Admin card visible for admins', (tester) async {
+    await tester.pumpWidget(const MaterialApp(home: MainPage(isAdmin: true)));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Admin'), findsOneWidget);
+  });
+
+  testWidgets('Admin card hidden for regular user', (tester) async {
+    await tester.pumpWidget(const MaterialApp(home: MainPage()));
+    await tester.pumpAndSettle();
+    expect(find.text('Admin'), findsNothing);
   });
 }

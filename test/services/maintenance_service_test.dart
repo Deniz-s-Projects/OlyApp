@@ -107,6 +107,20 @@ void main() {
       expect(message.id, 3);
     });
 
+    test('updateStatus posts update', () async {
+      final mockClient = MockClient((request) async {
+        expect(request.method, equals('POST'));
+        expect(request.url.path, '/api/maintenance/1');
+        final body = jsonDecode(request.body) as Map<String, dynamic>;
+        expect(body['status'], 'closed');
+        return http.Response(jsonEncode({'id': 1, 'userId': 1, 'subject': 'a', 'description': 'b', 'createdAt': 0, 'status': 'closed'}), 200);
+      });
+
+      final service = MaintenanceService(client: mockClient);
+      final result = await service.updateStatus(1, 'closed');
+      expect(result.status, 'closed');
+    });
+
     test('throws on error status', () async {
       final mockClient = MockClient((_) async => http.Response('err', 500));
       final service = MaintenanceService(client: mockClient);

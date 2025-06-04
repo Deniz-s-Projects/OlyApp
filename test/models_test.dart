@@ -9,6 +9,7 @@ void main() {
       name: 'John Doe',
       email: 'john@example.com',
       avatarUrl: 'https://example.com/avatar.png',
+      isAdmin: true,
     );
 
     final userMap = {
@@ -16,6 +17,7 @@ void main() {
       'name': 'John Doe',
       'email': 'john@example.com',
       'avatarUrl': 'https://example.com/avatar.png',
+      'isAdmin': true,
     };
 
     test('toMap/fromMap round trip', () {

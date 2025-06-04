@@ -38,8 +38,16 @@ class OlyApp extends StatefulWidget {
 
 class _OlyAppState extends State<OlyApp> {
   bool _loggedIn = false;
+  bool _isAdmin = false;
 
-  void _handleLogin() => setState(() => _loggedIn = true);
+  void _handleLogin() {
+    final userBox = Hive.box<User>('userBox');
+    final user = userBox.get('currentUser');
+    setState(() {
+      _loggedIn = true;
+      _isAdmin = user?.isAdmin ?? false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +58,7 @@ class _OlyAppState extends State<OlyApp> {
         useMaterial3: true,
       ),
       home: _loggedIn
-          ? const MainPage()
+          ? MainPage(isAdmin: _isAdmin)
           : LoginPage(onLoginSuccess: _handleLogin),
     );
   }
