@@ -12,13 +12,14 @@ class ItemDetailPage extends StatelessWidget {
   Future<void> _requestItem(BuildContext context) async {
     if (item.id == null) return;
     final svc = service ?? ItemService();
+    final messenger = ScaffoldMessenger.of(context);
     try {
       await svc.requestItem(item.id!);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Request sent!')));
+      messenger.showSnackBar(
+          const SnackBar(content: Text('Request sent!')));
     } catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Failed: $e')));
+      messenger.showSnackBar(
+          SnackBar(content: Text('Failed: $e')));
     }
   }
 
