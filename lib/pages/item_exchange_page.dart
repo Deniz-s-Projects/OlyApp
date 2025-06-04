@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/item_card.dart';
 import 'item_detail_page.dart';
+import 'post_item_page.dart';
 import '../models/models.dart';
 import '../services/item_service.dart';
 
@@ -150,8 +151,14 @@ class _ItemExchangePageState extends State<ItemExchangePage> {
 
       // FAB to post a new listing
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // TODO: navigate to PostItemPage()
+        onPressed: () async {
+          final created = await Navigator.push<bool>(
+            context,
+            MaterialPageRoute(builder: (_) => const PostItemPage()),
+          );
+          if (created == true) {
+            _loadItems();
+          }
         },
         child: const Icon(Icons.add),
       ),
