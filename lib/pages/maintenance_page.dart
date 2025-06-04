@@ -95,7 +95,7 @@ class _MaintenancePageState extends State<MaintenancePage> {
                     description: desc,
                   ),
                 );
-                if (!mounted) return;
+                if (!context.mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Request submitted!')),
                 );
