@@ -42,10 +42,13 @@ dependencies:
   latlong2: ^0.9.1
 
   http: any
+  google_sign_in: ^6.3.0
+  sign_in_with_apple: ^7.0.1
 dev_dependencies:
   test: any
   flutter_test:
     sdk: flutter
+  google_sign_in_mocks: ^0.3.0
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
