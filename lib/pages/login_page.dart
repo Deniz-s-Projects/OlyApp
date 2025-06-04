@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:http/http.dart' as http;
 import '../models/models.dart';
+import '../utils/validators.dart';
 
 /// A simple login page with email/password and placeholder Google/Apple login buttons.
 class LoginPage extends StatefulWidget {
@@ -90,18 +91,9 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  String? _validateEmail(String? value) {
-    if (value == null || value.isEmpty) return 'Email is required';
-    final emailRegex = RegExp(r"^[^@]+@[^@]+\.[^@]+$");
-    if (!emailRegex.hasMatch(value)) return 'Enter a valid email';
-    return null;
-  }
+  String? _validateEmail(String? value) => validateEmail(value);
 
-  String? _validatePassword(String? value) {
-    if (value == null || value.isEmpty) return 'Password is required';
-    if (value.length < 6) return 'Password must be at least 6 characters';
-    return null;
-  }
+  String? _validatePassword(String? value) => validatePassword(value);
 
   @override
   Widget build(BuildContext context) {

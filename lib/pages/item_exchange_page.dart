@@ -4,6 +4,7 @@ import 'item_detail_page.dart';
 import 'post_item_page.dart';
 import '../models/models.dart';
 import '../services/item_service.dart';
+import '../utils/item_filter.dart';
 
 class ItemExchangePage extends StatefulWidget {
   const ItemExchangePage({super.key});
@@ -37,28 +38,10 @@ class _ItemExchangePageState extends State<ItemExchangePage> {
   }
 
   void _filter() {
-    final query = _searchCtrl.text.toLowerCase();
+    final query = _searchCtrl.text;
     setState(() {
-      _filteredItems = _allItems.where((item) {
-        final matchesSearch = item.title.toLowerCase().contains(query);
-        final matchesCat = _selectedCategory == 'All'
-            || (itemCategory(item) == _selectedCategory);
-        return matchesSearch && matchesCat;
-      }).toList();
+      _filteredItems = filterItems(_allItems, query, _selectedCategory);
     });
-  }
-
-  String itemCategory(Item item) {
-    switch (item.category) {
-      case ItemCategory.furniture:
-        return 'Furniture';
-      case ItemCategory.books:
-        return 'Books';
-      case ItemCategory.electronics:
-        return 'Electronics';
-      default:
-        return 'Other';
-    }
   }
 
   @override
