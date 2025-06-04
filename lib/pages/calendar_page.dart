@@ -4,14 +4,15 @@ import '../models/models.dart';
 import '../services/event_service.dart';
 
 class CalendarPage extends StatefulWidget {
-  const CalendarPage({super.key});
+  final EventService? service;
+  const CalendarPage({super.key, this.service});
 
   @override
   State<CalendarPage> createState() => _CalendarPageState();
 }
 
 class _CalendarPageState extends State<CalendarPage> {
-  final EventService _service = EventService();
+  late final EventService _service;
   final Map<DateTime, List<CalendarEvent>> _events = {};
   late final ValueNotifier<List<CalendarEvent>> _selectedEvents;
   CalendarFormat _calendarFormat = CalendarFormat.month;
@@ -21,6 +22,7 @@ class _CalendarPageState extends State<CalendarPage> {
   @override
   void initState() {
     super.initState();
+    _service = widget.service ?? EventService();
     _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay));
     _loadEvents();
   }

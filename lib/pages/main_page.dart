@@ -4,7 +4,9 @@ import 'item_exchange_page.dart';
 import 'maintenance_page.dart';
 
 class MainPage extends StatefulWidget {
-  const MainPage({super.key});
+  final CalendarPage? calendarPage;
+  final MaintenancePage? maintenancePage;
+  const MainPage({super.key, this.calendarPage, this.maintenancePage});
 
   @override
   State<MainPage> createState() => _MainPageState();
@@ -27,9 +29,9 @@ class _MainPageState extends State<MainPage> {
     super.initState();
     _pages = [
       DashboardPage(onNavigate: _onDashboardNavigate),
-      const CalendarPage(),
+      widget.calendarPage ?? const CalendarPage(),
       const ItemExchangePage(),
-      const MaintenancePage(),
+      widget.maintenancePage ?? const MaintenancePage(),
     ];
   }
 
