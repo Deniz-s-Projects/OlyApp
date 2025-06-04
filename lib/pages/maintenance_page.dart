@@ -88,16 +88,17 @@ class _MaintenancePageState extends State<MaintenancePage> {
               final subject = _subjectController.text.trim();
               final desc = _descriptionController.text.trim();
               if (subject.isEmpty || desc.isEmpty) return;
-              await _service.createRequest(
-                MaintenanceRequest(
-                  userId: 1,
-                  subject: subject,
-                  description: desc,
-                ),
-              );
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Request submitted!')),
-              );
+                await _service.createRequest(
+                  MaintenanceRequest(
+                    userId: 1,
+                    subject: subject,
+                    description: desc,
+                  ),
+                );
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Request submitted!')),
+                );
               _subjectController.clear();
               _descriptionController.clear();
               _loadTickets();

@@ -150,8 +150,7 @@ class DashboardPage extends StatelessWidget {
   }
 
   void _navigate(BuildContext context, int index) {
-    final state = context.findAncestorStateOfType<_MainPageState>();
-    state?.setState(() => state._currentIndex = index);
+    setState(() => _currentIndex = index);
   }
 }
 
