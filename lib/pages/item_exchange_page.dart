@@ -7,14 +7,15 @@ import '../services/item_service.dart';
 import '../utils/item_filter.dart';
 
 class ItemExchangePage extends StatefulWidget {
-  const ItemExchangePage({super.key});
+  final ItemService? service;
+  const ItemExchangePage({super.key, this.service});
 
   @override
   State<ItemExchangePage> createState() => _ItemExchangePageState();
 }
 
 class _ItemExchangePageState extends State<ItemExchangePage> {
-  final ItemService _service = ItemService();
+  late final ItemService _service;
   final _searchCtrl = TextEditingController();
   String _selectedCategory = 'All';
 
@@ -26,6 +27,7 @@ class _ItemExchangePageState extends State<ItemExchangePage> {
   @override
   void initState() {
     super.initState();
+    _service = widget.service ?? ItemService();
     _loadItems();
   }
 
