@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../services/maintenance_service.dart';
+import 'maintenance_chat_page.dart';
 
 class MaintenancePage extends StatefulWidget {
   const MaintenancePage({super.key});
@@ -122,8 +123,11 @@ class _MaintenancePageState extends State<MaintenancePage> {
           subtitle: Text('Status: ${ticket.status}'),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Open ticket ${ticket.id}')),
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => MaintenanceChatPage(request: ticket),
+              ),
             );
           },
         );
