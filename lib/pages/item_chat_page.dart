@@ -26,8 +26,13 @@ class _ItemChatPageState extends State<ItemChatPage> {
 
   Future<void> _loadMessages() async {
     if (widget.item.id == null) return;
-    final msgs = await _service.fetchMessages(widget.item.id!);
-    setState(() => _messages = msgs);
+    try {
+      final msgs = await _service.fetchMessages(widget.item.id!);
+      if (!mounted) return;
+      setState(() => _messages = msgs);
+    } catch (_) {
+      // ignore errors in example
+    }
   }
 
   Future<void> _sendMessage() async {
@@ -38,9 +43,14 @@ class _ItemChatPageState extends State<ItemChatPage> {
       senderId: 1,
       content: text,
     );
-    final saved = await _service.sendMessage(message);
-    setState(() => _messages.add(saved));
-    _messageCtrl.clear();
+    try {
+      final saved = await _service.sendMessage(message);
+      if (!mounted) return;
+      setState(() => _messages.add(saved));
+      _messageCtrl.clear();
+    } catch (_) {
+      // ignore errors in example
+    }
   }
 
   @override
