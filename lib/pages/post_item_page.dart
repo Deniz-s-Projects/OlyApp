@@ -50,6 +50,7 @@ class _PostItemPageState extends State<PostItemPage> {
         Navigator.pop(context, true);
       }
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text('Failed to post: $e')));
     } finally {
@@ -84,19 +85,16 @@ class _PostItemPageState extends State<PostItemPage> {
                 decoration: const InputDecoration(labelText: 'Category'),
                 items: ItemCategory.values.map((cat) {
                   String label;
-                  switch (cat) {
-                    case ItemCategory.furniture:
-                      label = 'Furniture';
-                      break;
-                    case ItemCategory.books:
-                      label = 'Books';
-                      break;
-                    case ItemCategory.electronics:
-                      label = 'Electronics';
-                      break;
-                    default:
-                      label = 'Other';
-                  }
+                    switch (cat) {
+                      case ItemCategory.furniture:
+                        label = 'Furniture';
+                      case ItemCategory.books:
+                        label = 'Books';
+                      case ItemCategory.electronics:
+                        label = 'Electronics';
+                      default:
+                        label = 'Other';
+                    }
                   return DropdownMenuItem(value: cat, child: Text(label));
                 }).toList(),
                 onChanged: (val) => setState(() => _category = val ?? ItemCategory.other),
