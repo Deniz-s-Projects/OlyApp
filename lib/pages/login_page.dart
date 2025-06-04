@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:http/http.dart' as http;
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import '../models/models.dart';
 import '../utils/validators.dart';
 import '../services/api_service.dart';
@@ -9,8 +11,15 @@ import '../services/api_service.dart';
 /// A simple login page with email/password and placeholder Google/Apple login buttons.
 class LoginPage extends StatefulWidget {
   final VoidCallback onLoginSuccess;
+  final GoogleSignIn? googleSignIn;
+  final Future<AuthorizationCredentialAppleID> Function()? appleSignIn;
 
-  const LoginPage({super.key, required this.onLoginSuccess});
+  const LoginPage({
+    super.key,
+    required this.onLoginSuccess,
+    this.googleSignIn,
+    this.appleSignIn,
+  });
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -26,7 +35,9 @@ class _LoginPageState extends State<LoginPage> {
 
   /// Authenticate against real API endpoint
   Future<Map<String, dynamic>> _authenticate(
-      String email, String password) async {
+    String email,
+    String password,
+  ) async {
     if (useMock) {
       // Mock response for local testing
       await Future.delayed(const Duration(milliseconds: 500));
@@ -38,7 +49,7 @@ class _LoginPageState extends State<LoginPage> {
           'email': email,
           'avatarUrl': null,
           'isAdmin': email == 'admin@example.com',
-        }
+        },
       };
     }
 
@@ -77,12 +88,55 @@ class _LoginPageState extends State<LoginPage> {
       widget.onLoginSuccess();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Login failed: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Login failed: $e')));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  Future<User?> _handleGoogleSignIn() async {
+    final signIn = widget.googleSignIn ?? GoogleSignIn();
+    final account = await signIn.signIn();
+    if (account == null) return null;
+    final auth = await account.authentication;
+
+    final user = User(
+      name: account.displayName ?? account.email,
+      email: account.email,
+      avatarUrl: account.photoUrl,
+    );
+
+    final authBox = Hive.box('authBox');
+    await authBox.put('token', auth.idToken ?? auth.accessToken);
+
+    return user;
+  }
+
+  Future<User?> _handleAppleSignIn() async {
+    final getCredential =
+        widget.appleSignIn ??
+        () => SignInWithApple.getAppleIDCredential(
+          scopes: [
+            AppleIDAuthorizationScopes.email,
+            AppleIDAuthorizationScopes.fullName,
+          ],
+        );
+    final credential = await getCredential();
+
+    final fullName =
+        credential.givenName != null && credential.familyName != null
+            ? '${credential.givenName} ${credential.familyName}'
+            : 'Apple User';
+    final email = credential.email ?? '${credential.userIdentifier}@apple.com';
+
+    final user = User(name: fullName, email: email, avatarUrl: null);
+
+    final authBox = Hive.box('authBox');
+    await authBox.put('token', credential.identityToken);
+
+    return user;
   }
 
   @override
@@ -135,8 +189,10 @@ class _LoginPageState extends State<LoginPage> {
                             ? Icons.visibility
                             : Icons.visibility_off,
                       ),
-                      onPressed: () => setState(
-                              () => _passwordVisible = !_passwordVisible),
+                      onPressed:
+                          () => setState(
+                            () => _passwordVisible = !_passwordVisible,
+                          ),
                     ),
                   ),
                   obscureText: !_passwordVisible,
@@ -147,13 +203,14 @@ class _LoginPageState extends State<LoginPage> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _handleLogin,
-                    child: _isLoading
-                        ? const SizedBox(
-                      height: 16,
-                      width: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                        : const Text('Login'),
+                    child:
+                        _isLoading
+                            ? const SizedBox(
+                              height: 16,
+                              width: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                            : const Text('Login'),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -163,16 +220,33 @@ class _LoginPageState extends State<LoginPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     ElevatedButton.icon(
-                      onPressed: _isLoading
-                          ? null
-                          : () async {
-                        setState(() => _isLoading = true);
-                        // TODO: Google Sign-In integration
-                        await Future.delayed(
-                            const Duration(seconds: 1));
-                        widget.onLoginSuccess();
-                        if (mounted) setState(() => _isLoading = false);
-                      },
+                      onPressed:
+                          _isLoading
+                              ? null
+                              : () async {
+                                setState(() => _isLoading = true);
+                                try {
+                                  final user = await _handleGoogleSignIn();
+                                  if (user != null) {
+                                    final userBox = Hive.box<User>('userBox');
+                                    await userBox.put('currentUser', user);
+                                    widget.onLoginSuccess();
+                                  }
+                                } catch (e) {
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'Google sign-in failed: $e',
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                } finally {
+                                  if (mounted)
+                                    setState(() => _isLoading = false);
+                                }
+                              },
                       icon: const Icon(Icons.login),
                       label: const Text('Google'),
                       style: ElevatedButton.styleFrom(
@@ -182,16 +256,33 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(width: 12),
                     ElevatedButton.icon(
-                      onPressed: _isLoading
-                          ? null
-                          : () async {
-                        setState(() => _isLoading = true);
-                        // TODO: Apple Sign-In integration
-                        await Future.delayed(
-                            const Duration(seconds: 1));
-                        widget.onLoginSuccess();
-                        if (mounted) setState(() => _isLoading = false);
-                      },
+                      onPressed:
+                          _isLoading
+                              ? null
+                              : () async {
+                                setState(() => _isLoading = true);
+                                try {
+                                  final user = await _handleAppleSignIn();
+                                  if (user != null) {
+                                    final userBox = Hive.box<User>('userBox');
+                                    await userBox.put('currentUser', user);
+                                    widget.onLoginSuccess();
+                                  }
+                                } catch (e) {
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'Apple sign-in failed: $e',
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                } finally {
+                                  if (mounted)
+                                    setState(() => _isLoading = false);
+                                }
+                              },
                       icon: const Icon(Icons.apple),
                       label: const Text('Apple'),
                       style: ElevatedButton.styleFrom(
