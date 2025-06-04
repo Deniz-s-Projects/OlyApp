@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../models/models.dart';
+import '../services/maintenance_service.dart';
 
 class MaintenancePage extends StatefulWidget {
   const MaintenancePage({super.key});
@@ -8,16 +10,23 @@ class MaintenancePage extends StatefulWidget {
 }
 
 class _MaintenancePageState extends State<MaintenancePage> {
+  final MaintenanceService _service = MaintenanceService();
   int _selectedTab = 0;
   final _subjectController = TextEditingController();
   final _descriptionController = TextEditingController();
 
-  // Sample tickets; replace with real data source
-  final List<Map<String, String>> _tickets = const [
-    {'id': '1', 'subject': 'Leaky faucet', 'status': 'Open'},
-    {'id': '2', 'subject': 'Broken window', 'status': 'In Progress'},
-    {'id': '3', 'subject': 'AC not working', 'status': 'Closed'},
-  ];
+  List<MaintenanceRequest> _tickets = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTickets();
+  }
+
+  Future<void> _loadTickets() async {
+    final tickets = await _service.fetchRequests();
+    setState(() => _tickets = tickets);
+  }
 
   @override
   void dispose() {
@@ -74,13 +83,23 @@ class _MaintenancePageState extends State<MaintenancePage> {
           ),
           const SizedBox(height: 20),
           ElevatedButton(
-            onPressed: () {
-              // TODO: send to server
+            onPressed: () async {
+              final subject = _subjectController.text.trim();
+              final desc = _descriptionController.text.trim();
+              if (subject.isEmpty || desc.isEmpty) return;
+              await _service.createRequest(
+                MaintenanceRequest(
+                  userId: 1,
+                  subject: subject,
+                  description: desc,
+                ),
+              );
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Request submitted!')),
               );
               _subjectController.clear();
               _descriptionController.clear();
+              _loadTickets();
             },
             child: const Text('Send Request'),
           ),
@@ -99,13 +118,12 @@ class _MaintenancePageState extends State<MaintenancePage> {
       itemBuilder: (context, index) {
         final ticket = _tickets[index];
         return ListTile(
-          title: Text(ticket['subject']!),
-          subtitle: Text('Status: ${ticket['status']}'),
+          title: Text(ticket.subject),
+          subtitle: Text('Status: ${ticket.status}'),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
-            // TODO: navigate to conversation thread
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Open ticket ${ticket['id']}')),
+              SnackBar(content: Text('Open ticket ${ticket.id}')),
             );
           },
         );
