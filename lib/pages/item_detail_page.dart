@@ -1,27 +1,20 @@
 import 'package:flutter/material.dart';
+import '../models/models.dart';
+import '../services/item_service.dart';
+import 'item_chat_page.dart';
 
 class ItemDetailPage extends StatelessWidget {
-  final String itemTitle;
-  final String? itemImageUrl;
-  final String? itemDescription;
-  final double? itemPrice;
-  final bool isFree;
+  final Item item;
+  final ItemService? service;
 
-  const ItemDetailPage({
-    super.key,
-    required this.itemTitle,
-    this.itemImageUrl,
-    this.itemDescription,
-    this.itemPrice,
-    this.isFree = false,
-  });
+  const ItemDetailPage({super.key, required this.item, this.service});
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
-        title: Text(itemTitle),
+        title: Text(item.title),
         backgroundColor: colorScheme.primaryContainer,
         foregroundColor: colorScheme.onPrimaryContainer,
         elevation: 1,
@@ -31,22 +24,22 @@ class ItemDetailPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Item Image
-            itemImageUrl != null
+            item.imageUrl != null
                 ? Image.network(
-              itemImageUrl!,
-              height: 200,
-              width: double.infinity,
-              fit: BoxFit.cover,
-            )
+                  item.imageUrl!,
+                  height: 200,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                )
                 : Container(
-              height: 200,
-              color: colorScheme.surfaceContainerHighest,
-              child: Icon(
-                Icons.image_not_supported,
-                size: 64,
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ),
+                  height: 200,
+                  color: colorScheme.surfaceContainerHighest,
+                  child: Icon(
+                    Icons.image_not_supported,
+                    size: 64,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
 
             // Details
             Padding(
@@ -56,22 +49,21 @@ class ItemDetailPage extends StatelessWidget {
                 children: [
                   // Title & Price/Free Badge
                   Text(
-                    itemTitle,
-                    style: Theme.of(context)
-                        .textTheme
-                        .headlineSmall
-                        ?.copyWith(color: colorScheme.primary),
+                    item.title,
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      color: colorScheme.primary,
+                    ),
                   ),
                   const SizedBox(height: 8),
-                  if (isFree)
+                  if (item.isFree)
                     Chip(
                       label: const Text('Free'),
                       backgroundColor: colorScheme.primary,
                       labelStyle: TextStyle(color: colorScheme.onPrimary),
                     )
-                  else if (itemPrice != null)
+                  else if (item.price != null)
                     Text(
-                      '\$${itemPrice!.toStringAsFixed(2)}',
+                      '\$${item.price!.toStringAsFixed(2)}',
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
 
@@ -80,14 +72,13 @@ class ItemDetailPage extends StatelessWidget {
                   // Description Section
                   Text(
                     'Description',
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(color: colorScheme.secondary),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: colorScheme.secondary,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    itemDescription ?? 'No description provided.',
+                    item.description ?? 'No description provided.',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
 
@@ -101,7 +92,17 @@ class ItemDetailPage extends StatelessWidget {
                           icon: const Icon(Icons.chat),
                           label: const Text('Chat Owner'),
                           onPressed: () {
-                            // TODO: navigate to chat screen
+                            if (item.id == null) return;
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (_) => ItemChatPage(
+                                      item: item,
+                                      service: service,
+                                    ),
+                              ),
+                            );
                           },
                         ),
                       ),
