@@ -47,6 +47,17 @@ OlyApp is a mobile app built by and for residents of the Olympiadorf (Olydorf) i
    ```bash
    flutter run
    ```
+
+## 🧪 Running Tests
+
+Install dependencies and run the unit tests:
+
+```bash
+flutter pub get
+flutter test
+```
+
+All tests live in the `test/` directory and are executed automatically in CI.
 ---
 
 ## 📲 Coming Soon
