@@ -40,12 +40,34 @@ class _OlyAppState extends State<OlyApp> {
   bool _loggedIn = false;
   bool _isAdmin = false;
 
+  @override
+  void initState() {
+    super.initState();
+    final authBox = Hive.box('authBox');
+    final token = authBox.get('token');
+    final userBox = Hive.box<User>('userBox');
+    final user = userBox.get('currentUser');
+    if (token != null && user != null) {
+      _loggedIn = true;
+      _isAdmin = user.isAdmin;
+    }
+  }
+
   void _handleLogin() {
     final userBox = Hive.box<User>('userBox');
     final user = userBox.get('currentUser');
     setState(() {
       _loggedIn = true;
       _isAdmin = user?.isAdmin ?? false;
+    });
+  }
+
+  Future<void> _logout() async {
+    await Hive.box('authBox').clear();
+    await Hive.box<User>('userBox').clear();
+    setState(() {
+      _loggedIn = false;
+      _isAdmin = false;
     });
   }
 
@@ -58,7 +80,7 @@ class _OlyAppState extends State<OlyApp> {
         useMaterial3: true,
       ),
       home: _loggedIn
-          ? MainPage(isAdmin: _isAdmin)
+          ? MainPage(isAdmin: _isAdmin, onLogout: _logout)
           : LoginPage(onLoginSuccess: _handleLogin),
     );
   }

@@ -34,6 +34,7 @@ void main() {
       home: MainPage(
         calendarPage: CalendarPage(service: fakeEventService),
         maintenancePage: MaintenancePage(service: fakeMaintenanceService),
+        onLogout: () {},
       ),
     ));
 
@@ -60,14 +61,14 @@ void main() {
   });
 
   testWidgets('Admin card visible for admins', (tester) async {
-    await tester.pumpWidget(const MaterialApp(home: MainPage(isAdmin: true)));
+    await tester.pumpWidget(const MaterialApp(home: MainPage(isAdmin: true, onLogout: null)));
     await tester.pumpAndSettle();
 
     expect(find.text('Admin'), findsOneWidget);
   });
 
   testWidgets('Admin card hidden for regular user', (tester) async {
-    await tester.pumpWidget(const MaterialApp(home: MainPage()));
+    await tester.pumpWidget(const MaterialApp(home: MainPage(onLogout: null)));
     await tester.pumpAndSettle();
     expect(find.text('Admin'), findsNothing);
   });

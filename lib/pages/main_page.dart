@@ -9,7 +9,8 @@ class MainPage extends StatefulWidget {
   final CalendarPage? calendarPage;
   final MaintenancePage? maintenancePage;
   final bool isAdmin;
-  const MainPage({super.key, this.calendarPage, this.maintenancePage, this.isAdmin = false});
+  final VoidCallback? onLogout;
+  const MainPage({super.key, this.calendarPage, this.maintenancePage, this.isAdmin = false, this.onLogout});
 
   @override
   State<MainPage> createState() => _MainPageState();
@@ -52,6 +53,17 @@ class _MainPageState extends State<MainPage> {
         backgroundColor: colorScheme.primaryContainer,
         foregroundColor: colorScheme.onPrimaryContainer,
         elevation: 2,
+        actions: [
+          if (widget.onLogout != null)
+            PopupMenuButton<String>(
+              onSelected: (val) {
+                if (val == 'logout') widget.onLogout!();
+              },
+              itemBuilder: (context) => const [
+                PopupMenuItem(value: 'logout', child: Text('Logout')),
+              ],
+            ),
+        ],
       ),
       body: _pages[_currentIndex],
       floatingActionButton: _currentIndex != 4
