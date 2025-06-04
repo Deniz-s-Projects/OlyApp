@@ -20,12 +20,18 @@ class _MainPageState extends State<MainPage> {
     'Maintenance',
   ];
 
-  late final List<Widget> _pages = [
-    DashboardPage(),
-    const CalendarPage(),
-    const ItemExchangePage(),
-    const MaintenancePage(),
-  ];
+  late final List<Widget> _pages;
+
+  @override
+  void initState() {
+    super.initState();
+    _pages = [
+      DashboardPage(onNavigate: _onDashboardNavigate),
+      const CalendarPage(),
+      const ItemExchangePage(),
+      const MaintenancePage(),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,10 +80,15 @@ class _MainPageState extends State<MainPage> {
         return Icons.add;
     }
   }
+
+  void _onDashboardNavigate(int index) {
+    setState(() => _currentIndex = index);
+  }
 }
 
 class DashboardPage extends StatelessWidget {
-  const DashboardPage({super.key});
+  final ValueChanged<int> onNavigate;
+  const DashboardPage({super.key, required this.onNavigate});
 
   @override
   Widget build(BuildContext context) {
@@ -126,19 +137,19 @@ class DashboardPage extends StatelessWidget {
                   icon: Icons.calendar_today,
                   label: 'Calendar',
                   colorScheme: colorScheme,
-                  onTap: () => _navigate(context, 1),
+                  onTap: () => _navigate(1),
                 ),
                 DashboardCard(
                   icon: Icons.swap_horiz,
                   label: 'Exchange',
                   colorScheme: colorScheme,
-                  onTap: () => _navigate(context, 2),
+                  onTap: () => _navigate(2),
                 ),
                 DashboardCard(
                   icon: Icons.build,
                   label: 'Maintenance',
                   colorScheme: colorScheme,
-                  onTap: () => _navigate(context, 3),
+                  onTap: () => _navigate(3),
                 ),
                 // add more cards here
               ],
@@ -149,8 +160,8 @@ class DashboardPage extends StatelessWidget {
     );
   }
 
-  void _navigate(BuildContext context, int index) {
-    setState(() => _currentIndex = index);
+  void _navigate(int index) {
+    onNavigate(index);
   }
 }
 
