@@ -6,6 +6,8 @@ class ItemService extends ApiService {
 
   Future<List<Item>> fetchItems() async {
     return get('/items', (json) {
+  /// Retrieves messages for the item with [itemId].
+  /// Sends a chat [message] for its associated item.
       final list = (json['data'] as List<dynamic>);
       return list
           .map((e) => Item.fromJson(e as Map<String, dynamic>))
