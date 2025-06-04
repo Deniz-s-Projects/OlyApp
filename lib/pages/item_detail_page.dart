@@ -9,6 +9,19 @@ class ItemDetailPage extends StatelessWidget {
 
   const ItemDetailPage({super.key, required this.item, this.service});
 
+  Future<void> _requestItem(BuildContext context) async {
+    if (item.id == null) return;
+    final svc = service ?? ItemService();
+    try {
+      await svc.requestItem(item.id!);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Request sent!')));
+    } catch (e) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Failed: $e')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -116,7 +129,7 @@ class ItemDetailPage extends StatelessWidget {
                             foregroundColor: colorScheme.onPrimary,
                           ),
                           onPressed: () {
-                            // TODO: send request action
+                            _requestItem(context);
                           },
                         ),
                       ),

@@ -42,4 +42,9 @@ class ItemService extends ApiService {
       (json) => Message.fromJson(json as Map<String, dynamic>),
     );
   }
+
+  /// Sends a request to claim or purchase the item with [itemId].
+  Future<void> requestItem(int itemId) async {
+    await post('/items/$itemId/request', {}, (_) => null);
+  }
 }
