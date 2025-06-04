@@ -6,7 +6,7 @@ class MaintenanceService extends ApiService {
 
   Future<List<MaintenanceRequest>> fetchRequests() async {
     return get('/maintenance', (json) {
-      final list = json as List<dynamic>;
+      final list = (json['data'] as List<dynamic>);
       return list
           .map((e) => MaintenanceRequest.fromJson(e as Map<String, dynamic>))
           .toList();
@@ -15,13 +15,13 @@ class MaintenanceService extends ApiService {
 
   Future<MaintenanceRequest> createRequest(MaintenanceRequest request) async {
     return post('/maintenance', request.toJson(), (json) {
-      return MaintenanceRequest.fromJson(json as Map<String, dynamic>);
+      return MaintenanceRequest.fromJson(json['data'] as Map<String, dynamic>);
     });
   }
 
   Future<List<Message>> fetchMessages(int requestId) async {
     return get('/maintenance/$requestId/messages', (json) {
-      final list = json as List<dynamic>;
+      final list = (json['data'] as List<dynamic>);
       return list
           .map((e) => Message.fromJson(e as Map<String, dynamic>))
           .toList();
@@ -30,6 +30,7 @@ class MaintenanceService extends ApiService {
 
   Future<Message> sendMessage(Message message) async {
     return post('/maintenance/${message.requestId}/messages', message.toJson(),
-        (json) => Message.fromJson(json as Map<String, dynamic>));
+        (json) =>
+            Message.fromJson(json['data'] as Map<String, dynamic>));
   }
 }

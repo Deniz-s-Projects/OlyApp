@@ -6,12 +6,14 @@ class ItemService extends ApiService {
 
   Future<List<Item>> fetchItems() async {
     return get('/items', (json) {
-      final list = json as List<dynamic>;
-      return list.map((e) => Item.fromJson(e as Map<String, dynamic>)).toList();
+      final list = (json['data'] as List<dynamic>);
+      return list
+          .map((e) => Item.fromJson(e as Map<String, dynamic>))
+          .toList();
     });
   }
 
-  Future<Item> createItem(Item item) async {
+  Future<Item> createItem(Item item) async 
     return post(
       '/items',
       item.toJson(),

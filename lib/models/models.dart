@@ -3,6 +3,12 @@ import 'package:hive/hive.dart';
 
 part 'models.g.dart';
 
+DateTime _parseDate(dynamic value) {
+  if (value is int) return DateTime.fromMillisecondsSinceEpoch(value);
+  if (value is String) return DateTime.parse(value);
+  throw ArgumentError('Unsupported date format: $value');
+}
+
 @HiveType(typeId: 0)
 class User {
   @HiveField(0)
@@ -71,7 +77,7 @@ class MaintenanceRequest {
       userId: map['userId'] as int,
       subject: map['subject'] as String,
       description: map['description'] as String,
-      createdAt: DateTime.fromMillisecondsSinceEpoch(map['createdAt'] as int),
+      createdAt: _parseDate(map['createdAt']),
       status: map['status'] as String,
     );
   }
@@ -81,7 +87,7 @@ class MaintenanceRequest {
     'userId': userId,
     'subject': subject,
     'description': description,
-    'createdAt': createdAt.millisecondsSinceEpoch,
+    'createdAt': createdAt.toIso8601String(),
     'status': status,
   };
 
@@ -117,7 +123,7 @@ class Message {
     requestId: map['requestId'] as int,
     senderId: map['senderId'] as int,
     content: map['content'] as String,
-    timestamp: DateTime.fromMillisecondsSinceEpoch(map['timestamp'] as int),
+    timestamp: _parseDate(map['timestamp']),
   );
 
   Map<String, dynamic> toMap() => {
@@ -125,7 +131,7 @@ class Message {
     'requestId': requestId,
     'senderId': senderId,
     'content': content,
-    'timestamp': timestamp.millisecondsSinceEpoch,
+    'timestamp': timestamp.toIso8601String(),
   };
 
   factory Message.fromJson(Map<String, dynamic> json) => Message.fromMap(json);
@@ -155,14 +161,14 @@ class CalendarEvent {
   factory CalendarEvent.fromMap(Map<String, dynamic> map) => CalendarEvent(
     id: map['id'] as int?,
     title: map['title'] as String,
-    date: DateTime.fromMillisecondsSinceEpoch(map['date'] as int),
+    date: _parseDate(map['date']),
     description: map['description'] as String?,
   );
 
   Map<String, dynamic> toMap() => {
     if (id != null) 'id': id,
     'title': title,
-    'date': date.millisecondsSinceEpoch,
+    'date': date.toIso8601String(),
     'description': description,
   };
 
@@ -224,9 +230,14 @@ class Item {
     description: map['description'] as String?,
     imageUrl: map['imageUrl'] as String?,
     price: map['price'] != null ? (map['price'] as num).toDouble() : null,
-    isFree: (map['isFree'] as int) == 1,
-    category: ItemCategory.values[map['category'] as int],
-    createdAt: DateTime.fromMillisecondsSinceEpoch(map['createdAt'] as int),
+    isFree: map['isFree'] is bool
+        ? map['isFree'] as bool
+        : (map['isFree'] as int) == 1,
+    category: map['category'] is int
+        ? ItemCategory.values[map['category'] as int]
+        : ItemCategory.values
+            .firstWhere((e) => e.name == map['category'] as String),
+    createdAt: _parseDate(map['createdAt']),
   );
 
   Map<String, dynamic> toMap() => {
@@ -236,9 +247,9 @@ class Item {
     'description': description,
     'imageUrl': imageUrl,
     'price': price,
-    'isFree': isFree ? 1 : 0,
-    'category': category.index,
-    'createdAt': createdAt.millisecondsSinceEpoch,
+    'isFree': isFree,
+    'category': category.name,
+    'createdAt': createdAt.toIso8601String(),
   };
 
   factory Item.fromJson(Map<String, dynamic> json) => Item.fromMap(json);

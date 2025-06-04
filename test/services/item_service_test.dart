@@ -13,19 +13,21 @@ void main() {
         expect(request.method, equals('GET'));
         expect(request.url.path, '/api/items');
         return http.Response(
-          jsonEncode([
-            {
-              'id': 1,
-              'ownerId': 1,
-              'title': 'Chair',
-              'description': null,
-              'imageUrl': null,
-              'price': null,
-              'isFree': 0,
-              'category': 0,
-              'createdAt': 0,
-            },
-          ]),
+          jsonEncode({
+            'data': [
+              {
+                'id': 1,
+                'ownerId': 1,
+                'title': 'Chair',
+                'description': null,
+                'imageUrl': null,
+                'price': null,
+                'isFree': false,
+                'category': 'furniture',
+                'createdAt': '1970-01-01T00:00:00.000Z'
+              }
+            ]
+          }),
           200,
         );
       });
@@ -46,11 +48,10 @@ void main() {
         expect(body['title'], itemInput.title);
         return http.Response(
           jsonEncode({
-            'id': 2,
-            ...itemInput.toJson(),
-            'createdAt': 0,
-            'isFree': itemInput.isFree ? 1 : 0,
-            'category': itemInput.category.index,
+            'data': {
+              'id': 2,
+              ...itemInput.toJson(),
+            }
           }),
           201,
         );

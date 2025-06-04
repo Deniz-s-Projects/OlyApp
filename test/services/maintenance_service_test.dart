@@ -12,16 +12,21 @@ void main() {
       final mockClient = MockClient((request) async {
         expect(request.method, equals('GET'));
         expect(request.url.path, '/api/maintenance');
-        return http.Response(jsonEncode([
-          {
-            'id': 1,
-            'userId': 1,
-            'subject': 'Leak',
-            'description': 'Water',
-            'createdAt': 0,
-            'status': 'open'
-          }
-        ]), 200);
+        return http.Response(
+          jsonEncode({
+            'data': [
+              {
+                'id': 1,
+                'userId': 1,
+                'subject': 'Leak',
+                'description': 'Water',
+                'createdAt': '1970-01-01T00:00:00.000Z',
+                'status': 'open'
+              }
+            ]
+          }),
+          200,
+        );
       });
 
       final service = MaintenanceService(client: mockClient);
@@ -39,8 +44,10 @@ void main() {
         expect(body['subject'], input.subject);
         return http.Response(
           jsonEncode({
-            'id': 2,
-            ...input.toJson(),
+            'data': {
+              'id': 2,
+              ...input.toJson(),
+            }
           }),
           201,
         );
@@ -55,15 +62,20 @@ void main() {
       final mockClient = MockClient((request) async {
         expect(request.method, equals('GET'));
         expect(request.url.path, '/api/maintenance/1/messages');
-        return http.Response(jsonEncode([
-          {
-            'id': 1,
-            'requestId': 1,
-            'senderId': 2,
-            'content': 'Hi',
-            'timestamp': 0
-          }
-        ]), 200);
+        return http.Response(
+          jsonEncode({
+            'data': [
+              {
+                'id': 1,
+                'requestId': 1,
+                'senderId': 2,
+                'content': 'Hi',
+                'timestamp': '1970-01-01T00:00:00.000Z'
+              }
+            ]
+          }),
+          200,
+        );
       });
 
       final service = MaintenanceService(client: mockClient);
@@ -81,8 +93,10 @@ void main() {
         expect(body['content'], input.content);
         return http.Response(
           jsonEncode({
-            'id': 3,
-            ...input.toJson(),
+            'data': {
+              'id': 3,
+              ...input.toJson(),
+            }
           }),
           201,
         );
