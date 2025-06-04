@@ -38,7 +38,7 @@ void main() {
     ));
 
     // Starts on Dashboard
-    expect(find.text('Dashboard'), findsOneWidget);
+    expect(find.widgetWithText(AppBar, 'Dashboard'), findsOneWidget);
     expect(find.byType(FloatingActionButton), findsOneWidget);
 
     // Navigate to Calendar tab
@@ -46,7 +46,7 @@ void main() {
         of: find.byType(NavigationBar),
         matching: find.byIcon(Icons.calendar_today)));
     await tester.pumpAndSettle();
-    expect(find.text('Calendar'), findsOneWidget);
+    expect(find.widgetWithText(AppBar, 'Calendar'), findsOneWidget);
     expect(find.byType(FloatingActionButton), findsOneWidget);
 
     // Navigate to Maintenance tab
@@ -54,7 +54,7 @@ void main() {
         of: find.byType(NavigationBar),
         matching: find.byIcon(Icons.build)));
     await tester.pumpAndSettle();
-    expect(find.text('Maintenance'), findsOneWidget);
+    expect(find.widgetWithText(AppBar, 'Maintenance'), findsOneWidget);
     expect(find.byType(FloatingActionButton), findsNothing);
   });
 }
