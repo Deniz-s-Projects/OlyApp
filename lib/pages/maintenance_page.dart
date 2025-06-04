@@ -4,14 +4,15 @@ import '../services/maintenance_service.dart';
 import 'maintenance_chat_page.dart';
 
 class MaintenancePage extends StatefulWidget {
-  const MaintenancePage({super.key});
+  final MaintenanceService? service;
+  const MaintenancePage({super.key, this.service});
 
   @override
   State<MaintenancePage> createState() => _MaintenancePageState();
 }
 
 class _MaintenancePageState extends State<MaintenancePage> {
-  final MaintenanceService _service = MaintenanceService();
+  late final MaintenanceService _service;
   int _selectedTab = 0;
   final _subjectController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -21,6 +22,7 @@ class _MaintenancePageState extends State<MaintenancePage> {
   @override
   void initState() {
     super.initState();
+    _service = widget.service ?? MaintenanceService();
     _loadTickets();
   }
 
