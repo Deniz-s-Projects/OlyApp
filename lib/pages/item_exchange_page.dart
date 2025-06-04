@@ -113,13 +113,7 @@ class _ItemExchangePageState extends State<ItemExchangePage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => ItemDetailPage(
-                            itemTitle: item.title,
-                            itemImageUrl: item.imageUrl,
-                            itemDescription: item.description,
-                            itemPrice: item.price,
-                            isFree: item.isFree,
-                          ),
+                          builder: (_) => ItemDetailPage(item: item),
                         ),
                       );
                     },
