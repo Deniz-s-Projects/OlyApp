@@ -18,4 +18,18 @@ class MaintenanceService extends ApiService {
       return MaintenanceRequest.fromJson(json as Map<String, dynamic>);
     });
   }
+
+  Future<List<Message>> fetchMessages(int requestId) async {
+    return get('/maintenance/$requestId/messages', (json) {
+      final list = json as List<dynamic>;
+      return list
+          .map((e) => Message.fromJson(e as Map<String, dynamic>))
+          .toList();
+    });
+  }
+
+  Future<Message> sendMessage(Message message) async {
+    return post('/maintenance/${message.requestId}/messages', message.toJson(),
+        (json) => Message.fromJson(json as Map<String, dynamic>));
+  }
 }
