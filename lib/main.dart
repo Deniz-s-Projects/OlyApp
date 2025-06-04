@@ -24,6 +24,7 @@ void main() async {
   await Hive.openBox('calendarBox');
   await Hive.openBox('itemsBox');
   await Hive.openBox('userBox');
+  await Hive.openBox('authBox');
 
   runApp(const OlyApp());
 }
