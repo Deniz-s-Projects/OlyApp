@@ -7,7 +7,7 @@ void main() {
       final service = MapService();
       final pins = await service.fetchPins();
 
-      expect(pins, hasLength(3));
+      expect(pins, hasLength(5));
       expect(pins[0].id, 'building1');
       expect(pins[0].lat, 48.1745);
       expect(pins[0].lon, 11.548);
@@ -19,6 +19,8 @@ void main() {
       expect(pins[2].id, 'amenity1');
       expect(pins[2].lat, 48.1735);
       expect(pins[2].lon, 11.549);
+      expect(pins[3].id, 'rec1');
+      expect(pins[4].id, 'food1');
     });
   });
 }

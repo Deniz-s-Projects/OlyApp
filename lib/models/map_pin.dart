@@ -1,16 +1,18 @@
+enum MapPinCategory { building, venue, amenity, recreation, food }
+
 class MapPin {
   final String id;
   final String title;
   final double lat;
   final double lon;
-  final String type;
+  final MapPinCategory category;
 
   MapPin({
     required this.id,
     required this.title,
     required this.lat,
     required this.lon,
-    required this.type,
+    required this.category,
   });
 
   factory MapPin.fromMap(Map<String, dynamic> map) => MapPin(
@@ -18,7 +20,10 @@ class MapPin {
         title: map['title'] as String,
         lat: (map['lat'] as num).toDouble(),
         lon: (map['lon'] as num).toDouble(),
-        type: map['type'] as String,
+        category: MapPinCategory.values.firstWhere(
+          (e) => e.name == map['category'],
+          orElse: () => MapPinCategory.amenity,
+        ),
       );
 
   Map<String, dynamic> toMap() => {
@@ -26,6 +31,6 @@ class MapPin {
         'title': title,
         'lat': lat,
         'lon': lon,
-        'type': type,
+        'category': category.name,
       };
 }

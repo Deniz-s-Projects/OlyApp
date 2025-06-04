@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'pages/login_page.dart';
 import 'pages/main_page.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
+import 'dart:io';
 import 'models/models.dart';
 
 void main() async {
@@ -25,6 +27,15 @@ void main() async {
   await Hive.openBox('itemsBox');
   await Hive.openBox('userBox');
   await Hive.openBox('authBox');
+
+  // Initialize tile caching store when not running tests
+  if (!Platform.environment.containsKey('FLUTTER_TEST')) {
+    await FMTCObjectBoxBackend().initialise();
+    final store = FMTCStore('mapTiles');
+    if (!await store.manage.ready) {
+      await store.manage.create();
+    }
+  }
 
   runApp(const OlyApp());
 }
