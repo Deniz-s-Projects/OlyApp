@@ -48,6 +48,11 @@ OlyApp is a mobile app built by and for residents of the Olympiadorf (Olydorf) i
    flutter run
    ```
 
+   To point the app at a different backend, pass a custom API URL:
+   ```bash
+   flutter run --dart-define=API_URL=https://prod.example.com
+   ```
+
 ## 🧪 Running Tests
 
 Install dependencies and run the unit tests:

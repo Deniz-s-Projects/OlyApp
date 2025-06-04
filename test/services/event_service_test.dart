@@ -6,11 +6,15 @@ import 'package:http/testing.dart';
 import 'package:oly_app/services/event_service.dart';
 import 'package:oly_app/models/models.dart';
 
+const apiUrl =
+    String.fromEnvironment('API_URL', defaultValue: 'http://localhost:3000');
+
 void main() {
   group('EventService', () {
     test('fetchEvents parses list correctly', () async {
       final mockClient = MockClient((request) async {
         expect(request.method, equals('GET'));
+        expect(request.url.origin, Uri.parse(apiUrl).origin);
         expect(request.url.path, '/api/events');
         return http.Response(
           jsonEncode({
@@ -40,6 +44,7 @@ void main() {
       );
       final mockClient = MockClient((request) async {
         expect(request.method, equals('POST'));
+        expect(request.url.origin, Uri.parse(apiUrl).origin);
         expect(request.url.path, '/api/events');
         final body = jsonDecode(request.body) as Map<String, dynamic>;
         expect(body['title'], input.title);
@@ -64,6 +69,7 @@ void main() {
       final input = CalendarEvent(id: 1, title: 'Edit', date: DateTime.fromMillisecondsSinceEpoch(0));
       final mockClient = MockClient((request) async {
         expect(request.method, equals('POST'));
+        expect(request.url.origin, Uri.parse(apiUrl).origin);
         expect(request.url.path, '/api/events/1');
         final body = jsonDecode(request.body) as Map<String, dynamic>;
         expect(body['title'], input.title);
