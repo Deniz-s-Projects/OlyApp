@@ -47,7 +47,8 @@ void main() {
         matching: find.byIcon(Icons.calendar_today)));
     await tester.pumpAndSettle();
     expect(find.widgetWithText(AppBar, 'Calendar'), findsOneWidget);
-    expect(find.byType(FloatingActionButton), findsOneWidget);
+    // Calendar page includes its own FAB so at least one is present.
+    expect(find.byType(FloatingActionButton), findsWidgets);
 
     // Navigate to Maintenance tab
     await tester.tap(find.descendant(
