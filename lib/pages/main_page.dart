@@ -31,9 +31,12 @@ class _MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
-    _pages = [ 
-      DashboardPage(onNavigate: _onDashboardNavigate),
-      const MapPage(), 
+    _pages = [
+      DashboardPage(
+        onNavigate: _onDashboardNavigate,
+        isAdmin: widget.isAdmin,
+      ),
+      const MapPage(),
       widget.calendarPage ?? const CalendarPage(),
       const ItemExchangePage(),
       widget.maintenancePage ?? const MaintenancePage(),
