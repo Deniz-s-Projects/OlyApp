@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../widgets/item_card.dart';
 import 'item_detail_page.dart';
+import '../models/models.dart';
+import '../services/item_service.dart';
 
 class ItemExchangePage extends StatefulWidget {
   const ItemExchangePage({super.key});
@@ -10,26 +12,34 @@ class ItemExchangePage extends StatefulWidget {
 }
 
 class _ItemExchangePageState extends State<ItemExchangePage> {
+  final ItemService _service = ItemService();
   final _searchCtrl = TextEditingController();
   String _selectedCategory = 'All';
 
   final _categories = ['All', 'Furniture', 'Books', 'Electronics'];
 
-  // TODO: hook up to your real data source
-  List<String> _allItems = ['Table', 'Textbook', 'Lamp', 'Chair', 'Laptop'];
-  List<String> _filteredItems = [];
+  List<Item> _allItems = [];
+  List<Item> _filteredItems = [];
 
   @override
   void initState() {
     super.initState();
-    _filteredItems = List.from(_allItems);
+    _loadItems();
+  }
+
+  Future<void> _loadItems() async {
+    final items = await _service.fetchItems();
+    setState(() {
+      _allItems = items;
+      _filteredItems = List.from(_allItems);
+    });
   }
 
   void _filter() {
     final query = _searchCtrl.text.toLowerCase();
     setState(() {
       _filteredItems = _allItems.where((item) {
-        final matchesSearch = item.toLowerCase().contains(query);
+        final matchesSearch = item.title.toLowerCase().contains(query);
         final matchesCat = _selectedCategory == 'All'
             || (itemCategory(item) == _selectedCategory);
         return matchesSearch && matchesCat;
@@ -37,12 +47,17 @@ class _ItemExchangePageState extends State<ItemExchangePage> {
     });
   }
 
-  String itemCategory(String item) {
-    // Replace with your real logic
-    if (item == 'Table' || item == 'Chair') return 'Furniture';
-    if (item == 'Textbook') return 'Books';
-    if (item == 'Laptop') return 'Electronics';
-    return 'All';
+  String itemCategory(Item item) {
+    switch (item.category) {
+      case ItemCategory.furniture:
+        return 'Furniture';
+      case ItemCategory.books:
+        return 'Books';
+      case ItemCategory.electronics:
+        return 'Electronics';
+      default:
+        return 'Other';
+    }
   }
 
   @override
@@ -107,18 +122,24 @@ class _ItemExchangePageState extends State<ItemExchangePage> {
                 ),
                 itemCount: _filteredItems.length,
                 itemBuilder: (ctx, idx) {
-                  final title = _filteredItems[idx];
+                  final item = _filteredItems[idx];
                   return InkWell(
                     borderRadius: BorderRadius.circular(12),
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => ItemDetailPage(itemTitle: title),
+                          builder: (_) => ItemDetailPage(
+                            itemTitle: item.title,
+                            itemImageUrl: item.imageUrl,
+                            itemDescription: item.description,
+                            itemPrice: item.price,
+                            isFree: item.isFree,
+                          ),
                         ),
                       );
                     },
-                    child: ItemCard(title: title),
+                    child: ItemCard(title: item.title),
                   );
                 },
               ),

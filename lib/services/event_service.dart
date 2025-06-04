@@ -1,0 +1,18 @@
+import '../models/models.dart';
+import 'api_service.dart';
+
+class EventService extends ApiService {
+  EventService({super.client});
+
+  Future<List<CalendarEvent>> fetchEvents() async {
+    return get('/events', (json) {
+      final list = json as List<dynamic>;
+      return list.map((e) => CalendarEvent.fromJson(e as Map<String, dynamic>)).toList();
+    });
+  }
+
+  Future<CalendarEvent> createEvent(CalendarEvent event) async {
+    return post('/events', event.toJson(),
+        (json) => CalendarEvent.fromJson(json as Map<String, dynamic>));
+  }
+}

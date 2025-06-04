@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
+import '../models/models.dart';
+import '../services/event_service.dart';
 
 class CalendarPage extends StatefulWidget {
   const CalendarPage({super.key});
@@ -9,8 +11,9 @@ class CalendarPage extends StatefulWidget {
 }
 
 class _CalendarPageState extends State<CalendarPage> {
-  final Map<DateTime, List<Event>> _events = {};
-  late final ValueNotifier<List<Event>> _selectedEvents;
+  final EventService _service = EventService();
+  final Map<DateTime, List<CalendarEvent>> _events = {};
+  late final ValueNotifier<List<CalendarEvent>> _selectedEvents;
   CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
   DateTime _selectedDay = DateTime.now();
@@ -19,7 +22,7 @@ class _CalendarPageState extends State<CalendarPage> {
   void initState() {
     super.initState();
     _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay));
-    // TODO: load existing events into _events map
+    _loadEvents();
   }
 
   @override
@@ -28,7 +31,19 @@ class _CalendarPageState extends State<CalendarPage> {
     super.dispose();
   }
 
-  List<Event> _getEventsForDay(DateTime day) {
+  Future<void> _loadEvents() async {
+    final events = await _service.fetchEvents();
+    setState(() {
+      _events.clear();
+      for (final e in events) {
+        final key = DateTime(e.date.year, e.date.month, e.date.day);
+        _events.putIfAbsent(key, () => []).add(e);
+      }
+      _selectedEvents.value = _getEventsForDay(_selectedDay);
+    });
+  }
+
+  List<CalendarEvent> _getEventsForDay(DateTime day) {
     return _events[DateTime(day.year, day.month, day.day)] ?? [];
   }
 
@@ -49,12 +64,15 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 
   void _addEvent() async {
-    await _showAddEventDialog(context, (title, date) {
-      final dayKey = DateTime(date.year, date.month, date.day);
+    await _showAddEventDialog(context, (title, date) async {
+      final event = await _service.createEvent(
+        CalendarEvent(title: title, date: date),
+      );
+      final dayKey = DateTime(event.date.year, event.date.month, event.date.day);
       if (_events.containsKey(dayKey)) {
-        _events[dayKey]!.add(Event(title));
+        _events[dayKey]!.add(event);
       } else {
-        _events[dayKey] = [Event(title)];
+        _events[dayKey] = [event];
       }
       _selectedEvents.value = _getEventsForDay(_selectedDay);
     });
@@ -67,7 +85,7 @@ class _CalendarPageState extends State<CalendarPage> {
 
       body: Column(
         children: [
-          TableCalendar<Event>(
+          TableCalendar<CalendarEvent>(
             firstDay: DateTime.utc(2020, 1, 1),
             lastDay: DateTime.utc(2030, 12, 31),
             focusedDay: _focusedDay,
@@ -98,7 +116,7 @@ class _CalendarPageState extends State<CalendarPage> {
           ),
           const SizedBox(height: 8),
           Expanded(
-            child: ValueListenableBuilder<List<Event>>(
+            child: ValueListenableBuilder<List<CalendarEvent>>(
               valueListenable: _selectedEvents,
               builder: (context, events, _) {
                 if (events.isEmpty) {
@@ -129,12 +147,6 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 }
 
-class Event {
-  final String title;
-  Event(this.title);
-  @override
-  String toString() => title;
-}
 
 Future<void> _showAddEventDialog(
     BuildContext context,
