@@ -6,6 +6,7 @@ import 'admin/admin_home_page.dart';
 import 'map_page.dart';
 import 'profile_page.dart';
 import 'post_item_page.dart';
+import 'bulletin_board_page.dart';
 import '../models/models.dart';
 import '../services/event_service.dart';
 
@@ -234,6 +235,17 @@ class DashboardPage extends StatelessWidget {
                   label: 'Exchange',
                   colorScheme: colorScheme,
                   onTap: () => _navigate(3),
+                ),
+                DashboardCard(
+                  icon: Icons.message,
+                  label: 'Bulletin',
+                  colorScheme: colorScheme,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const BulletinBoardPage(),
+                    ),
+                  ),
                 ),
                 DashboardCard(
                   icon: Icons.build,

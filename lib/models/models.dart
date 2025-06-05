@@ -49,7 +49,8 @@ class User {
   factory User.fromJson(Map<String, dynamic> json) => User.fromMap(json);
   Map<String, dynamic> toJson() => toMap();
   String toJsonString() => jsonEncode(toJson());
-  factory User.fromJsonString(String source) => User.fromMap(jsonDecode(source));
+  factory User.fromJsonString(String source) =>
+      User.fromMap(jsonDecode(source));
 }
 
 @HiveType(typeId: 1)
@@ -96,10 +97,12 @@ class MaintenanceRequest {
     'status': status,
   };
 
-  factory MaintenanceRequest.fromJson(Map<String, dynamic> json) => MaintenanceRequest.fromMap(json);
+  factory MaintenanceRequest.fromJson(Map<String, dynamic> json) =>
+      MaintenanceRequest.fromMap(json);
   Map<String, dynamic> toJson() => toMap();
   String toJsonString() => jsonEncode(toJson());
-  factory MaintenanceRequest.fromJsonString(String source) => MaintenanceRequest.fromMap(jsonDecode(source));
+  factory MaintenanceRequest.fromJsonString(String source) =>
+      MaintenanceRequest.fromMap(jsonDecode(source));
 }
 
 @HiveType(typeId: 2)
@@ -142,7 +145,8 @@ class Message {
   factory Message.fromJson(Map<String, dynamic> json) => Message.fromMap(json);
   Map<String, dynamic> toJson() => toMap();
   String toJsonString() => jsonEncode(toJson());
-  factory Message.fromJsonString(String source) => Message.fromMap(jsonDecode(source));
+  factory Message.fromJsonString(String source) =>
+      Message.fromMap(jsonDecode(source));
 }
 
 @HiveType(typeId: 3)
@@ -171,8 +175,7 @@ class CalendarEvent {
     title: map['title'] as String,
     date: _parseDate(map['date']),
     description: map['description'] as String?,
-    attendees:
-        (map['attendees'] as List<dynamic>? ?? const []).cast<int>(),
+    attendees: (map['attendees'] as List<dynamic>? ?? const []).cast<int>(),
   );
 
   Map<String, dynamic> toMap() => {
@@ -183,10 +186,12 @@ class CalendarEvent {
     'attendees': attendees,
   };
 
-  factory CalendarEvent.fromJson(Map<String, dynamic> json) => CalendarEvent.fromMap(json);
+  factory CalendarEvent.fromJson(Map<String, dynamic> json) =>
+      CalendarEvent.fromMap(json);
   Map<String, dynamic> toJson() => toMap();
   String toJsonString() => jsonEncode(toJson());
-  factory CalendarEvent.fromJsonString(String source) => CalendarEvent.fromMap(jsonDecode(source));
+  factory CalendarEvent.fromJsonString(String source) =>
+      CalendarEvent.fromMap(jsonDecode(source));
 }
 
 @HiveType(typeId: 4)
@@ -246,8 +251,9 @@ class Item {
         : (map['isFree'] as int) == 1,
     category: map['category'] is int
         ? ItemCategory.values[map['category'] as int]
-        : ItemCategory.values
-            .firstWhere((e) => e.name == map['category'] as String),
+        : ItemCategory.values.firstWhere(
+            (e) => e.name == map['category'] as String,
+          ),
     createdAt: _parseDate(map['createdAt']),
   );
 
@@ -266,5 +272,31 @@ class Item {
   factory Item.fromJson(Map<String, dynamic> json) => Item.fromMap(json);
   Map<String, dynamic> toJson() => toMap();
   String toJsonString() => jsonEncode(toJson());
-  factory Item.fromJsonString(String source) => Item.fromMap(jsonDecode(source));
+  factory Item.fromJsonString(String source) =>
+      Item.fromMap(jsonDecode(source));
+}
+
+class BulletinPost {
+  final int? id;
+  final String content;
+  final DateTime date;
+
+  BulletinPost({this.id, required this.content, DateTime? date})
+    : date = date ?? DateTime.now();
+
+  factory BulletinPost.fromMap(Map<String, dynamic> map) => BulletinPost(
+    id: map['id'] as int?,
+    content: map['content'] as String,
+    date: _parseDate(map['date']),
+  );
+
+  Map<String, dynamic> toMap() => {
+    if (id != null) 'id': id,
+    'content': content,
+    'date': date.toIso8601String(),
+  };
+
+  factory BulletinPost.fromJson(Map<String, dynamic> json) =>
+      BulletinPost.fromMap(json);
+  Map<String, dynamic> toJson() => toMap();
 }
