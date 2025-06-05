@@ -98,6 +98,22 @@ describe('Events API', () => {
     expect(updated.attendees).toContain(1);
   });
 
+  test('POST /events/:id/rsvp stores device tokens', async () => {
+    const user = await User.create({
+      name: 't',
+      email: 't@test.com',
+      passwordHash: 'x',
+      deviceTokens: ['tok1'],
+    });
+    const event = await Event.create({ title: 'Party', date: new Date(0) });
+    const token = jwt.sign({ userId: user._id }, SECRET);
+    await request(app)
+      .post(`/api/events/${event._id}/rsvp`)
+      .set('Authorization', `Bearer ${token}`);
+    const updated = await Event.findById(event._id);
+    expect(updated.deviceTokens).toContain('tok1');
+  });
+
   test('GET /events/:id/attendees returns attendees', async () => {
     const event = await Event.create({
       title: 'Party',

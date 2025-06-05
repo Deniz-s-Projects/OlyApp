@@ -1,4 +1,5 @@
 import 'api_service.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class NotificationService extends ApiService {
   NotificationService({super.client});
@@ -14,4 +15,11 @@ class NotificationService extends ApiService {
     }, (json) => json['successCount'] as int);
     return result;
   }
+
+  /// Stream of notifications received while the app is in the foreground.
+  Stream<Map<String, String?>> get foregroundMessages =>
+      FirebaseMessaging.onMessage.map((m) {
+        final n = m.notification;
+        return {'title': n?.title, 'body': n?.body};
+      });
 }
