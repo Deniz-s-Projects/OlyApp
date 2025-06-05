@@ -67,6 +67,8 @@ class MaintenanceRequest {
   final DateTime createdAt;
   @HiveField(5)
   final String status;
+  @HiveField(6)
+  final String? imageUrl;
 
   MaintenanceRequest({
     this.id,
@@ -75,6 +77,7 @@ class MaintenanceRequest {
     required this.description,
     DateTime? createdAt,
     this.status = 'open',
+    this.imageUrl,
   }) : createdAt = createdAt ?? DateTime.now();
 
   factory MaintenanceRequest.fromMap(Map<String, dynamic> map) {
@@ -85,6 +88,7 @@ class MaintenanceRequest {
       description: map['description'] as String,
       createdAt: _parseDate(map['createdAt']),
       status: map['status'] as String,
+      imageUrl: map['imageUrl'] as String?,
     );
   }
 
@@ -95,6 +99,7 @@ class MaintenanceRequest {
     'description': description,
     'createdAt': createdAt.toIso8601String(),
     'status': status,
+    'imageUrl': imageUrl,
   };
 
   factory MaintenanceRequest.fromJson(Map<String, dynamic> json) =>
@@ -246,14 +251,16 @@ class Item {
     description: map['description'] as String?,
     imageUrl: map['imageUrl'] as String?,
     price: map['price'] != null ? (map['price'] as num).toDouble() : null,
-    isFree: map['isFree'] is bool
-        ? map['isFree'] as bool
-        : (map['isFree'] as int) == 1,
-    category: map['category'] is int
-        ? ItemCategory.values[map['category'] as int]
-        : ItemCategory.values.firstWhere(
-            (e) => e.name == map['category'] as String,
-          ),
+    isFree:
+        map['isFree'] is bool
+            ? map['isFree'] as bool
+            : (map['isFree'] as int) == 1,
+    category:
+        map['category'] is int
+            ? ItemCategory.values[map['category'] as int]
+            : ItemCategory.values.firstWhere(
+              (e) => e.name == map['category'] as String,
+            ),
     createdAt: _parseDate(map['createdAt']),
   );
 

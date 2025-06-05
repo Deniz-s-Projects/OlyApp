@@ -43,6 +43,7 @@ void main() {
       description: 'Kitchen sink leaks',
       createdAt: created,
       status: 'open',
+      imageUrl: 'img.png',
     );
 
     final requestMap = {
@@ -52,6 +53,7 @@ void main() {
       'description': 'Kitchen sink leaks',
       'createdAt': created.toIso8601String(),
       'status': 'open',
+      'imageUrl': 'img.png',
     };
 
     test('toMap/fromMap round trip', () {
