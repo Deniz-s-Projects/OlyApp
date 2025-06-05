@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../services/bulletin_service.dart';
+import '../utils/user_helpers.dart';
 
 class BulletinBoardPage extends StatefulWidget {
   final BulletinService? service;
@@ -16,6 +17,11 @@ class _BulletinBoardPageState extends State<BulletinBoardPage> {
   List<BulletinPost> _posts = [];
   final Map<int, List<BulletinComment>> _comments = {};
   final Map<int, TextEditingController> _commentCtrls = {};
+
+  String _authorName(int userId) {
+    final me = currentUserId();
+    return userId == me ? 'You' : 'User $userId';
+  }
 
   @override
   void initState() {
@@ -42,7 +48,9 @@ class _BulletinBoardPageState extends State<BulletinBoardPage> {
   Future<void> _submit() async {
     final text = _textCtrl.text.trim();
     if (text.isEmpty) return;
-    final post = await _service.addPost(BulletinPost(content: text));
+    final post = await _service.addPost(
+      BulletinPost(userId: currentUserId(), content: text),
+    );
     if (!mounted) return;
     setState(() {
       _posts.add(post);
@@ -57,7 +65,11 @@ class _BulletinBoardPageState extends State<BulletinBoardPage> {
     final text = ctrl.text.trim();
     if (text.isEmpty) return;
     final comment = await _service.addComment(
-      BulletinComment(postId: postId, content: text),
+      BulletinComment(
+        postId: postId,
+        userId: currentUserId(),
+        content: text,
+      ),
     );
     if (!mounted) return;
     setState(() => _comments.putIfAbsent(postId, () => []).add(comment));
@@ -85,7 +97,12 @@ class _BulletinBoardPageState extends State<BulletinBoardPage> {
     );
     if (result != null && result.isNotEmpty) {
       final updated = await _service.updatePost(
-        BulletinPost(id: post.id, content: result, date: post.date),
+        BulletinPost(
+          id: post.id,
+          userId: post.userId,
+          content: result,
+          date: post.date,
+        ),
       );
       if (!mounted) return;
       setState(() {
@@ -131,6 +148,7 @@ class _BulletinBoardPageState extends State<BulletinBoardPage> {
           list![idx] = BulletinComment(
             id: comment.id,
             postId: postId,
+            userId: comment.userId,
             content: result,
             date: comment.date,
           );
@@ -193,6 +211,10 @@ class _BulletinBoardPageState extends State<BulletinBoardPage> {
                                       children: [
                                         Text(p.content),
                                         Text(
+                                          _authorName(p.userId),
+                                          style: Theme.of(context).textTheme.bodySmall,
+                                        ),
+                                        Text(
                                           '${p.date.day}/${p.date.month}/${p.date.year}',
                                           style: Theme.of(context).textTheme.bodySmall,
                                         ),
@@ -217,7 +239,11 @@ class _BulletinBoardPageState extends State<BulletinBoardPage> {
                                   padding: const EdgeInsets.symmetric(vertical: 2),
                                   child: Row(
                                     children: [
-                                      Expanded(child: Text(c.content)),
+                                      Expanded(
+                                        child: Text(
+                                          '${_authorName(c.userId)}: ${c.content}',
+                                        ),
+                                      ),
                                       IconButton(
                                         key: ValueKey('editComment_${p.id}_${c.id}'),
                                         icon: const Icon(Icons.edit, size: 18),

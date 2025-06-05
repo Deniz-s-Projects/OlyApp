@@ -291,20 +291,23 @@ class Item {
 
 class BulletinPost {
   final int? id;
+  final int userId;
   final String content;
   final DateTime date;
 
-  BulletinPost({this.id, required this.content, DateTime? date})
+  BulletinPost({this.id, required this.userId, required this.content, DateTime? date})
     : date = date ?? DateTime.now();
 
   factory BulletinPost.fromMap(Map<String, dynamic> map) => BulletinPost(
     id: map['id'] as int?,
+    userId: map['userId'] as int,
     content: map['content'] as String,
     date: _parseDate(map['date']),
   );
 
   Map<String, dynamic> toMap() => {
     if (id != null) 'id': id,
+    'userId': userId,
     'content': content,
     'date': date.toIso8601String(),
   };
@@ -317,12 +320,14 @@ class BulletinPost {
 class BulletinComment {
   final int? id;
   final int postId;
+  final int userId;
   final String content;
   final DateTime date;
 
   BulletinComment({
     this.id,
     required this.postId,
+    required this.userId,
     required this.content,
     DateTime? date,
   }) : date = date ?? DateTime.now();
@@ -330,6 +335,7 @@ class BulletinComment {
   factory BulletinComment.fromMap(Map<String, dynamic> map) => BulletinComment(
     id: map['id'] as int?,
     postId: map['postId'] as int,
+    userId: map['userId'] as int,
     content: map['content'] as String,
     date: _parseDate(map['date']),
   );
@@ -337,6 +343,7 @@ class BulletinComment {
   Map<String, dynamic> toMap() => {
     if (id != null) 'id': id,
     'postId': postId,
+    'userId': userId,
     'content': content,
     'date': date.toIso8601String(),
   };

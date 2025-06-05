@@ -1,8 +1,10 @@
 const express = require('express');
 const BulletinPost = require('../models/BulletinPost');
 const BulletinComment = require('../models/BulletinComment');
+const auth = require('../middleware/auth');
 
 const router = express.Router();
+router.use(auth);
 
 // helper to get next numeric id for a model
 async function nextId(model) {
@@ -25,6 +27,7 @@ router.post('/', async (req, res) => {
   try {
     const post = await BulletinPost.create({
       id: await nextId(BulletinPost),
+      userId: Number(req.userId),
       content: req.body.content,
       date: req.body.date,
     });
@@ -50,6 +53,7 @@ router.post('/:id/comments', async (req, res) => {
     const comment = await BulletinComment.create({
       id: await nextId(BulletinComment),
       postId: Number(req.params.id),
+      userId: Number(req.userId),
       content: req.body.content,
       date: req.body.date,
     });

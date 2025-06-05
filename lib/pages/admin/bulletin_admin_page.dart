@@ -49,6 +49,7 @@ class _BulletinAdminPageState extends State<BulletinAdminPage> {
     if (result != null && result.isNotEmpty) {
       final updated = BulletinPost(
         id: post.id,
+        userId: post.userId,
         content: result,
         date: post.date,
       );

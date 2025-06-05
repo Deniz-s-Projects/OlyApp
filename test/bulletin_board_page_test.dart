@@ -18,6 +18,7 @@ class FakeBulletinService extends BulletinService {
   Future<BulletinPost> addPost(BulletinPost post) async {
     final newPost = BulletinPost(
       id: posts.length + 1,
+      userId: post.userId,
       content: post.content,
       date: post.date,
     );
@@ -36,6 +37,7 @@ class FakeBulletinService extends BulletinService {
     final saved = BulletinComment(
       id: list.length + 1,
       postId: comment.postId,
+      userId: comment.userId,
       content: comment.content,
       date: comment.date,
     );
@@ -62,9 +64,9 @@ class FakeBulletinService extends BulletinService {
 void main() {
   testWidgets('Existing posts are shown', (tester) async {
     final service = FakeBulletinService(
-      [BulletinPost(id: 1, content: 'Hello', date: DateTime.now())],
+      [BulletinPost(id: 1, userId: 1, content: 'Hello', date: DateTime.now())],
       {
-        1: [BulletinComment(postId: 1, content: 'Nice', date: DateTime.now())],
+        1: [BulletinComment(postId: 1, userId: 2, content: 'Nice', date: DateTime.now())],
       },
     );
     await tester.pumpWidget(
@@ -72,7 +74,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.text('Hello'), findsOneWidget);
-    expect(find.text('Nice'), findsOneWidget);
+    expect(find.textContaining('Nice'), findsOneWidget);
   });
 
   testWidgets('Submitting adds new post', (tester) async {
@@ -91,7 +93,7 @@ void main() {
 
   testWidgets('Submitting comment displays it', (tester) async {
     final service = FakeBulletinService(
-      [BulletinPost(id: 1, content: 'Post', date: DateTime.now())],
+      [BulletinPost(id: 1, userId: 1, content: 'Post', date: DateTime.now())],
       {1: []},
     );
     await tester.pumpWidget(
@@ -103,12 +105,12 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('sendComment_1')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Hi'), findsWidgets);
+    expect(find.textContaining('Hi'), findsWidgets);
   });
 
   testWidgets('Edit icon updates post', (tester) async {
     final service = FakeBulletinService(
-      [BulletinPost(id: 1, content: 'Old', date: DateTime.now())],
+      [BulletinPost(id: 1, userId: 1, content: 'Old', date: DateTime.now())],
       {1: []},
     );
     await tester.pumpWidget(
@@ -127,7 +129,7 @@ void main() {
 
   testWidgets('Delete icon removes post', (tester) async {
     final service = FakeBulletinService(
-      [BulletinPost(id: 1, content: 'Bye', date: DateTime.now())],
+      [BulletinPost(id: 1, userId: 1, content: 'Bye', date: DateTime.now())],
       {1: []},
     );
     await tester.pumpWidget(
