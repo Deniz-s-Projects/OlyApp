@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../models/models.dart';
 import '../services/event_service.dart';
+import '../services/map_service.dart';
+import 'map_page.dart';
+import '../models/map_pin.dart';
+import 'package:latlong2/latlong.dart';
 
 class CalendarPage extends StatefulWidget {
   final EventService? service;
@@ -74,9 +78,13 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 
   void _addEvent() async {
-    await showAddEventDialog(context, (title, date) async {
+    await showAddEventDialog(context, (title, date, location) async {
       final event = await _service.createEvent(
-        CalendarEvent(title: title, date: date),
+        CalendarEvent(
+          title: title,
+          date: date,
+          location: location.isNotEmpty ? location : null,
+        ),
       );
       final dayKey = DateTime(
         event.date.year,
@@ -105,6 +113,7 @@ class _CalendarPageState extends State<CalendarPage> {
           date: event.date,
           description: event.description,
           attendees: attendees,
+          location: event.location,
         );
         final dayKey = DateTime(event.date.year, event.date.month, event.date.day);
         final list = _events[dayKey];
@@ -125,19 +134,55 @@ class _CalendarPageState extends State<CalendarPage> {
     if (event.id == null) return;
     try {
       final attendees = await _service.fetchAttendees(event.id!);
+      MapPin? pin;
+      if (event.location != null) {
+        final pins = await MapService().fetchPins();
+        for (final p in pins) {
+          if (p.id == event.location) {
+            pin = p;
+            break;
+          }
+        }
+      }
       if (!mounted) return;
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
           title: const Text('Attendees'),
-          content: Text(
-            attendees.isEmpty ? 'None' : attendees.join(', '),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(attendees.isEmpty ? 'None' : attendees.join(', ')),
+              if (event.location != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text('Location: ${pin?.title ?? event.location}'),
+                ),
+            ],
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
               child: const Text('OK'),
             ),
+            if (pin != null)
+              TextButton(
+                onPressed: () {
+                  final p = pin!;
+                  Navigator.pop(ctx);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => MapPage(
+                        center: LatLng(p.lat, p.lon),
+                        service: MapService(),
+                      ),
+                    ),
+                  );
+                },
+                child: const Text('Open Map'),
+              ),
           ],
         ),
       );
@@ -148,6 +193,7 @@ class _CalendarPageState extends State<CalendarPage> {
           date: event.date,
           description: event.description,
           attendees: attendees,
+          location: event.location,
         );
         final dayKey = DateTime(event.date.year, event.date.month, event.date.day);
         final list = _events[dayKey];
@@ -247,9 +293,10 @@ class _CalendarPageState extends State<CalendarPage> {
 
 Future<void> showAddEventDialog(
   BuildContext context,
-  void Function(String title, DateTime date) onConfirm,
+  void Function(String title, DateTime date, String location) onConfirm,
 ) async {
   final textCtrl = TextEditingController();
+  final locCtrl = TextEditingController();
   DateTime selectedDate = DateTime.now();
   await showDialog(
     context: context,
@@ -261,6 +308,11 @@ Future<void> showAddEventDialog(
           TextField(
             controller: textCtrl,
             decoration: const InputDecoration(labelText: 'Title'),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: locCtrl,
+            decoration: const InputDecoration(labelText: 'Location'),
           ),
           const SizedBox(height: 8),
           TextButton.icon(
@@ -288,7 +340,7 @@ Future<void> showAddEventDialog(
         ElevatedButton(
           onPressed: () {
             if (textCtrl.text.isNotEmpty) {
-              onConfirm(textCtrl.text, selectedDate);
+              onConfirm(textCtrl.text, selectedDate, locCtrl.text);
               Navigator.pop(ctx);
             }
           },

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:oly_app/models/models.dart';
 import 'package:oly_app/pages/calendar_page.dart';
+import 'package:oly_app/pages/map_page.dart';
 import 'package:oly_app/services/event_service.dart';
 
 class FakeEventService extends EventService {
@@ -19,6 +20,7 @@ class FakeEventService extends EventService {
             date: event.date,
             description: event.description,
             attendees: event.attendees,
+            location: event.location,
           );
     events.add(newEvent);
     return newEvent;
@@ -35,6 +37,7 @@ class FakeEventService extends EventService {
         date: e.date,
         description: e.description,
         attendees: [...e.attendees, userId],
+        location: e.location,
       );
     }
   }
@@ -63,7 +66,8 @@ void main() {
     await tester.tap(find.byType(FloatingActionButton));
     await tester.pumpAndSettle();
 
-    await tester.enterText(find.byType(TextField), 'Meeting');
+    await tester.enterText(find.byType(TextField).at(0), 'Meeting');
+    await tester.enterText(find.byType(TextField).at(1), 'building1');
     await tester.tap(find.text('Add'));
     await tester.pumpAndSettle();
 
@@ -98,7 +102,13 @@ void main() {
   testWidgets('Tapping event shows attendees dialog', (tester) async {
     final service = FakeEventService();
     service.events.add(
-      CalendarEvent(id: 1, title: 'Party', date: DateTime.now(), attendees: const [1]),
+      CalendarEvent(
+        id: 1,
+        title: 'Party',
+        date: DateTime.now(),
+        attendees: const [1],
+        location: 'building1',
+      ),
     );
     await tester.pumpWidget(MaterialApp(home: CalendarPage(service: service)));
     await tester.pumpAndSettle();
@@ -108,5 +118,10 @@ void main() {
 
     expect(find.text('Attendees'), findsOneWidget);
     expect(find.text('1'), findsWidgets);
+    expect(find.textContaining('Location:'), findsOneWidget);
+
+    await tester.tap(find.text('Open Map'));
+    await tester.pumpAndSettle();
+    expect(find.byType(MapPage), findsOneWidget);
   });
 }

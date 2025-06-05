@@ -110,6 +110,7 @@ void main() {
       date: eventDate,
       description: 'Project discussion',
       attendees: const [1, 2],
+      location: 'locA',
     );
 
     final eventMap = {
@@ -118,6 +119,7 @@ void main() {
       'date': eventDate.toIso8601String(),
       'description': 'Project discussion',
       'attendees': const [1, 2],
+      'location': 'locA',
     };
 
     test('toMap/fromMap round trip', () {

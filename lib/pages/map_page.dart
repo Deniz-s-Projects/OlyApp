@@ -10,7 +10,8 @@ class MapPage extends StatefulWidget {
   final MapService? service;
   final bool loadTiles;
   final List<LatLng>? route;
-  const MapPage({super.key, this.service, this.loadTiles = true, this.route});
+  final LatLng? center;
+  const MapPage({super.key, this.service, this.loadTiles = true, this.route, this.center});
 
   @override
   State<MapPage> createState() => _MapPageState();
@@ -92,7 +93,7 @@ class _MapPageState extends State<MapPage> {
         children: [
           FlutterMap(
             options: MapOptions(
-              initialCenter: const LatLng(48.1740, 11.5475),
+              initialCenter: widget.center ?? const LatLng(48.1740, 11.5475),
               initialZoom: 16,
             ),
             children: [
