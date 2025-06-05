@@ -1,4 +1,4 @@
-name: Flutter CI
+name: CI
 
 on:
   pull_request:
@@ -6,7 +6,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -16,18 +15,46 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.29.3' 
+          flutter-version: '3.29.3'
           channel: 'stable'
 
-      - name: Install dependencies
+      # ─────────── Cache Flutter (pub) dependencies ───────────
+      - name: Cache Flutter dependencies
+        uses: actions/cache@v3
+        with:
+          # Cache the Pub package cache directory. Whenever pubspec.yaml changes, this key will change.
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-flutter-pub-${{ hashFiles('**/pubspec.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-flutter-pub-
+
+      - name: Install Flutter dependencies
         run: flutter pub get
 
-      - name: Run tests
+      # ─────────── Set up Node (for npm test) ───────────
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      # ─────────── Cache npm dependencies ───────────
+      - name: Cache npm dependencies
+        uses: actions/cache@v3
+        with:
+          # Cache the npm cache folder. Whenever package-lock.json changes, this key will change.
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Run Flutter tests
         run: flutter test
 
-      - name: Run npm test
+      - name: Run npm tests
         run: npm test
-        
-      - name: Analyze project
-        run: flutter analyze
 
+      - name: Analyze Flutter project
+        run: flutter analyze
