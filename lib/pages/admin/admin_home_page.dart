@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'event_admin_page.dart';
 import 'maintenance_admin_page.dart';
 import 'notification_admin_page.dart';
+import 'bulletin_admin_page.dart';
 
 class AdminHomePage extends StatelessWidget {
   const AdminHomePage({super.key});
@@ -16,33 +17,47 @@ class AdminHomePage extends StatelessWidget {
           children: [
             ElevatedButton(
               onPressed: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => const EventAdminPage()));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const EventAdminPage()),
+                );
               },
               child: const Text('Manage Events'),
             ),
             const SizedBox(height: 12),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => const MaintenanceAdminPage()));
-                },
-                child: const Text('Maintenance Tickets'),
-              ),
-              const SizedBox(height: 12),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const NotificationAdminPage(),
-                    ),
-                  );
-                },
-                child: const Text('Send Notification'),
-              )
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const BulletinAdminPage()),
+                );
+              },
+              child: const Text('Bulletin Posts'),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const MaintenanceAdminPage(),
+                  ),
+                );
+              },
+              child: const Text('Maintenance Tickets'),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const NotificationAdminPage(),
+                  ),
+                );
+              },
+              child: const Text('Send Notification'),
+            ),
           ],
         ),
       ),
