@@ -3,21 +3,23 @@ import 'calendar_page.dart';
 import 'item_exchange_page.dart';
 import 'maintenance_page.dart';
 import 'admin/admin_home_page.dart';
-import 'map_page.dart'; 
-import 'profile_page.dart'; 
+import 'map_page.dart';
+import 'profile_page.dart';
 import 'post_item_page.dart';
 import '../models/models.dart';
-import '../services/event_service.dart'; 
+import '../services/event_service.dart';
 
 class MainPage extends StatefulWidget {
   final CalendarPage? calendarPage;
   final MaintenancePage? maintenancePage;
+  final ItemExchangePage? itemExchangePage;
   final bool isAdmin;
   final VoidCallback? onLogout;
   const MainPage({
     super.key,
     this.calendarPage,
     this.maintenancePage,
+    this.itemExchangePage,
     this.isAdmin = false,
     this.onLogout,
   });
@@ -46,7 +48,7 @@ class _MainPageState extends State<MainPage> {
       DashboardPage(onNavigate: _onDashboardNavigate, isAdmin: widget.isAdmin),
       const MapPage(),
       widget.calendarPage ?? const CalendarPage(),
-      const ItemExchangePage(),
+      widget.itemExchangePage ?? const ItemExchangePage(),
       widget.maintenancePage ?? const MaintenancePage(),
     ];
   }
@@ -82,8 +84,8 @@ class _MainPageState extends State<MainPage> {
       ),
       body: _pages[_currentIndex],
       floatingActionButton: _fabCallback() != null
-          ? FloatingActionButton( 
-              onPressed: _fabCallback(), 
+          ? FloatingActionButton(
+              onPressed: _fabCallback(),
               backgroundColor: colorScheme.secondary,
               foregroundColor: colorScheme.onSecondary,
               child: Icon(_fabIcon()),

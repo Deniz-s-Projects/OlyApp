@@ -3,10 +3,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:oly_app/pages/calendar_page.dart';
 import 'package:oly_app/pages/main_page.dart';
 import 'package:oly_app/pages/maintenance_page.dart';
+import 'package:oly_app/pages/item_exchange_page.dart';
 import 'package:oly_app/models/models.dart';
 import 'package:oly_app/services/event_service.dart';
 import 'package:oly_app/services/maintenance_service.dart';
 import 'package:oly_app/pages/post_item_page.dart';
+import 'package:oly_app/services/item_service.dart';
 
 class FakeEventService extends EventService {
   final List<CalendarEvent> events = [];
@@ -24,6 +26,13 @@ class FakeMaintenanceService extends MaintenanceService {
   FakeMaintenanceService();
   @override
   Future<List<MaintenanceRequest>> fetchRequests() async => [];
+}
+
+class FakeItemService extends ItemService {
+  final List<Item> items;
+  FakeItemService([this.items = const []]);
+  @override
+  Future<List<Item>> fetchItems() async => items;
 }
 
 void main() {
@@ -116,7 +125,15 @@ void main() {
   });
 
   testWidgets('FAB on exchange tab opens PostItemPage', (tester) async {
-    await tester.pumpWidget(const MaterialApp(home: MainPage(onLogout: null)));
+    final fakeItemService = FakeItemService();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: MainPage(
+          itemExchangePage: ItemExchangePage(service: fakeItemService),
+          onLogout: null,
+        ),
+      ),
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(
