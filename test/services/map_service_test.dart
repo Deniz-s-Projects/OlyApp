@@ -1,26 +1,37 @@
 import 'package:test/test.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:oly_app/services/map_service.dart';
 
 void main() {
   group('MapService', () {
-    test('fetchPins returns built in pins', () async {
-      final service = MapService();
+    test('fetchPins retrieves pins from API', () async {
+      final mockClient = MockClient((request) async {
+        expect(request.method, 'GET');
+        expect(request.url.path, '/api/pins');
+        return http.Response(
+          jsonEncode({
+            'data': [
+              {
+                'id': '1',
+                'title': 'Dorm',
+                'lat': 0,
+                'lon': 0,
+                'category': 'building'
+              }
+            ]
+          }),
+          200,
+        );
+      });
+
+      final service = MapService(client: mockClient);
       final pins = await service.fetchPins();
 
-      expect(pins, hasLength(5));
-      expect(pins[0].id, 'building1');
-      expect(pins[0].lat, 48.1745);
-      expect(pins[0].lon, 11.548);
-
-      expect(pins[1].id, 'venue1');
-      expect(pins[1].lat, 48.1740);
-      expect(pins[1].lon, 11.547);
-
-      expect(pins[2].id, 'amenity1');
-      expect(pins[2].lat, 48.1735);
-      expect(pins[2].lon, 11.549);
-      expect(pins[3].id, 'rec1');
-      expect(pins[4].id, 'food1');
+      expect(pins, hasLength(1));
+      expect(pins.first.id, '1');
+      expect(pins.first.title, 'Dorm');
     });
   });
 }
