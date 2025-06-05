@@ -34,6 +34,7 @@ void main() async {
   await Hive.openBox('userBox');
   await Hive.openBox('authBox');
   await Hive.openBox('favoritesBox');
+  await Hive.openBox('settingsBox');
 
   // Initialize tile caching store when not running tests
   if (!Platform.environment.containsKey('FLUTTER_TEST')) {
@@ -50,6 +51,9 @@ void main() async {
 class OlyApp extends StatefulWidget {
   const OlyApp({super.key});
 
+  static _OlyAppState? of(BuildContext context) =>
+      context.findAncestorStateOfType<_OlyAppState>();
+
   @override
   State<OlyApp> createState() => _OlyAppState();
 }
@@ -57,11 +61,18 @@ class OlyApp extends StatefulWidget {
 class _OlyAppState extends State<OlyApp> {
   bool _loggedIn = false;
   bool _isAdmin = false;
+  ThemeMode _themeMode = ThemeMode.light;
   final List<Map<String, String?>> _notifications = [];
 
   @override
   void initState() {
     super.initState();
+    final settingsBox = Hive.box('settingsBox');
+    final stored = settingsBox.get('themeMode', defaultValue: 'light') as String;
+    _themeMode = ThemeMode.values.firstWhere(
+      (m) => m.name == stored,
+      orElse: () => ThemeMode.light,
+    );
     final authBox = Hive.box('authBox');
     final token = authBox.get('token');
     final userBox = Hive.box<User>('userBox');
@@ -107,6 +118,11 @@ class _OlyAppState extends State<OlyApp> {
     });
   }
 
+  void updateThemeMode(ThemeMode mode) {
+    setState(() => _themeMode = mode);
+    Hive.box('settingsBox').put('themeMode', mode.name);
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -115,6 +131,8 @@ class _OlyAppState extends State<OlyApp> {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.white38),
         useMaterial3: true,
       ),
+      darkTheme: ThemeData.dark(useMaterial3: true),
+      themeMode: _themeMode,
 
       routes: {
         '/register': (_) => RegisterPage(onRegistered: _handleLogin),
