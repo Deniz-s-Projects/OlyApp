@@ -1,5 +1,6 @@
 const express = require('express');
 const Event = require('../models/Event');
+const User = require('../models/User');
 const auth = require('../middleware/auth');
 const requireAdmin = require('../middleware/requireAdmin');
 
@@ -53,16 +54,25 @@ router.delete('/:id', requireAdmin, async (req, res) => {
 // POST /events/:id/rsvp - add attendee
 router.post('/:id/rsvp', async (req, res) => {
   try {
-    const userId = Number(req.userId);
-    if (!Number.isInteger(userId)) {
-      return res.status(400).json({ error: 'Invalid userId' });
-    }
+    const numericId = Number(req.userId);
     const event = await Event.findById(req.params.id);
     if (!event) return res.status(404).json({ error: 'Event not found' });
-    if (!event.attendees.includes(userId)) {
-      event.attendees.push(userId);
-      await event.save();
+    if (!Number.isNaN(numericId) && !event.attendees.includes(numericId)) {
+      event.attendees.push(numericId);
     }
+    try {
+      const user = await User.findById(req.userId);
+      if (user) {
+        for (const token of user.deviceTokens) {
+          if (!event.deviceTokens.includes(token)) {
+            event.deviceTokens.push(token);
+          }
+        }
+      }
+    } catch (_) {
+      // ignore invalid user id
+    }
+    await event.save();
     res.json(event);
   } catch (err) {
     res.status(400).json({ error: err.message });

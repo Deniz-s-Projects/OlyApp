@@ -83,17 +83,14 @@ class OlyAppState extends State<OlyApp> {
       _loggedIn = true;
       _isAdmin = user.isAdmin;
     }
-    FirebaseMessaging.onMessage.listen((message) {
-      final notif = message.notification;
-      if (notif != null) {
-        if (mounted) {
-          setState(() {
-            _notifications.add({'title': notif.title, 'body': notif.body});
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(notif.title ?? 'Notification')),
-          );
-        }
+    NotificationService().foregroundMessages.listen((data) {
+      if (mounted) {
+        setState(() {
+          _notifications.add({'title': data['title'], 'body': data['body']});
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(data['title'] ?? 'Notification')),
+        );
       }
     });
   }

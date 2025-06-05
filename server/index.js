@@ -5,6 +5,8 @@ const cors = require('cors');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const path = require('path');
 const admin = require('firebase-admin');
+const cron = require('node-cron');
+const Event = require('./models/Event');
 
 const app = express();
 app.use(cors());
@@ -29,6 +31,37 @@ connectToDatabase().catch((err) => {
 
 const apiRouter = require('./api');
 app.use('/api', apiRouter);
+
+// Send event reminders 15 minutes before start
+cron.schedule('* * * * *', async () => {
+  const now = new Date();
+  const target = new Date(now.getTime() + 15 * 60000);
+  const nextMinute = new Date(target.getTime() + 60000);
+  try {
+    const events = await Event.find({
+      date: { $gte: target, $lt: nextMinute },
+      reminderSent: false,
+    });
+    for (const event of events) {
+      if (!event.deviceTokens.length) continue;
+      try {
+        await admin.messaging().sendEachForMulticast({
+          tokens: event.deviceTokens,
+          notification: {
+            title: `Upcoming event: ${event.title}`,
+            body: 'Starts in 15 minutes',
+          },
+        });
+        event.reminderSent = true;
+        await event.save();
+      } catch (err) {
+        console.error('Failed to send reminder', err);
+      }
+    }
+  } catch (err) {
+    console.error('Reminder check failed', err);
+  }
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
