@@ -6,8 +6,9 @@ import '../models/map_pin.dart';
 import 'api_service.dart';
 
 class MapService {
-  MapService({http.Client? client}) : _client = client ?? http.Client();
+  MapService({http.Client? client}) : _client = client ?? defaultClient;
 
+  static http.Client defaultClient = http.Client();
   final http.Client _client;
   Future<List<MapPin>> fetchPins() async {
     final uri = ApiService().buildUri('/pins');
@@ -28,10 +29,12 @@ class MapService {
     final res = await _client.get(Uri.parse(url));
     if (res.statusCode == 200) {
       final data = jsonDecode(res.body) as Map<String, dynamic>;
-      final coords = (data['routes'][0]['geometry']['coordinates'] as List)
-          .cast<List>();
+      final coords =
+          (data['routes'][0]['geometry']['coordinates'] as List).cast<List>();
       return coords
-          .map((c) => LatLng((c[1] as num).toDouble(), (c[0] as num).toDouble()))
+          .map(
+            (c) => LatLng((c[1] as num).toDouble(), (c[0] as num).toDouble()),
+          )
           .toList();
     }
     return [];
