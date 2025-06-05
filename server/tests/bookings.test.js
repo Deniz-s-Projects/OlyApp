@@ -5,6 +5,10 @@ const express = require('express');
 const apiRouter = require('../api');
 const BookingSlot = require('../models/BookingSlot');
 
+function getToken(id = 1) {
+  return Buffer.from(`${id}:${Date.now()}`).toString('base64');
+}
+
 let app;
 let mongo;
 
@@ -32,7 +36,10 @@ describe('Bookings API', () => {
     const t3 = new Date('2023-01-01T12:00:00Z');
     await BookingSlot.create([{ time: t1 }, { time: t2, name: 'Bob' }, { time: t3 }]);
 
-    const res = await request(app).get('/api/bookings/slots');
+    const token = getToken();
+    const res = await request(app)
+      .get('/api/bookings/slots')
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body.data).toEqual([t1.toISOString(), t3.toISOString()]);
   });
@@ -41,14 +48,17 @@ describe('Bookings API', () => {
     const time = new Date('2023-01-02T10:00:00Z');
     await BookingSlot.create({ time });
 
+    const token = getToken();
     const first = await request(app)
       .post('/api/bookings')
+      .set('Authorization', `Bearer ${token}`)
       .send({ time: time.toISOString(), name: 'Alice' });
     expect(first.status).toBe(200);
     expect(first.body.data.name).toBe('Alice');
 
     const second = await request(app)
       .post('/api/bookings')
+      .set('Authorization', `Bearer ${token}`)
       .send({ time: time.toISOString(), name: 'Bob' });
     expect(second.status).toBe(400);
 
