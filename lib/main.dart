@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'pages/login_page.dart';
 import 'pages/main_page.dart';
+import 'pages/register_page.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 import 'dart:io';
@@ -114,6 +115,10 @@ class _OlyAppState extends State<OlyApp> {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.white38),
         useMaterial3: true,
       ),
+
+      routes: {
+        '/register': (_) => RegisterPage(onRegistered: _handleLogin),
+      }, 
       home:
           _loggedIn
               ? MainPage(
@@ -121,7 +126,7 @@ class _OlyAppState extends State<OlyApp> {
                   onLogout: _logout,
                   notifications: _notifications,
                 )
-              : LoginPage(onLoginSuccess: () => _handleLogin()),
+              : LoginPage(onLoginSuccess: () => _handleLogin()), 
     );
   }
 }

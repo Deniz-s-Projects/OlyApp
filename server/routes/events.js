@@ -1,6 +1,7 @@
 const express = require('express');
 const Event = require('../models/Event');
 const auth = require('../middleware/auth');
+const requireAdmin = require('../middleware/requireAdmin');
 
 const router = express.Router();
 router.use(auth);
@@ -16,7 +17,7 @@ router.get('/', async (req, res) => {
 });
 
 // POST /events - create event
-router.post('/', async (req, res) => {
+router.post('/', requireAdmin, async (req, res) => {
   try {
     const event = await Event.create(req.body);
     res.json({ data: event });
@@ -25,8 +26,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-// POST /events/:id - update event
-router.post('/:id', async (req, res) => {
+// PUT /events/:id - update event
+router.put('/:id', requireAdmin, async (req, res) => {
   try {
     const event = await Event.findByIdAndUpdate(req.params.id, req.body, {
       new: true

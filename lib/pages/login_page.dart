@@ -293,13 +293,20 @@ class _LoginPageState extends State<LoginPage> {
                               },
                       icon: const Icon(Icons.apple),
                       label: const Text('Apple'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: cs.primaryContainer,
-                        foregroundColor: cs.onPrimaryContainer,
-                      ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: cs.primaryContainer,
+                      foregroundColor: cs.onPrimaryContainer,
                     ),
-                  ],
-                ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              TextButton(
+                onPressed: _isLoading
+                    ? null
+                    : () => Navigator.pushNamed(context, '/register'),
+                child: const Text('Create an account'),
+              ),
               ],
             ),
           ),
