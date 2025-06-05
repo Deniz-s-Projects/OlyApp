@@ -11,8 +11,38 @@ class FakeEventService extends EventService {
   Future<List<CalendarEvent>> fetchEvents() async => events;
   @override
   Future<CalendarEvent> createEvent(CalendarEvent event) async {
-    events.add(event);
-    return event;
+    final newEvent = event.id != null
+        ? event
+        : CalendarEvent(
+            id: events.length + 1,
+            title: event.title,
+            date: event.date,
+            description: event.description,
+            attendees: event.attendees,
+          );
+    events.add(newEvent);
+    return newEvent;
+  }
+
+  @override
+  Future<void> rsvpEvent(int eventId, int userId) async {
+    final index = events.indexWhere((e) => e.id == eventId);
+    if (index != -1) {
+      final e = events[index];
+      events[index] = CalendarEvent(
+        id: e.id,
+        title: e.title,
+        date: e.date,
+        description: e.description,
+        attendees: [...e.attendees, userId],
+      );
+    }
+  }
+
+  @override
+  Future<List<int>> fetchAttendees(int eventId) async {
+    final e = events.firstWhere((ev) => ev.id == eventId);
+    return e.attendees;
   }
 }
 
@@ -47,5 +77,36 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Failed to load events'), findsOneWidget);
+  });
+
+  testWidgets('RSVP button updates attendee count', (tester) async {
+    final service = FakeEventService();
+    service.events.add(
+      CalendarEvent(id: 1, title: 'Party', date: DateTime.now()),
+    );
+    await tester.pumpWidget(MaterialApp(home: CalendarPage(service: service)));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Attendees: 0'), findsOneWidget);
+
+    await tester.tap(find.text('RSVP'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Attendees: 1'), findsOneWidget);
+  });
+
+  testWidgets('Tapping event shows attendees dialog', (tester) async {
+    final service = FakeEventService();
+    service.events.add(
+      CalendarEvent(id: 1, title: 'Party', date: DateTime.now(), attendees: const [1]),
+    );
+    await tester.pumpWidget(MaterialApp(home: CalendarPage(service: service)));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(ListTile));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Attendees'), findsOneWidget);
+    expect(find.text('1'), findsWidgets);
   });
 }
