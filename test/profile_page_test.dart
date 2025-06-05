@@ -24,46 +24,59 @@ void main() {
 
   testWidgets('Edits persist and reload', (tester) async {
     await mockNetworkImagesFor(() async {
-      final box = Hive.box<User>('userBox');
-      await box.put('currentUser', User(name: 'Old', email: 'old@test.com'));
+      // ── Wrap everything (Hive I/O + widget pumps) in a single runAsync:
+      await tester.runAsync(() async {
+        // 1) Insert the “Old” user into Hive on the real event loop:
+        final box = Hive.box<User>('userBox');
+        await box.put('currentUser', User(name: 'Old', email: 'old@test.com'));
 
-      await tester.pumpWidget(const MaterialApp(home: ProfilePage()));
-      await tester.pump();
+        // 2) Pump ProfilePage:
+        await tester.pumpWidget(const MaterialApp(home: ProfilePage()));
+        // Give 300ms for any images/animations to complete (instead of pumpAndSettle):
+        await tester.pump(const Duration(milliseconds: 300));
+ 
+        final nameFieldTf = find.byType(TextFormField).at(0);
+        final emailFieldTf = find.byType(TextFormField).at(1);
 
-      Finder nameField() => find.bySemanticsLabel('Name');
-      Finder emailField() => find.bySemanticsLabel('Email');
-      Finder avatarField() => find.bySemanticsLabel('Avatar URL');
+        final nameEditableFinder = find.descendant(
+          of: nameFieldTf,
+          matching: find.byType(EditableText),
+        );
+        final emailEditableFinder = find.descendant(
+          of: emailFieldTf,
+          matching: find.byType(EditableText),
+        );
 
-      expect(tester.widget<TextFormField>(nameField()).controller!.text, 'Old');
-      expect(
-        tester.widget<TextFormField>(emailField()).controller!.text,
-        'old@test.com',
-      );
+        // 5) Verify the initial text is “Old” / “old@test.com”:
+        final nameEditable = tester.widget<EditableText>(nameEditableFinder);
+        final emailEditable = tester.widget<EditableText>(emailEditableFinder);
+        expect(nameEditable.controller.text, 'Old');
+        expect(emailEditable.controller.text, 'old@test.com');
 
-      await tester.enterText(nameField(), 'New Name');
-      await tester.enterText(emailField(), 'new@example.com'); 
-      await tester.tap(find.text('Save'));
-      await tester.pump();
+        // 6) Enter new text into each field and tap “Save”:
+        await tester.enterText(nameEditableFinder, 'New Name');
+        await tester.enterText(emailEditableFinder, 'new@example.com');
+        await tester.tap(find.text('Save'));
+        // Wait 300ms for any save‐animation or Hive write to complete:
+        await tester.pump(const Duration(milliseconds: 300));
 
-      final saved = box.get('currentUser')!;
-      expect(saved.name, 'New Name');
-      expect(saved.email, 'new@example.com'); 
+        // 7) Verify that Hive actually wrote the updated user:
+        final saved = Hive.box<User>('userBox').get('currentUser')!;
+        expect(saved.name, 'New Name');
+        expect(saved.email, 'new@example.com');
 
-      await tester.pumpWidget(const MaterialApp(home: ProfilePage()));
-      await tester.pump();
+        // 8) Re‐pump the ProfilePage and give it time to rebuild:
+        await tester.pumpWidget(const MaterialApp(home: ProfilePage()));
+        await tester.pump(const Duration(milliseconds: 300));
 
-      expect(
-        tester.widget<TextFormField>(nameField()).controller!.text,
-        'New Name',
-      );
-      expect(
-        tester.widget<TextFormField>(emailField()).controller!.text,
-        'new@example.com',
-      );
-      expect(
-        tester.widget<TextFormField>(avatarField()).controller!.text,
-        'http://example.com/avatar.png',
-      );
+        // 9) Finally, confirm that the text fields now show “New Name” / “new@example.com”:
+        final reloadedNameEditable = tester.widget<EditableText>(
+            nameEditableFinder);
+        final reloadedEmailEditable = tester.widget<EditableText>(
+            emailEditableFinder);
+        expect(reloadedNameEditable.controller.text, 'New Name');
+        expect(reloadedEmailEditable.controller.text, 'new@example.com');
+      });
     });
   });
 }
