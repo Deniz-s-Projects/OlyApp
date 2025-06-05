@@ -5,9 +5,13 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 import 'dart:io';
 import 'models/models.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
 
   // Initialize Hive
   await Hive.initFlutter();
@@ -66,13 +70,17 @@ class _OlyAppState extends State<OlyApp> {
     }
   }
 
-  void _handleLogin() {
+  Future<void> _handleLogin() async {
     final userBox = Hive.box<User>('userBox');
     final user = userBox.get('currentUser');
     setState(() {
       _loggedIn = true;
       _isAdmin = user?.isAdmin ?? false;
     });
+    final token = await FirebaseMessaging.instance.getToken();
+    if (token != null) {
+      await NotificationService().registerToken(token);
+    }
   }
 
   Future<void> _logout() async {
@@ -95,7 +103,7 @@ class _OlyAppState extends State<OlyApp> {
       home:
           _loggedIn
               ? MainPage(isAdmin: _isAdmin, onLogout: _logout)
-              : LoginPage(onLoginSuccess: _handleLogin),
+              : LoginPage(onLoginSuccess: () => _handleLogin()),
     );
   }
 }

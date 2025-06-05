@@ -4,11 +4,13 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const path = require('path');
+const admin = require('firebase-admin');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+admin.initializeApp();
 
 async function connectToDatabase() {
   if (process.env.MONGODB_URI) {
