@@ -23,14 +23,11 @@ class MaintenanceService extends ApiService {
     File? imageFile,
   }) async {
     if (imageFile != null) {
-      final req =
-          http.MultipartRequest('POST', buildUri('/maintenance'))
-            ..fields.addAll(
-              request.toJson().map((key, value) => MapEntry(key, '$value')),
-            )
-            ..files.add(
-              await http.MultipartFile.fromPath('image', imageFile.path),
-            );
+      final req = http.MultipartRequest('POST', buildUri('/maintenance'))
+        ..fields.addAll(
+          request.toJson().map((key, value) => MapEntry(key, '$value')),
+        )
+        ..files.add(await http.MultipartFile.fromPath('image', imageFile.path));
       final streamed = await client.send(req);
       final response = await http.Response.fromStream(streamed);
       if (response.statusCode == 201 || response.statusCode == 200) {
@@ -66,7 +63,7 @@ class MaintenanceService extends ApiService {
   }
 
   Future<MaintenanceRequest> updateStatus(int id, String status) async {
-    return post(
+    return put(
       '/maintenance/$id',
       {'status': status},
       (json) => MaintenanceRequest.fromJson(json as Map<String, dynamic>),

@@ -52,7 +52,7 @@ class _MainPageState extends State<MainPage> {
     _pages = [
       DashboardPage(onNavigate: _onDashboardNavigate, isAdmin: widget.isAdmin),
       const MapPage(),
-      widget.calendarPage ?? const CalendarPage(),
+      widget.calendarPage ?? CalendarPage(isAdmin: widget.isAdmin),
       widget.bookingPage ?? const BookingPage(),
       widget.itemExchangePage ?? const ItemExchangePage(),
       widget.maintenancePage ?? const MaintenancePage(),
@@ -108,10 +108,7 @@ class _MainPageState extends State<MainPage> {
             icon: Icon(Icons.calendar_today),
             label: 'Calendar',
           ),
-          NavigationDestination(
-            icon: Icon(Icons.schedule),
-            label: 'Booking',
-          ),
+          NavigationDestination(icon: Icon(Icons.schedule), label: 'Booking'),
           NavigationDestination(
             icon: Icon(Icons.swap_horiz),
             label: 'Exchange',
@@ -154,6 +151,7 @@ class _MainPageState extends State<MainPage> {
           ).showSnackBar(const SnackBar(content: Text('No map action')));
         };
       case 2:
+        if (!widget.isAdmin) return null;
         return () async {
           await showAddEventDialog(context, (title, date, location) async {
             final service = EventService();
