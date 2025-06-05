@@ -136,8 +136,8 @@ class _MaintenancePageState extends State<MaintenancePage> {
                   userId: 1,
                   subject: subject,
                   description: desc,
-                  imageUrl: _imageFile?.path,
                 ),
+                imageFile: _imageFile != null ? File(_imageFile!.path) : null,
               );
               if (!context.mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(

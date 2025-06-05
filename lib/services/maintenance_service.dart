@@ -1,3 +1,8 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:http/http.dart' as http;
+
 import '../models/models.dart';
 import 'api_service.dart';
 
@@ -13,7 +18,31 @@ class MaintenanceService extends ApiService {
     });
   }
 
-  Future<MaintenanceRequest> createRequest(MaintenanceRequest request) async {
+  Future<MaintenanceRequest> createRequest(
+    MaintenanceRequest request, {
+    File? imageFile,
+  }) async {
+    if (imageFile != null) {
+      final req =
+          http.MultipartRequest('POST', buildUri('/maintenance'))
+            ..fields.addAll(
+              request.toJson().map((key, value) => MapEntry(key, '$value')),
+            )
+            ..files.add(
+              await http.MultipartFile.fromPath('image', imageFile.path),
+            );
+      final streamed = await client.send(req);
+      final response = await http.Response.fromStream(streamed);
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return MaintenanceRequest.fromJson(
+          data['data'] as Map<String, dynamic>,
+        );
+      } else {
+        throw Exception('Request failed: ${response.statusCode}');
+      }
+    }
+
     return post('/maintenance', request.toJson(), (json) {
       return MaintenanceRequest.fromJson(json['data'] as Map<String, dynamic>);
     });
@@ -29,13 +58,18 @@ class MaintenanceService extends ApiService {
   }
 
   Future<Message> sendMessage(Message message) async {
-    return post('/maintenance/${message.requestId}/messages', message.toJson(),
-        (json) =>
-            Message.fromJson(json['data'] as Map<String, dynamic>));
+    return post(
+      '/maintenance/${message.requestId}/messages',
+      message.toJson(),
+      (json) => Message.fromJson(json['data'] as Map<String, dynamic>),
+    );
   }
 
   Future<MaintenanceRequest> updateStatus(int id, String status) async {
-    return post('/maintenance/$id', {'status': status},
-        (json) => MaintenanceRequest.fromJson(json as Map<String, dynamic>));
+    return post(
+      '/maintenance/$id',
+      {'status': status},
+      (json) => MaintenanceRequest.fromJson(json as Map<String, dynamic>),
+    );
   }
 }
