@@ -99,6 +99,7 @@ class _BookingPageState extends State<BookingPage> {
           _slots[key]?.remove(slot);
         });
         await _loadBookings();
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Booking confirmed')),
         );
