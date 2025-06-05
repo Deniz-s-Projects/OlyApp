@@ -59,6 +59,7 @@ Install dependencies and run the unit tests:
 
 ```bash
 flutter pub get
+flutter analyze
 flutter test
 ```
 
