@@ -4,6 +4,10 @@ import 'package:oly_app/models/models.dart';
 import 'package:oly_app/pages/calendar_page.dart';
 import 'package:oly_app/pages/map_page.dart';
 import 'package:oly_app/services/event_service.dart';
+import 'package:oly_app/services/map_service.dart';
+import 'package:http/testing.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class FakeEventService extends EventService {
   final List<CalendarEvent> events = [];
@@ -12,16 +16,17 @@ class FakeEventService extends EventService {
   Future<List<CalendarEvent>> fetchEvents() async => events;
   @override
   Future<CalendarEvent> createEvent(CalendarEvent event) async {
-    final newEvent = event.id != null
-        ? event
-        : CalendarEvent(
-            id: events.length + 1,
-            title: event.title,
-            date: event.date,
-            description: event.description,
-            attendees: event.attendees,
-            location: event.location,
-          );
+    final newEvent =
+        event.id != null
+            ? event
+            : CalendarEvent(
+              id: events.length + 1,
+              title: event.title,
+              date: event.date,
+              description: event.description,
+              attendees: event.attendees,
+              location: event.location,
+            );
     events.add(newEvent);
     return newEvent;
   }
@@ -51,8 +56,7 @@ class FakeEventService extends EventService {
 
 class ErrorEventService extends EventService {
   @override
-  Future<List<CalendarEvent>> fetchEvents() async =>
-      throw Exception('fail');
+  Future<List<CalendarEvent>> fetchEvents() async => throw Exception('fail');
 }
 
 void main() {
@@ -110,6 +114,25 @@ void main() {
         location: 'building1',
       ),
     );
+    MapService.defaultClient = MockClient((request) async {
+      expect(request.method, 'GET');
+      expect(request.url.path, '/api/pins');
+      return http.Response(
+        jsonEncode({
+          'data': [
+            {
+              'id': 'building1',
+              'title': 'Dorm',
+              'lat': 0,
+              'lon': 0,
+              'category': 'building',
+            },
+          ],
+        }),
+        200,
+      );
+    });
+
     await tester.pumpWidget(MaterialApp(home: CalendarPage(service: service)));
     await tester.pumpAndSettle();
 
@@ -123,5 +146,7 @@ void main() {
     await tester.tap(find.text('Open Map'));
     await tester.pumpAndSettle();
     expect(find.byType(MapPage), findsOneWidget);
+
+    MapService.defaultClient = http.Client();
   });
 }

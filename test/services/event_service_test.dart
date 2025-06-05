@@ -6,8 +6,10 @@ import 'package:http/testing.dart';
 import 'package:oly_app/services/event_service.dart';
 import 'package:oly_app/models/models.dart';
 
-const apiUrl =
-    String.fromEnvironment('API_URL', defaultValue: 'http://localhost:3000');
+const apiUrl = String.fromEnvironment(
+  'API_URL',
+  defaultValue: 'http://localhost:3000',
+);
 
 void main() {
   group('EventService', () {
@@ -24,9 +26,9 @@ void main() {
                 'title': 'Party',
                 'date': '1970-01-01T00:00:00.000Z',
                 'description': 'fun',
-                'location': 'loc1'
-              }
-            ]
+                'location': 'loc1',
+              },
+            ],
           }),
           200,
         );
@@ -54,10 +56,7 @@ void main() {
         expect(body['location'], input.location);
         return http.Response(
           jsonEncode({
-            'data': {
-              'id': 2,
-              ...input.toJson(),
-            }
+            'data': {'id': 2, ...input.toJson()},
           }),
           201,
         );
@@ -84,7 +83,7 @@ void main() {
         final body = jsonDecode(request.body) as Map<String, dynamic>;
         expect(body['title'], input.title);
         expect(body['location'], input.location);
-        return http.Response(jsonEncode(input.toJson()), 200);
+        return http.Response(jsonEncode({'data': input.toJson()}), 200);
       });
 
       final service = EventService(client: mockClient);
@@ -112,7 +111,12 @@ void main() {
         expect(request.method, equals('GET'));
         expect(request.url.origin, Uri.parse(apiUrl).origin);
         expect(request.url.path, '/api/events/1/attendees');
-        return http.Response(jsonEncode({'data': [1, 2]}), 200);
+        return http.Response(
+          jsonEncode({
+            'data': [1, 2],
+          }),
+          200,
+        );
       });
 
       final service = EventService(client: mockClient);
