@@ -92,6 +92,78 @@ class _CalendarPageState extends State<CalendarPage> {
     });
   }
 
+  Future<void> _rsvp(CalendarEvent event) async {
+    if (event.id == null) return;
+    try {
+      await _service.rsvpEvent(event.id!, 1);
+      final attendees = await _service.fetchAttendees(event.id!);
+      if (!mounted) return;
+      setState(() {
+        final updated = CalendarEvent(
+          id: event.id,
+          title: event.title,
+          date: event.date,
+          description: event.description,
+          attendees: attendees,
+        );
+        final dayKey = DateTime(event.date.year, event.date.month, event.date.day);
+        final list = _events[dayKey];
+        if (list != null) {
+          final index = list.indexWhere((e) => e.id == event.id);
+          if (index != -1) list[index] = updated;
+        }
+        _selectedEvents.value = _getEventsForDay(_selectedDay);
+      });
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Failed to RSVP')));
+    }
+  }
+
+  Future<void> _showAttendees(CalendarEvent event) async {
+    if (event.id == null) return;
+    try {
+      final attendees = await _service.fetchAttendees(event.id!);
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Attendees'),
+          content: Text(
+            attendees.isEmpty ? 'None' : attendees.join(', '),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+      setState(() {
+        final updated = CalendarEvent(
+          id: event.id,
+          title: event.title,
+          date: event.date,
+          description: event.description,
+          attendees: attendees,
+        );
+        final dayKey = DateTime(event.date.year, event.date.month, event.date.day);
+        final list = _events[dayKey];
+        if (list != null) {
+          final index = list.indexWhere((e) => e.id == event.id);
+          if (index != -1) list[index] = updated;
+        }
+        _selectedEvents.value = _getEventsForDay(_selectedDay);
+      });
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Failed to load attendees')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -148,6 +220,13 @@ class _CalendarPageState extends State<CalendarPage> {
                     return ListTile(
                       leading: const Icon(Icons.event_note),
                       title: Text(event.title),
+                      subtitle:
+                          Text('Attendees: ${event.attendees.length}'),
+                      trailing: TextButton(
+                        onPressed: () => _rsvp(event),
+                        child: const Text('RSVP'),
+                      ),
+                      onTap: () => _showAttendees(event),
                     );
                   },
                 );

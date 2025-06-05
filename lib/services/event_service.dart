@@ -23,4 +23,15 @@ class EventService extends ApiService {
     return post('/events/${event.id}', event.toJson(),
         (json) => CalendarEvent.fromJson(json as Map<String, dynamic>));
   }
+
+  Future<void> rsvpEvent(int eventId, int userId) async {
+    await post('/events/$eventId/rsvp', {'userId': userId}, (_) => null);
+  }
+
+  Future<List<int>> fetchAttendees(int eventId) async {
+    return get('/events/$eventId/attendees', (json) {
+      final list = json['data'] as List<dynamic>;
+      return list.map((e) => e as int).toList();
+    });
+  }
 }

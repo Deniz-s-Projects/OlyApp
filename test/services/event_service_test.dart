@@ -81,6 +81,33 @@ void main() {
       expect(event.title, 'Edit');
     });
 
+    test('rsvpEvent posts to rsvp endpoint', () async {
+      final mockClient = MockClient((request) async {
+        expect(request.method, equals('POST'));
+        expect(request.url.origin, Uri.parse(apiUrl).origin);
+        expect(request.url.path, '/api/events/1/rsvp');
+        final body = jsonDecode(request.body) as Map<String, dynamic>;
+        expect(body['userId'], 2);
+        return http.Response('{}', 200);
+      });
+
+      final service = EventService(client: mockClient);
+      await service.rsvpEvent(1, 2);
+    });
+
+    test('fetchAttendees parses list', () async {
+      final mockClient = MockClient((request) async {
+        expect(request.method, equals('GET'));
+        expect(request.url.origin, Uri.parse(apiUrl).origin);
+        expect(request.url.path, '/api/events/1/attendees');
+        return http.Response(jsonEncode({'data': [1, 2]}), 200);
+      });
+
+      final service = EventService(client: mockClient);
+      final attendees = await service.fetchAttendees(1);
+      expect(attendees, [1, 2]);
+    });
+
     test('fetchEvents throws on error', () async {
       final mockClient = MockClient((_) async => http.Response('err', 404));
       final service = EventService(client: mockClient);

@@ -107,6 +107,7 @@ void main() {
       title: 'Meeting',
       date: eventDate,
       description: 'Project discussion',
+      attendees: const [1, 2],
     );
 
     final eventMap = {
@@ -114,6 +115,7 @@ void main() {
       'title': 'Meeting',
       'date': eventDate.toIso8601String(),
       'description': 'Project discussion',
+      'attendees': const [1, 2],
     };
 
     test('toMap/fromMap round trip', () {

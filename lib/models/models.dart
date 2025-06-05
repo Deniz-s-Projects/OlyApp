@@ -155,12 +155,15 @@ class CalendarEvent {
   final DateTime date;
   @HiveField(3)
   final String? description;
+  @HiveField(4)
+  final List<int> attendees;
 
   CalendarEvent({
     this.id,
     required this.title,
     required this.date,
     this.description,
+    this.attendees = const [],
   });
 
   factory CalendarEvent.fromMap(Map<String, dynamic> map) => CalendarEvent(
@@ -168,6 +171,8 @@ class CalendarEvent {
     title: map['title'] as String,
     date: _parseDate(map['date']),
     description: map['description'] as String?,
+    attendees:
+        (map['attendees'] as List<dynamic>? ?? const []).cast<int>(),
   );
 
   Map<String, dynamic> toMap() => {
@@ -175,6 +180,7 @@ class CalendarEvent {
     'title': title,
     'date': date.toIso8601String(),
     'description': description,
+    'attendees': attendees,
   };
 
   factory CalendarEvent.fromJson(Map<String, dynamic> json) => CalendarEvent.fromMap(json);
