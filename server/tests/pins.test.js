@@ -47,4 +47,18 @@ describe('Pins API', () => {
     expect(res.status).toBe(201);
     expect(res.body.data.title).toBe('Cafe');
   });
+
+  test('DELETE /pins/:id removes pin', async () => {
+    await MapPin.create({
+      id: '3',
+      title: 'Hall',
+      lat: 2,
+      lon: 2,
+      category: 'venue',
+    });
+    const res = await request(app).delete('/api/pins/3');
+    expect(res.status).toBe(200);
+    const remaining = await MapPin.find();
+    expect(remaining).toHaveLength(0);
+  });
 });

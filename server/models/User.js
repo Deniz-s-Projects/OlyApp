@@ -4,6 +4,7 @@ const UserSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   passwordHash: { type: String, required: true },
+  // Path to user's avatar image under /uploads
   avatarUrl: String,
   isAdmin: { type: Boolean, default: false },
   deviceTokens: { type: [String], default: [] }

@@ -4,6 +4,7 @@ import 'maintenance_admin_page.dart';
 import 'notification_admin_page.dart';
 import 'bulletin_admin_page.dart';
 import 'booking_admin_page.dart';
+import 'map_admin_page.dart';
 
 class AdminHomePage extends StatelessWidget {
   const AdminHomePage({super.key});
@@ -68,6 +69,16 @@ class AdminHomePage extends StatelessWidget {
                 );
               },
               child: const Text('Booking Slots'),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const MapAdminPage()),
+                );
+              },
+              child: const Text('Map Pins'),
             ),
           ],
         ),

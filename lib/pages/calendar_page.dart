@@ -136,10 +136,11 @@ class _CalendarPageState extends State<CalendarPage> {
     }
   }
 
-  Future<void> _showAttendees(CalendarEvent event) async {
+  Future<void> _showEventDetails(CalendarEvent event) async {
     if (event.id == null) return;
     try {
       final attendees = await _service.fetchAttendees(event.id!);
+      final comments = await _service.fetchComments(event.id!);
       MapPin? pin;
       if (event.location != null) {
         final pins = await MapService().fetchPins();
@@ -151,45 +152,74 @@ class _CalendarPageState extends State<CalendarPage> {
         }
       }
       if (!mounted) return;
-      showDialog(
+      final commentCtrl = TextEditingController();
+      await showDialog(
         context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text('Attendees'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(attendees.isEmpty ? 'None' : attendees.join(', ')),
-              if (event.location != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Text('Location: ${pin?.title ?? event.location}'),
+        builder: (ctx) => StatefulBuilder(
+          builder: (ctx, setState) => AlertDialog(
+            title: Text(event.title),
+            content: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(attendees.isEmpty ? 'None' : attendees.join(', ')),
+                  if (event.location != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text('Location: ${pin?.title ?? event.location}'),
+                    ),
+                  const SizedBox(height: 8),
+                  const Text('Comments:'),
+                  for (final c in comments)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2),
+                      child: Text(c.content),
+                    ),
+                  TextField(
+                    controller: commentCtrl,
+                    decoration:
+                        const InputDecoration(hintText: 'Add comment...'),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Close'),
+              ),
+              TextButton(
+                onPressed: () async {
+                  final text = commentCtrl.text.trim();
+                  if (text.isEmpty) return;
+                  final comment = await _service
+                      .addComment(EventComment(eventId: event.id!, content: text));
+                  setState(() {
+                    comments.add(comment);
+                    commentCtrl.clear();
+                  });
+                },
+                child: const Text('Post'),
+              ),
+              if (pin != null)
+                TextButton(
+                  onPressed: () {
+                    final p = pin!;
+                    Navigator.pop(ctx);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => MapPage(
+                          center: LatLng(p.lat, p.lon),
+                          service: MapService(),
+                        ),
+                      ),
+                    );
+                  },
+                  child: const Text('View on Map'),
                 ),
             ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('OK'),
-            ),
-            if (pin != null)
-              TextButton(
-                onPressed: () {
-                  final p = pin!;
-                  Navigator.pop(ctx);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => MapPage(
-                        center: LatLng(p.lat, p.lon),
-                        service: MapService(),
-                      ),
-                    ),
-                  );
-                },
-                child: const Text('View on Map'),
-              ),
-          ],
         ),
       );
       setState(() {
@@ -289,7 +319,7 @@ class _CalendarPageState extends State<CalendarPage> {
                         onPressed: () => _rsvp(event),
                         child: const Text('RSVP'),
                       ),
-                      onTap: () => _showAttendees(event),
+                      onTap: () => _showEventDetails(event),
                     );
                   },
                 );
