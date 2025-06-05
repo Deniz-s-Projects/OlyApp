@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:image_picker/image_picker.dart';
 import '../models/models.dart';
 import '../main.dart';
 import '../services/user_service.dart';
@@ -22,6 +25,7 @@ class _ProfilePageState extends State<ProfilePage> {
   late final TextEditingController _nameCtrl;
   late final TextEditingController _emailCtrl;
   late final TextEditingController _avatarCtrl;
+  XFile? _avatarFile;
 
   @override
   void initState() {
@@ -45,8 +49,28 @@ class _ProfilePageState extends State<ProfilePage> {
     super.dispose();
   }
 
+  Future<void> _pickImage(ImageSource source) async {
+    final picker = ImagePicker();
+    final file = await picker.pickImage(source: source);
+    if (file != null) {
+      setState(() => _avatarFile = file);
+    }
+  }
+
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_avatarFile != null) {
+      try {
+        final path = await _service.uploadAvatar(File(_avatarFile!.path));
+        _avatarCtrl.text = path;
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text('Upload failed: $e')));
+        }
+        return;
+      }
+    }
     final updated = User(
       id: _user.id,
       name: _nameCtrl.text.trim(),
@@ -113,6 +137,26 @@ class _ProfilePageState extends State<ProfilePage> {
                 controller: _avatarCtrl,
                 decoration: const InputDecoration(labelText: 'Avatar URL'),
               ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () => _pickImage(ImageSource.gallery),
+                    icon: const Icon(Icons.photo_library),
+                    label: const Text('Gallery'),
+                  ),
+                  const SizedBox(width: 12),
+                  ElevatedButton.icon(
+                    onPressed: () => _pickImage(ImageSource.camera),
+                    icon: const Icon(Icons.camera_alt),
+                    label: const Text('Camera'),
+                  ),
+                ],
+              ),
+              if (_avatarFile != null) ...[
+                const SizedBox(height: 12),
+                Image.file(File(_avatarFile!.path), height: 120),
+              ],
               SwitchListTile(
                 title: const Text('Dark Mode'),
                 value: _darkMode,

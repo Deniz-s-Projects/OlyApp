@@ -1,6 +1,19 @@
 const express = require('express');
+const multer = require('multer');
+const path = require('path');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, '../uploads'));
+  },
+  filename: (req, file, cb) => {
+    const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    cb(null, unique + path.extname(file.originalname));
+  }
+});
+const upload = multer({ storage });
 
 const router = express.Router();
 router.use(auth);
@@ -23,6 +36,18 @@ router.put('/me', async (req, res) => {
         isAdmin: user.isAdmin,
       },
     });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// POST /users/me/avatar - upload avatar image
+router.post('/me/avatar', upload.single('avatar'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+    const avatarUrl = `/uploads/${req.file.filename}`;
+    await User.findByIdAndUpdate(req.userId, { avatarUrl });
+    res.status(201).json({ path: avatarUrl });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
