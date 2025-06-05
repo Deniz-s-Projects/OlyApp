@@ -1,5 +1,6 @@
 const express = require('express');
 const Event = require('../models/Event');
+const EventComment = require('../models/EventComment');
 const auth = require('../middleware/auth');
 const requireAdmin = require('../middleware/requireAdmin');
 
@@ -75,6 +76,30 @@ router.get('/:id/attendees', async (req, res) => {
     const event = await Event.findById(req.params.id);
     if (!event) return res.status(404).json({ error: 'Event not found' });
     res.json({ data: event.attendees });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// GET /events/:id/comments - list comments
+router.get('/:id/comments', async (req, res) => {
+  try {
+    const comments = await EventComment.find({ eventId: req.params.id });
+    res.json({ data: comments });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// POST /events/:id/comments - create comment
+router.post('/:id/comments', async (req, res) => {
+  try {
+    const comment = await EventComment.create({
+      eventId: req.params.id,
+      content: req.body.content,
+      date: req.body.date,
+    });
+    res.status(201).json({ data: comment });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

@@ -9,6 +9,7 @@ const Message = require('../models/Message');
 const MaintenanceRequest = require('../models/MaintenanceRequest');
 const BulletinPost = require('../models/BulletinPost');
 const BulletinComment = require('../models/BulletinComment');
+const EventComment = require('../models/EventComment');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
@@ -109,6 +110,29 @@ describe('Events API', () => {
       .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body.data).toEqual([1, 2]);
+  });
+
+  test('GET /events/:id/comments returns comments', async () => {
+    const event = await Event.create({ title: 'Party', date: new Date(0) });
+    await EventComment.create({ eventId: event._id, content: 'c' });
+    const token = await getToken();
+    const res = await request(app)
+      .get(`/api/events/${event._id}/comments`)
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    expect(res.body.data).toHaveLength(1);
+    expect(res.body.data[0].content).toBe('c');
+  });
+
+  test('POST /events/:id/comments creates comment', async () => {
+    const event = await Event.create({ title: 'Party', date: new Date(0) });
+    const token = await getToken();
+    const res = await request(app)
+      .post(`/api/events/${event._id}/comments`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ content: 'c' });
+    expect(res.status).toBe(201);
+    expect(res.body.data.content).toBe('c');
   });
 });
 
