@@ -53,6 +53,23 @@ class EventService extends ApiService {
     });
   }
 
+  Future<List<EventComment>> fetchComments(int eventId) async {
+    return get('/events/$eventId/comments', (json) {
+      final list = json['data'] as List<dynamic>;
+      return list
+          .map((e) => EventComment.fromJson(e as Map<String, dynamic>))
+          .toList();
+    });
+  }
+
+  Future<EventComment> addComment(EventComment comment) async {
+    return post(
+      '/events/${comment.eventId}/comments',
+      comment.toJson(),
+      (json) => EventComment.fromJson(json['data'] as Map<String, dynamic>),
+    );
+  }
+
   Future<void> deleteEvent(int id) async {
     await delete('/events/$id', (_) => null);
   }
