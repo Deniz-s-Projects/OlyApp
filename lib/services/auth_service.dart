@@ -1,3 +1,5 @@
+
+import 'package:hive_flutter/hive_flutter.dart'; 
 import 'api_service.dart';
 
 class AuthService extends ApiService {
@@ -8,7 +10,7 @@ class AuthService extends ApiService {
     String email,
     String password,
   ) async {
-    return post(
+    final data = await post( 
       '/auth/register',
       {
         'name': name,
@@ -17,16 +19,20 @@ class AuthService extends ApiService {
       },
       (json) => Map<String, dynamic>.from(json as Map),
     );
+    await Hive.box('authBox').put('token', data['token']);
+    return data;
   }
 
   Future<Map<String, dynamic>> login(String email, String password) async {
-    return post(
+    final data = await post( 
       '/auth/login',
       {
         'email': email,
         'password': password,
       },
       (json) => Map<String, dynamic>.from(json as Map),
-    );
+    ); 
+    await Hive.box('authBox').put('token', data['token']);
+    return data; 
   }
 }

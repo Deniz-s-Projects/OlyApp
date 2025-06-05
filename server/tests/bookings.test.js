@@ -2,11 +2,14 @@ const request = require('supertest');
 const mongoose = require('mongoose');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const express = require('express');
+const jwt = require('jsonwebtoken');
 const apiRouter = require('../api');
 const BookingSlot = require('../models/BookingSlot');
 
+const SECRET = process.env.JWT_SECRET || 'secretkey';
+
 function getToken(id = 1) {
-  return Buffer.from(`${id}:${Date.now()}`).toString('base64');
+  return jwt.sign({ userId: id }, SECRET);
 }
 
 let app;

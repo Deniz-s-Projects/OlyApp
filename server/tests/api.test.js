@@ -9,10 +9,13 @@ const Message = require('../models/Message');
 const MaintenanceRequest = require('../models/MaintenanceRequest');
 const BulletinPost = require('../models/BulletinPost');
 const BulletinComment = require('../models/BulletinComment');
+const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
+const SECRET = process.env.JWT_SECRET || 'secretkey'; 
+
 function getToken(id = 1) {
-  return Buffer.from(`${id}:${Date.now()}`).toString('base64');
+  return jwt.sign({ userId: id }, SECRET);
 }
 
 let app;
@@ -49,7 +52,7 @@ describe('Events API', () => {
 
   test('POST /events creates event', async () => {
     const admin = await User.create({ name: 'a', email: 'a@b.c', passwordHash: 'x', isAdmin: true });
-    const token = Buffer.from(`${admin._id}:${Date.now()}`).toString('base64');
+    const token = jwt.sign({ userId: admin._id }, SECRET); 
     const res = await request(app)
       .post('/api/events')
       .set('Authorization', `Bearer ${token}`)
@@ -61,7 +64,7 @@ describe('Events API', () => {
   test('PUT /events/:id updates event', async () => {
     const event = await Event.create({ title: 'Old', date: new Date(0) });
     const admin = await User.create({ name: 'a', email: 'a@b.c', passwordHash: 'x', isAdmin: true });
-    const token = Buffer.from(`${admin._id}:${Date.now()}`).toString('base64');
+    const token = jwt.sign({ userId: admin._id }, SECRET);
     const res = await request(app)
       .put(`/api/events/${event._id}`)
       .set('Authorization', `Bearer ${token}`)
@@ -216,7 +219,7 @@ describe('Maintenance API', () => {
       description: 'Water'
     });
     const admin = await User.create({ name: 'a', email: 'a@b.c', passwordHash: 'x', isAdmin: true });
-    const token = Buffer.from(`${admin._id}:${Date.now()}`).toString('base64');
+    const token = jwt.sign({ userId: admin._id }, SECRET);
     const res = await request(app)
       .put(`/api/maintenance/${req._id}`)
       .set('Authorization', `Bearer ${token}`)

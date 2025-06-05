@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:hive_flutter/hive_flutter.dart';
 
 /// Base class for API services.
 class ApiService {
@@ -19,8 +20,20 @@ class ApiService {
     ).replace(path: '/api$path', queryParameters: query);
   }
 
+  Map<String, String> _authHeaders([Map<String, String>? headers]) {
+    final box = Hive.isBoxOpen('authBox') ? Hive.box('authBox') : null;
+    final token = box?.get('token') as String?;
+    return {
+      if (token != null) 'Authorization': 'Bearer $token',
+      if (headers != null) ...headers,
+    };
+  }
+
   Future<T> get<T>(String path, T Function(dynamic json) parser) async {
-    final response = await _client.get(buildUri(path));
+    final response = await _client.get(
+      buildUri(path),
+      headers: _authHeaders(),
+    );
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       return parser(data);
@@ -36,7 +49,7 @@ class ApiService {
   ) async {
     final response = await _client.post(
       buildUri(path),
-      headers: {'Content-Type': 'application/json'},
+      headers: _authHeaders({'Content-Type': 'application/json'}),
       body: jsonEncode(body),
     );
     if (response.statusCode == 200 || response.statusCode == 201) {
@@ -54,7 +67,7 @@ class ApiService {
   ) async {
     final response = await _client.put(
       buildUri(path),
-      headers: {'Content-Type': 'application/json'},
+      headers: _authHeaders({'Content-Type': 'application/json'}),
       body: jsonEncode(body),
     );
     if (response.statusCode == 200) {
@@ -66,7 +79,10 @@ class ApiService {
   }
 
   Future<T> delete<T>(String path, T Function(dynamic json) parser) async {
-    final response = await _client.delete(buildUri(path));
+    final response = await _client.delete(
+      buildUri(path),
+      headers: _authHeaders(),
+    );
     if (response.statusCode == 200) {
       final body = response.body.isEmpty ? '{}' : response.body;
       final data = jsonDecode(body);
