@@ -32,11 +32,13 @@ class _BookingAdminPageState extends State<BookingAdminPage> {
       lastDate: DateTime.now().add(const Duration(days: 365)),
       initialDate: DateTime.now(),
     );
+    if (!mounted) return;
     if (date == null) return;
     final time = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
     );
+    if (!mounted) return;
     if (time == null) return;
     final dt = DateTime(
       date.year,
@@ -46,6 +48,7 @@ class _BookingAdminPageState extends State<BookingAdminPage> {
       time.minute,
     );
     await _service.createSlot(dt);
+    if (!mounted) return;
     _load();
   }
 
