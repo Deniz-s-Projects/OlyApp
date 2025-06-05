@@ -8,6 +8,7 @@ import 'map_page.dart';
 import 'profile_page.dart';
 import 'post_item_page.dart';
 import 'bulletin_board_page.dart';
+import 'notifications_page.dart';
 import '../models/models.dart';
 import '../services/event_service.dart';
 
@@ -18,6 +19,7 @@ class MainPage extends StatefulWidget {
   final ItemExchangePage? itemExchangePage;
   final bool isAdmin;
   final VoidCallback? onLogout;
+  final List<Map<String, String?>> notifications;
   const MainPage({
     super.key,
     this.calendarPage,
@@ -26,6 +28,7 @@ class MainPage extends StatefulWidget {
     this.itemExchangePage,
     this.isAdmin = false,
     this.onLogout,
+    this.notifications = const [],
   });
 
   @override
@@ -140,9 +143,14 @@ class _MainPageState extends State<MainPage> {
     switch (_currentIndex) {
       case 0:
         return () {
-          ScaffoldMessenger.of(
+          Navigator.push(
             context,
-          ).showSnackBar(const SnackBar(content: Text('No notifications')));
+            MaterialPageRoute(
+              builder: (_) => NotificationsPage(
+                notifications: widget.notifications,
+              ),
+            ),
+          );
         };
       case 1:
         return () {

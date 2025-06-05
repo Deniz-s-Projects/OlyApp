@@ -57,6 +57,7 @@ class OlyApp extends StatefulWidget {
 class _OlyAppState extends State<OlyApp> {
   bool _loggedIn = false;
   bool _isAdmin = false;
+  final List<Map<String, String?>> _notifications = [];
 
   @override
   void initState() {
@@ -69,6 +70,19 @@ class _OlyAppState extends State<OlyApp> {
       _loggedIn = true;
       _isAdmin = user.isAdmin;
     }
+    FirebaseMessaging.onMessage.listen((message) {
+      final notif = message.notification;
+      if (notif != null) {
+        if (mounted) {
+          setState(() {
+            _notifications.add({'title': notif.title, 'body': notif.body});
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(notif.title ?? 'Notification')),
+          );
+        }
+      }
+    });
   }
 
   Future<void> _handleLogin() async {
@@ -101,12 +115,18 @@ class _OlyAppState extends State<OlyApp> {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.white38),
         useMaterial3: true,
       ),
+
       routes: {
         '/register': (_) => RegisterPage(onRegistered: _handleLogin),
-      },
-      home: _loggedIn
-          ? MainPage(isAdmin: _isAdmin, onLogout: _logout)
-          : LoginPage(onLoginSuccess: () => _handleLogin()),
+      }, 
+      home:
+          _loggedIn
+              ? MainPage(
+                  isAdmin: _isAdmin,
+                  onLogout: _logout,
+                  notifications: _notifications,
+                )
+              : LoginPage(onLoginSuccess: () => _handleLogin()), 
     );
   }
 }
