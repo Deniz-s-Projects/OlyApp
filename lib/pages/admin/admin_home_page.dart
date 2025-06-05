@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'event_admin_page.dart';
 import 'maintenance_admin_page.dart';
+import 'notification_admin_page.dart';
 
 class AdminHomePage extends StatelessWidget {
   const AdminHomePage({super.key});
@@ -21,15 +22,27 @@ class AdminHomePage extends StatelessWidget {
               child: const Text('Manage Events'),
             ),
             const SizedBox(height: 12),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const MaintenanceAdminPage()));
+                },
+                child: const Text('Maintenance Tickets'),
+              ),
+              const SizedBox(height: 12),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (_) => const MaintenanceAdminPage()));
-              },
-              child: const Text('Maintenance Tickets'),
-            )
+                      builder: (_) => const NotificationAdminPage(),
+                    ),
+                  );
+                },
+                child: const Text('Send Notification'),
+              )
           ],
         ),
       ),

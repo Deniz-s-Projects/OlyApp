@@ -69,7 +69,7 @@ void main() {
       expect(event.location, input.location);
     });
 
-    test('updateEvent posts to event id', () async {
+    test('updateEvent uses PUT', () async {
       final input = CalendarEvent(
         id: 1,
         title: 'Edit',
@@ -77,7 +77,7 @@ void main() {
         location: 'loc3',
       );
       final mockClient = MockClient((request) async {
-        expect(request.method, equals('POST'));
+        expect(request.method, equals('PUT'));
         expect(request.url.origin, Uri.parse(apiUrl).origin);
         expect(request.url.path, '/api/events/1');
         final body = jsonDecode(request.body) as Map<String, dynamic>;

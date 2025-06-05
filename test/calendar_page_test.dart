@@ -16,17 +16,16 @@ class FakeEventService extends EventService {
   Future<List<CalendarEvent>> fetchEvents() async => events;
   @override
   Future<CalendarEvent> createEvent(CalendarEvent event) async {
-    final newEvent =
-        event.id != null
-            ? event
-            : CalendarEvent(
-              id: events.length + 1,
-              title: event.title,
-              date: event.date,
-              description: event.description,
-              attendees: event.attendees,
-              location: event.location,
-            );
+    final newEvent = event.id != null
+        ? event
+        : CalendarEvent(
+            id: events.length + 1,
+            title: event.title,
+            date: event.date,
+            description: event.description,
+            attendees: event.attendees,
+            location: event.location,
+          );
     events.add(newEvent);
     return newEvent;
   }
@@ -62,7 +61,9 @@ class ErrorEventService extends EventService {
 void main() {
   testWidgets('Add event displays in list', (tester) async {
     final service = FakeEventService();
-    await tester.pumpWidget(MaterialApp(home: CalendarPage(service: service)));
+    await tester.pumpWidget(
+      MaterialApp(home: CalendarPage(service: service, isAdmin: true)),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('No events for this day.'), findsOneWidget);
@@ -143,7 +144,7 @@ void main() {
     expect(find.text('1'), findsWidgets);
     expect(find.textContaining('Location:'), findsOneWidget);
 
-    await tester.tap(find.text('Open Map'));
+    await tester.tap(find.text('View on Map'));
     await tester.pumpAndSettle();
     expect(find.byType(MapPage), findsOneWidget);
 
