@@ -45,6 +45,7 @@ dependencies:
   http: any
   google_sign_in: ^6.3.0
   sign_in_with_apple: ^7.0.1
+  image_picker: ^1.1.2
 dev_dependencies:
   test: any
   flutter_test:

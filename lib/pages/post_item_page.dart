@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../models/models.dart';
 import '../services/item_service.dart';
 
@@ -15,6 +18,7 @@ class _PostItemPageState extends State<PostItemPage> {
   final _descCtrl = TextEditingController();
   final _priceCtrl = TextEditingController();
   final _imageCtrl = TextEditingController();
+  XFile? _imageFile;
   ItemCategory _category = ItemCategory.other;
   final ItemService _service = ItemService();
   bool _submitting = false;
@@ -28,31 +32,45 @@ class _PostItemPageState extends State<PostItemPage> {
     super.dispose();
   }
 
+  Future<void> _pickImage(ImageSource source) async {
+    final picker = ImagePicker();
+    final file = await picker.pickImage(source: source);
+    if (file != null) {
+      setState(() => _imageFile = file);
+    }
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _submitting = true);
     try {
       final priceText = _priceCtrl.text.trim();
       final price = priceText.isNotEmpty ? double.tryParse(priceText) : null;
+      final imagePath =
+          _imageFile?.path ??
+          (_imageCtrl.text.trim().isEmpty ? null : _imageCtrl.text.trim());
       final item = Item(
         ownerId: 1,
         title: _titleCtrl.text.trim(),
-        description: _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
-        imageUrl: _imageCtrl.text.trim().isEmpty ? null : _imageCtrl.text.trim(),
+        description:
+            _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
+        imageUrl: imagePath,
         price: price,
         isFree: price == null || price == 0,
         category: _category,
       );
       await _service.createItem(item);
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Item posted!')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Item posted!')));
         Navigator.pop(context, true);
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Failed to post: $e')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to post: $e')));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -71,7 +89,8 @@ class _PostItemPageState extends State<PostItemPage> {
               TextFormField(
                 controller: _titleCtrl,
                 decoration: const InputDecoration(labelText: 'Title'),
-                validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+                validator:
+                    (v) => v == null || v.trim().isEmpty ? 'Required' : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
@@ -83,33 +102,60 @@ class _PostItemPageState extends State<PostItemPage> {
               DropdownButtonFormField<ItemCategory>(
                 value: _category,
                 decoration: const InputDecoration(labelText: 'Category'),
-                items: ItemCategory.values.map((cat) {
-                  String label;
-                    switch (cat) {
-                      case ItemCategory.furniture:
-                        label = 'Furniture';
-                      case ItemCategory.books:
-                        label = 'Books';
-                      case ItemCategory.electronics:
-                        label = 'Electronics';
-                      default:
-                        label = 'Other';
-                    }
-                  return DropdownMenuItem(value: cat, child: Text(label));
-                }).toList(),
-                onChanged: (val) => setState(() => _category = val ?? ItemCategory.other),
+                items:
+                    ItemCategory.values.map((cat) {
+                      String label;
+                      switch (cat) {
+                        case ItemCategory.furniture:
+                          label = 'Furniture';
+                        case ItemCategory.books:
+                          label = 'Books';
+                        case ItemCategory.electronics:
+                          label = 'Electronics';
+                        default:
+                          label = 'Other';
+                      }
+                      return DropdownMenuItem(value: cat, child: Text(label));
+                    }).toList(),
+                onChanged:
+                    (val) =>
+                        setState(() => _category = val ?? ItemCategory.other),
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _priceCtrl,
                 decoration: const InputDecoration(labelText: 'Price'),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _imageCtrl,
-                decoration: const InputDecoration(labelText: 'Image URL (optional)'),
+                decoration: const InputDecoration(
+                  labelText: 'Image URL (optional)',
+                ),
               ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () => _pickImage(ImageSource.gallery),
+                    icon: const Icon(Icons.photo_library),
+                    label: const Text('Gallery'),
+                  ),
+                  const SizedBox(width: 12),
+                  ElevatedButton.icon(
+                    onPressed: () => _pickImage(ImageSource.camera),
+                    icon: const Icon(Icons.camera_alt),
+                    label: const Text('Camera'),
+                  ),
+                ],
+              ),
+              if (_imageFile != null) ...[
+                const SizedBox(height: 12),
+                Image.file(File(_imageFile!.path), height: 150),
+              ],
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _submitting ? null : _submit,
