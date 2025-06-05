@@ -27,7 +27,10 @@ router.post('/', async (req, res) => {
 // GET /maintenance/:id/messages - list messages for a request
 router.get('/:id/messages', async (req, res) => {
   try {
-    const messages = await Message.find({ requestId: req.params.id });
+    const messages = await Message.find({
+      requestId: req.params.id,
+      requestType: 'MaintenanceRequest'
+    });
     res.json({ data: messages });
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -37,7 +40,11 @@ router.get('/:id/messages', async (req, res) => {
 // POST /maintenance/:id/messages - create message for a request
 router.post('/:id/messages', async (req, res) => {
   try {
-    const messageData = { ...req.body, requestId: req.params.id };
+    const messageData = {
+      ...req.body,
+      requestId: req.params.id,
+      requestType: 'MaintenanceRequest'
+    };
     const message = await Message.create(messageData);
     res.status(201).json({ data: message });
   } catch (err) {
