@@ -1,62 +1,113 @@
+import 'dart:convert';
 import 'package:test/test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
+
 import 'package:oly_app/services/bulletin_service.dart';
 import 'package:oly_app/models/models.dart';
 
+const apiUrl =
+    String.fromEnvironment('API_URL', defaultValue: 'http://localhost:3000');
+
 void main() {
   group('BulletinService', () {
-    test('addPost assigns incrementing ids', () async {
-      final service = BulletinService();
-      final first = await service.addPost(BulletinPost(content: 'a'));
-      final second = await service.addPost(BulletinPost(content: 'b'));
+    test('fetchPosts parses list correctly', () async {
+      final mockClient = MockClient((request) async {
+        expect(request.method, equals('GET'));
+        expect(request.url.origin, Uri.parse(apiUrl).origin);
+        expect(request.url.path, '/api/bulletin');
+        return http.Response(
+          jsonEncode({
+            'data': [
+              {
+                'id': 1,
+                'content': 'Hello',
+                'date': '1970-01-01T00:00:00.000Z'
+              }
+            ]
+          }),
+          200,
+        );
+      });
 
-      expect(first.id, 1);
-      expect(second.id, 2);
-    });
-
-    test('fetchPosts returns unmodifiable list', () async {
-      final service = BulletinService();
-      await service.addPost(BulletinPost(content: 'a'));
+      final service = BulletinService(client: mockClient);
       final posts = await service.fetchPosts();
-
-      expect(
-        () => posts.add(BulletinPost(content: 'b')),
-        throwsUnsupportedError,
-      );
+      expect(posts, hasLength(1));
+      expect(posts.first.content, 'Hello');
     });
 
-    test(
-      'addComment stores comments per post and lists are immutable',
-      () async {
-        final service = BulletinService();
-        final post1 = await service.addPost(BulletinPost(content: 'p1'));
-        final post2 = await service.addPost(BulletinPost(content: 'p2'));
-
-        await service.addComment(
-          BulletinComment(postId: post1.id!, content: 'c1'),
+    test('addPost sends POST and parses result', () async {
+      final input = BulletinPost(content: 'Hi', date: DateTime.fromMillisecondsSinceEpoch(0));
+      final mockClient = MockClient((request) async {
+        expect(request.method, equals('POST'));
+        expect(request.url.origin, Uri.parse(apiUrl).origin);
+        expect(request.url.path, '/api/bulletin');
+        final body = jsonDecode(request.body) as Map<String, dynamic>;
+        expect(body['content'], input.content);
+        return http.Response(
+          jsonEncode({
+            'data': {'id': 2, ...input.toJson()}
+          }),
+          201,
         );
-        await service.addComment(
-          BulletinComment(postId: post2.id!, content: 'c2'),
+      });
+
+      final service = BulletinService(client: mockClient);
+      final result = await service.addPost(input);
+      expect(result.id, 2);
+      expect(result.content, input.content);
+    });
+
+    test('fetchComments parses list correctly', () async {
+      final mockClient = MockClient((request) async {
+        expect(request.method, equals('GET'));
+        expect(request.url.path, '/api/bulletin/1/comments');
+        return http.Response(
+          jsonEncode({
+            'data': [
+              {
+                'id': 1,
+                'postId': 1,
+                'content': 'c',
+                'date': '1970-01-01T00:00:00.000Z'
+              }
+            ]
+          }),
+          200,
         );
+      });
 
-        final comments1 = await service.fetchComments(post1.id!);
-        final comments2 = await service.fetchComments(post2.id!);
+      final service = BulletinService(client: mockClient);
+      final comments = await service.fetchComments(1);
+      expect(comments, hasLength(1));
+      expect(comments.first.content, 'c');
+    });
 
-        expect(comments1.map((c) => c.content), ['c1']);
-        expect(comments2.map((c) => c.content), ['c2']);
-        expect(
-          () => comments1.add(BulletinComment(postId: post1.id!, content: 'x')),
-          throwsUnsupportedError,
+    test('addComment posts comment', () async {
+      final input = BulletinComment(postId: 1, content: 'x');
+      final mockClient = MockClient((request) async {
+        expect(request.method, equals('POST'));
+        expect(request.url.path, '/api/bulletin/1/comments');
+        final body = jsonDecode(request.body) as Map<String, dynamic>;
+        expect(body['content'], input.content);
+        return http.Response(
+          jsonEncode({
+            'data': {'id': 3, ...input.toJson()}
+          }),
+          201,
         );
+      });
 
-        await service.addComment(
-          BulletinComment(postId: post2.id!, content: 'c3'),
-        );
-        final comments2Updated = await service.fetchComments(post2.id!);
+      final service = BulletinService(client: mockClient);
+      final comment = await service.addComment(input);
+      expect(comment.id, 3);
+      expect(comment.content, input.content);
+    });
 
-        // ensure lists are isolated and previous list is unchanged
-        expect(comments1, hasLength(1));
-        expect(comments2Updated, hasLength(2));
-      },
-    );
+    test('throws on error status', () async {
+      final mockClient = MockClient((_) async => http.Response('err', 500));
+      final service = BulletinService(client: mockClient);
+      expect(service.fetchPosts(), throwsException);
+    });
   });
 }

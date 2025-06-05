@@ -7,6 +7,8 @@ const Event = require('../models/Event');
 const Item = require('../models/Item');
 const Message = require('../models/Message');
 const MaintenanceRequest = require('../models/MaintenanceRequest');
+const BulletinPost = require('../models/BulletinPost');
+const BulletinComment = require('../models/BulletinComment');
 
 let app;
 let mongo;
@@ -180,5 +182,41 @@ describe('Maintenance API', () => {
       .send({ status: 'closed' });
     expect(res.status).toBe(200);
     expect(res.body.status).toBe('closed');
+  });
+});
+
+describe('Bulletin API', () => {
+  test('GET /bulletin returns list', async () => {
+    await BulletinPost.create({ id: 1, content: 'Hello' });
+    const res = await request(app).get('/api/bulletin');
+    expect(res.status).toBe(200);
+    expect(res.body.data).toHaveLength(1);
+    expect(res.body.data[0].content).toBe('Hello');
+  });
+
+  test('POST /bulletin creates post', async () => {
+    const res = await request(app)
+      .post('/api/bulletin')
+      .send({ content: 'New' });
+    expect(res.status).toBe(201);
+    expect(res.body.data.content).toBe('New');
+  });
+
+  test('GET /bulletin/:id/comments returns comments', async () => {
+    await BulletinPost.create({ id: 1, content: 'p' });
+    await BulletinComment.create({ id: 1, postId: 1, content: 'c' });
+    const res = await request(app).get('/api/bulletin/1/comments');
+    expect(res.status).toBe(200);
+    expect(res.body.data).toHaveLength(1);
+    expect(res.body.data[0].content).toBe('c');
+  });
+
+  test('POST /bulletin/:id/comments creates comment', async () => {
+    await BulletinPost.create({ id: 1, content: 'p' });
+    const res = await request(app)
+      .post('/api/bulletin/1/comments')
+      .send({ content: 'c' });
+    expect(res.status).toBe(201);
+    expect(res.body.data.content).toBe('c');
   });
 });
