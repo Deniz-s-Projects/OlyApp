@@ -21,6 +21,7 @@ void main() {
             'data': [
               {
                 'id': 1,
+                'userId': 2,
                 'content': 'Hello',
                 'date': '1970-01-01T00:00:00.000Z'
               }
@@ -37,13 +38,14 @@ void main() {
     });
 
     test('addPost sends POST and parses result', () async {
-      final input = BulletinPost(content: 'Hi', date: DateTime.fromMillisecondsSinceEpoch(0));
+      final input = BulletinPost(userId: 1, content: 'Hi', date: DateTime.fromMillisecondsSinceEpoch(0));
       final mockClient = MockClient((request) async {
         expect(request.method, equals('POST'));
         expect(request.url.origin, Uri.parse(apiUrl).origin);
         expect(request.url.path, '/api/bulletin');
         final body = jsonDecode(request.body) as Map<String, dynamic>;
         expect(body['content'], input.content);
+        expect(body['userId'], input.userId);
         return http.Response(
           jsonEncode({
             'data': {'id': 2, ...input.toJson()}
@@ -68,6 +70,7 @@ void main() {
               {
                 'id': 1,
                 'postId': 1,
+                'userId': 2,
                 'content': 'c',
                 'date': '1970-01-01T00:00:00.000Z'
               }
@@ -84,12 +87,13 @@ void main() {
     });
 
     test('addComment posts comment', () async {
-      final input = BulletinComment(postId: 1, content: 'x');
+      final input = BulletinComment(postId: 1, userId: 1, content: 'x');
       final mockClient = MockClient((request) async {
         expect(request.method, equals('POST'));
         expect(request.url.path, '/api/bulletin/1/comments');
         final body = jsonDecode(request.body) as Map<String, dynamic>;
         expect(body['content'], input.content);
+        expect(body['userId'], input.userId);
         return http.Response(
           jsonEncode({
             'data': {'id': 3, ...input.toJson()}
@@ -105,12 +109,13 @@ void main() {
     });
 
     test('updatePost sends PUT', () async {
-      final input = BulletinPost(id: 1, content: 'n', date: DateTime.fromMillisecondsSinceEpoch(0));
+      final input = BulletinPost(id: 1, userId: 1, content: 'n', date: DateTime.fromMillisecondsSinceEpoch(0));
       final mockClient = MockClient((request) async {
         expect(request.method, equals('PUT'));
         expect(request.url.path, '/api/bulletin/1');
         final body = jsonDecode(request.body) as Map<String, dynamic>;
         expect(body['content'], input.content);
+        expect(body['userId'], input.userId);
         return http.Response(jsonEncode({'data': input.toJson()}), 200);
       });
       final service = BulletinService(client: mockClient);

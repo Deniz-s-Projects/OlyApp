@@ -244,51 +244,66 @@ describe('Maintenance API', () => {
 
 describe('Bulletin API', () => {
   test('GET /bulletin returns list', async () => {
-    await BulletinPost.create({ id: 1, content: 'Hello' });
-    const res = await request(app).get('/api/bulletin');
+    await BulletinPost.create({ id: 1, userId: 1, content: 'Hello' });
+    const token = getToken();
+    const res = await request(app)
+      .get('/api/bulletin')
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body.data).toHaveLength(1);
     expect(res.body.data[0].content).toBe('Hello');
   });
 
   test('POST /bulletin creates post', async () => {
+    const token = getToken();
     const res = await request(app)
       .post('/api/bulletin')
+      .set('Authorization', `Bearer ${token}`)
       .send({ content: 'New' });
     expect(res.status).toBe(201);
     expect(res.body.data.content).toBe('New');
   });
 
   test('GET /bulletin/:id/comments returns comments', async () => {
-    await BulletinPost.create({ id: 1, content: 'p' });
-    await BulletinComment.create({ id: 1, postId: 1, content: 'c' });
-    const res = await request(app).get('/api/bulletin/1/comments');
+    await BulletinPost.create({ id: 1, userId: 1, content: 'p' });
+    await BulletinComment.create({ id: 1, postId: 1, userId: 1, content: 'c' });
+    const token = getToken();
+    const res = await request(app)
+      .get('/api/bulletin/1/comments')
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body.data).toHaveLength(1);
     expect(res.body.data[0].content).toBe('c');
   });
 
   test('POST /bulletin/:id/comments creates comment', async () => {
-    await BulletinPost.create({ id: 1, content: 'p' });
+    await BulletinPost.create({ id: 1, userId: 1, content: 'p' });
+    const token = getToken();
     const res = await request(app)
       .post('/api/bulletin/1/comments')
+      .set('Authorization', `Bearer ${token}`)
       .send({ content: 'c' });
     expect(res.status).toBe(201);
     expect(res.body.data.content).toBe('c');
   });
 
   test('PUT /bulletin/:id updates post', async () => {
-    await BulletinPost.create({ id: 1, content: 'old' });
+    await BulletinPost.create({ id: 1, userId: 1, content: 'old' });
+    const token = getToken();
     const res = await request(app)
       .put('/api/bulletin/1')
+      .set('Authorization', `Bearer ${token}`)
       .send({ content: 'new' });
     expect(res.status).toBe(200);
     expect(res.body.data.content).toBe('new');
   });
 
   test('DELETE /bulletin/:id deletes post', async () => {
-    await BulletinPost.create({ id: 1, content: 'old' });
-    const res = await request(app).delete('/api/bulletin/1');
+    await BulletinPost.create({ id: 1, userId: 1, content: 'old' });
+    const token = getToken();
+    const res = await request(app)
+      .delete('/api/bulletin/1')
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     const posts = await BulletinPost.find();
     expect(posts).toHaveLength(0);
