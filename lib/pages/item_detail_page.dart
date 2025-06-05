@@ -17,11 +17,9 @@ class ItemDetailPage extends StatelessWidget {
     final messenger = ScaffoldMessenger.of(context);
     try {
       await svc.requestItem(item.id!);
-      messenger.showSnackBar(
-          const SnackBar(content: Text('Request sent!')));
+      messenger.showSnackBar(const SnackBar(content: Text('Request sent!')));
     } catch (e) {
-      messenger.showSnackBar(
-          SnackBar(content: Text('Failed: $e')));
+      messenger.showSnackBar(SnackBar(content: Text('Failed: $e')));
     }
   }
 
@@ -33,41 +31,62 @@ class ItemDetailPage extends StatelessWidget {
       user = Hive.box<User>('userBox').get('currentUser');
     }
     final isOwner = user != null && user.id == item.ownerId;
+    final favBox = Hive.box('favoritesBox');
     return Scaffold(
       appBar: AppBar(
         title: Text(item.title),
         backgroundColor: colorScheme.primaryContainer,
         foregroundColor: colorScheme.onPrimaryContainer,
         elevation: 1,
-        actions: isOwner
-            ? [
-                IconButton(
-                  key: const Key('editItem'),
-                  icon: const Icon(Icons.edit),
+        actions: [
+          if (item.id != null)
+            ValueListenableBuilder(
+              valueListenable: favBox.listenable(),
+              builder: (context, Box box, _) {
+                final ids =
+                    (box.get('ids', defaultValue: const <int>[]) as List)
+                        .cast<int>();
+                final isFav = ids.contains(item.id);
+                return IconButton(
+                  key: const Key('toggleFavoriteDetail'),
+                  icon: Icon(isFav ? Icons.star : Icons.star_border),
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => PostItemPage(
-                          item: item,
-                          service: service,
-                        ),
-                      ),
-                    );
+                    final set = ids.toSet();
+                    if (isFav) {
+                      set.remove(item.id);
+                    } else {
+                      set.add(item.id as int);
+                    }
+                    box.put('ids', set.toList());
                   },
-                ),
-                IconButton(
-                  key: const Key('deleteItem'),
-                  icon: const Icon(Icons.delete),
-                  onPressed: () async {
-                    if (item.id == null) return;
-                    final svc = service ?? ItemService();
-                    await svc.deleteItem(item.id!);
-                    if (context.mounted) Navigator.pop(context, true);
-                  },
-                ),
-              ]
-            : null,
+                );
+              },
+            ),
+          if (isOwner) ...[
+            IconButton(
+              key: const Key('editItem'),
+              icon: const Icon(Icons.edit),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => PostItemPage(item: item, service: service),
+                  ),
+                );
+              },
+            ),
+            IconButton(
+              key: const Key('deleteItem'),
+              icon: const Icon(Icons.delete),
+              onPressed: () async {
+                if (item.id == null) return;
+                final svc = service ?? ItemService();
+                await svc.deleteItem(item.id!);
+                if (context.mounted) Navigator.pop(context, true);
+              },
+            ),
+          ],
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(

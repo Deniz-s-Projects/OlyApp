@@ -5,6 +5,7 @@ import 'post_item_page.dart';
 import '../models/models.dart';
 import '../services/item_service.dart';
 import '../utils/item_filter.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class ItemExchangePage extends StatefulWidget {
   final ItemService? service;
@@ -18,11 +19,19 @@ class _ItemExchangePageState extends State<ItemExchangePage> {
   late final ItemService _service;
   final _searchCtrl = TextEditingController();
   String _selectedCategory = 'All';
+  bool _onlyFavorites = false;
 
   final _categories = ['All', 'Furniture', 'Books', 'Electronics'];
 
   List<Item> _allItems = [];
   List<Item> _filteredItems = [];
+
+  Set<int> _favoriteIds() {
+    final box = Hive.box('favoritesBox');
+    return (box.get('ids', defaultValue: const <int>[]) as List)
+        .cast<int>()
+        .toSet();
+  }
 
   @override
   void initState() {
@@ -42,7 +51,15 @@ class _ItemExchangePageState extends State<ItemExchangePage> {
   void _filter() {
     final query = _searchCtrl.text;
     setState(() {
-      _filteredItems = filterItems(_allItems, query, _selectedCategory);
+      var results = filterItems(_allItems, query, _selectedCategory);
+      if (_onlyFavorites) {
+        final favs = _favoriteIds();
+        results =
+            results
+                .where((item) => item.id != null && favs.contains(item.id))
+                .toList();
+      }
+      _filteredItems = results;
     });
   }
 
@@ -60,9 +77,8 @@ class _ItemExchangePageState extends State<ItemExchangePage> {
                 prefixIcon: const Icon(Icons.search),
                 hintText: 'Search items…',
                 filled: true,
-                fillColor: Theme.of(
-                  context,
-                ).colorScheme.surfaceContainerHighest,
+                fillColor:
+                    Theme.of(context).colorScheme.surfaceContainerHighest,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: BorderSide.none,
@@ -96,6 +112,22 @@ class _ItemExchangePageState extends State<ItemExchangePage> {
               ),
             ),
 
+            const SizedBox(height: 8),
+
+            Align(
+              alignment: Alignment.centerLeft,
+              child: FilterChip(
+                label: const Text('Favorites'),
+                selected: _onlyFavorites,
+                onSelected: (val) {
+                  setState(() {
+                    _onlyFavorites = val;
+                    _filter();
+                  });
+                },
+              ),
+            ),
+
             const SizedBox(height: 16),
 
             // Grid of items
@@ -110,17 +142,46 @@ class _ItemExchangePageState extends State<ItemExchangePage> {
                 itemCount: _filteredItems.length,
                 itemBuilder: (ctx, idx) {
                   final item = _filteredItems[idx];
-                  return InkWell(
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ItemDetailPage(item: item),
+                  final favs = _favoriteIds();
+                  final isFav = item.id != null && favs.contains(item.id);
+                  return Stack(
+                    children: [
+                      InkWell(
+                        borderRadius: BorderRadius.circular(12),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ItemDetailPage(item: item),
+                            ),
+                          );
+                        },
+                        child: ItemCard(title: item.title),
+                      ),
+                      if (item.id != null)
+                        Positioned(
+                          top: 0,
+                          right: 0,
+                          child: IconButton(
+                            key: Key('toggleFavorite_${item.id}'),
+                            icon: Icon(
+                              isFav ? Icons.star : Icons.star_border,
+                              color: Colors.amber,
+                            ),
+                            onPressed: () {
+                              final box = Hive.box('favoritesBox');
+                              final set = favs.toSet();
+                              if (isFav) {
+                                set.remove(item.id);
+                              } else {
+                                set.add(item.id as int);
+                              }
+                              box.put('ids', set.toList());
+                              _filter();
+                            },
+                          ),
                         ),
-                      );
-                    },
-                    child: ItemCard(title: item.title),
+                    ],
                   );
                 },
               ),
