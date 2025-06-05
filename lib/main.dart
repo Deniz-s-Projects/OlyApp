@@ -35,6 +35,7 @@ void main() async {
   await Hive.openBox('authBox');
   await Hive.openBox('favoritesBox');
   await Hive.openBox('settingsBox');
+  await Hive.openBox('pinsBox');
 
   // Initialize tile caching store when not running tests
   if (!Platform.environment.containsKey('FLUTTER_TEST')) {
@@ -68,7 +69,8 @@ class OlyAppState extends State<OlyApp> {
   void initState() {
     super.initState();
     final settingsBox = Hive.box('settingsBox');
-    final stored = settingsBox.get('themeMode', defaultValue: 'light') as String;
+    final stored =
+        settingsBox.get('themeMode', defaultValue: 'light') as String;
     _themeMode = ThemeMode.values.firstWhere(
       (m) => m.name == stored,
       orElse: () => ThemeMode.light,
@@ -134,17 +136,15 @@ class OlyAppState extends State<OlyApp> {
       darkTheme: ThemeData.dark(useMaterial3: true),
       themeMode: _themeMode,
 
-      routes: {
-        '/register': (_) => RegisterPage(onRegistered: _handleLogin),
-      }, 
+      routes: {'/register': (_) => RegisterPage(onRegistered: _handleLogin)},
       home:
           _loggedIn
               ? MainPage(
-                  isAdmin: _isAdmin,
-                  onLogout: _logout,
-                  notifications: _notifications,
-                )
-              : LoginPage(onLoginSuccess: () => _handleLogin()), 
+                isAdmin: _isAdmin,
+                onLogout: _logout,
+                notifications: _notifications,
+              )
+              : LoginPage(onLoginSuccess: () => _handleLogin()),
     );
   }
 }

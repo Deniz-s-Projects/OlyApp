@@ -11,7 +11,13 @@ class MapPage extends StatefulWidget {
   final bool loadTiles;
   final List<LatLng>? route;
   final LatLng? center;
-  const MapPage({super.key, this.service, this.loadTiles = true, this.route, this.center});
+  const MapPage({
+    super.key,
+    this.service,
+    this.loadTiles = true,
+    this.route,
+    this.center,
+  });
 
   @override
   State<MapPage> createState() => _MapPageState();
@@ -89,6 +95,10 @@ class _MapPageState extends State<MapPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        onPressed: _loadPins,
+        child: const Icon(Icons.refresh),
+      ),
       body: Stack(
         children: [
           FlutterMap(
