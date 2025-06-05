@@ -51,7 +51,7 @@ describe('Events API', () => {
       .post(`/api/events/${event._id}`)
       .send({ title: 'New' });
     expect(res.status).toBe(200);
-    expect(res.body.title).toBe('New');
+    expect(res.body.data.title).toBe('New');
   });
 
   test('POST /events/:id/rsvp adds attendee', async () => {

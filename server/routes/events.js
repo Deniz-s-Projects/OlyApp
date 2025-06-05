@@ -26,9 +26,11 @@ router.post('/', async (req, res) => {
 // POST /events/:id - update event
 router.post('/:id', async (req, res) => {
   try {
-    const event = await Event.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const event = await Event.findByIdAndUpdate(req.params.id, req.body, {
+      new: true
+    });
     if (!event) return res.status(404).json({ error: 'Event not found' });
-    res.json(event);
+    res.json({ data: event });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
