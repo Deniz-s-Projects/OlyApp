@@ -1,7 +1,9 @@
 const express = require('express');
 const Event = require('../models/Event');
+const auth = require('../middleware/auth');
 
 const router = express.Router();
+router.use(auth);
 
 // GET /events - list events
 router.get('/', async (req, res) => {
@@ -39,8 +41,8 @@ router.post('/:id', async (req, res) => {
 // POST /events/:id/rsvp - add attendee
 router.post('/:id/rsvp', async (req, res) => {
   try {
-    const { userId } = req.body;
-    if (typeof userId !== 'number') {
+    const userId = Number(req.userId);
+    if (!Number.isInteger(userId)) {
       return res.status(400).json({ error: 'Invalid userId' });
     }
     const event = await Event.findById(req.params.id);

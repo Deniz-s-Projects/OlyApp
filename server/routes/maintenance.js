@@ -1,6 +1,7 @@
 const express = require('express');
 const MaintenanceRequest = require('../models/MaintenanceRequest');
 const Message = require('../models/Message');
+const auth = require('../middleware/auth');
 const multer = require('multer');
 const path = require('path');
 
@@ -16,6 +17,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 const router = express.Router();
+router.use(auth);
 
 // GET /maintenance - list maintenance requests
 router.get('/', async (req, res) => {
@@ -30,7 +32,7 @@ router.get('/', async (req, res) => {
 // POST /maintenance - create maintenance request
 router.post('/', upload.single('image'), async (req, res) => {
   try {
-    const data = { ...req.body };
+    const data = { ...req.body, userId: Number(req.userId) };
     if (req.file) {
       data.imageUrl = `/uploads/${req.file.filename}`;
     }
@@ -59,6 +61,7 @@ router.post('/:id/messages', async (req, res) => {
   try {
     const messageData = {
       ...req.body,
+      senderId: Number(req.userId),
       requestId: req.params.id,
       requestType: 'MaintenanceRequest'
     };

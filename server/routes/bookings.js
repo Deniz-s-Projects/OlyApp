@@ -1,7 +1,9 @@
 const express = require('express');
 const BookingSlot = require('../models/BookingSlot');
+const auth = require('../middleware/auth');
 
 const router = express.Router();
+router.use(auth);
 
 // GET /bookings/slots - list available booking slots
 router.get('/slots', async (req, res) => {

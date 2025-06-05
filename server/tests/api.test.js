@@ -10,6 +10,10 @@ const MaintenanceRequest = require('../models/MaintenanceRequest');
 const BulletinPost = require('../models/BulletinPost');
 const BulletinComment = require('../models/BulletinComment');
 
+function getToken(id = 1) {
+  return Buffer.from(`${id}:${Date.now()}`).toString('base64');
+}
+
 let app;
 let mongo;
 
@@ -33,15 +37,20 @@ afterAll(async () => {
 describe('Events API', () => {
   test('GET /events returns list', async () => {
     await Event.create({ title: 'Party', date: new Date(0), location: 'loc1' });
-    const res = await request(app).get('/api/events');
+    const token = await getToken();
+    const res = await request(app)
+      .get('/api/events')
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body.data).toHaveLength(1);
     expect(res.body.data[0].title).toBe('Party');
   });
 
   test('POST /events creates event', async () => {
+    const token = await getToken();
     const res = await request(app)
       .post('/api/events')
+      .set('Authorization', `Bearer ${token}`)
       .send({ title: 'Meet', date: new Date(0), location: 'loc2' });
     expect(res.status).toBe(200);
     expect(res.body.data.title).toBe('Meet');
@@ -49,8 +58,10 @@ describe('Events API', () => {
 
   test('POST /events/:id updates event', async () => {
     const event = await Event.create({ title: 'Old', date: new Date(0) });
+    const token = await getToken();
     const res = await request(app)
       .post(`/api/events/${event._id}`)
+      .set('Authorization', `Bearer ${token}`)
       .send({ title: 'New' });
     expect(res.status).toBe(200);
     expect(res.body.data.title).toBe('New');
@@ -58,12 +69,13 @@ describe('Events API', () => {
 
   test('POST /events/:id/rsvp adds attendee', async () => {
     const event = await Event.create({ title: 'Party', date: new Date(0) });
+    const token = await getToken();
     const res = await request(app)
       .post(`/api/events/${event._id}/rsvp`)
-      .send({ userId: 2 });
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     const updated = await Event.findById(event._id);
-    expect(updated.attendees).toContain(2);
+    expect(updated.attendees).toContain(1);
   });
 
   test('GET /events/:id/attendees returns attendees', async () => {
@@ -72,7 +84,10 @@ describe('Events API', () => {
       date: new Date(0),
       attendees: [1, 2]
     });
-    const res = await request(app).get(`/api/events/${event._id}/attendees`);
+    const token = await getToken();
+    const res = await request(app)
+      .get(`/api/events/${event._id}/attendees`)
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body.data).toEqual([1, 2]);
   });
@@ -81,16 +96,21 @@ describe('Events API', () => {
 describe('Items API', () => {
   test('GET /items returns list', async () => {
     await Item.create({ ownerId: 1, title: 'Chair' });
-    const res = await request(app).get('/api/items');
+    const token = await getToken();
+    const res = await request(app)
+      .get('/api/items')
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body.data).toHaveLength(1);
     expect(res.body.data[0].title).toBe('Chair');
   });
 
   test('POST /items creates item', async () => {
+    const token = await getToken();
     const res = await request(app)
       .post('/api/items')
-      .send({ ownerId: 1, title: 'Table' });
+      .set('Authorization', `Bearer ${token}`)
+      .send({ title: 'Table' });
     expect(res.status).toBe(201);
     expect(res.body.data.title).toBe('Table');
   });
@@ -103,7 +123,10 @@ describe('Items API', () => {
       senderId: 2,
       content: 'Hi'
     });
-    const res = await request(app).get(`/api/items/${item._id}/messages`);
+    const token = await getToken();
+    const res = await request(app)
+      .get(`/api/items/${item._id}/messages`)
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body).toHaveLength(1);
     expect(res.body[0].content).toBe('Hi');
@@ -111,9 +134,11 @@ describe('Items API', () => {
 
   test('POST /items/:id/messages creates message', async () => {
     const item = await Item.create({ ownerId: 1, title: 'Chair' });
+    const token = await getToken();
     const res = await request(app)
       .post(`/api/items/${item._id}/messages`)
-      .send({ senderId: 1, content: 'Hello' });
+      .set('Authorization', `Bearer ${token}`)
+      .send({ content: 'Hello' });
     expect(res.status).toBe(201);
     expect(res.body.content).toBe('Hello');
   });
@@ -126,16 +151,21 @@ describe('Maintenance API', () => {
       subject: 'Leak',
       description: 'Water'
     });
-    const res = await request(app).get('/api/maintenance');
+    const token = await getToken();
+    const res = await request(app)
+      .get('/api/maintenance')
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body.data).toHaveLength(1);
     expect(res.body.data[0].subject).toBe('Leak');
   });
 
   test('POST /maintenance creates request', async () => {
+    const token = await getToken();
     const res = await request(app)
       .post('/api/maintenance')
-      .send({ userId: 1, subject: 'Leak', description: 'Water' });
+      .set('Authorization', `Bearer ${token}`)
+      .send({ subject: 'Leak', description: 'Water' });
     expect(res.status).toBe(201);
     expect(res.body.data.subject).toBe('Leak');
   });
@@ -152,7 +182,10 @@ describe('Maintenance API', () => {
       senderId: 2,
       content: 'Hi'
     });
-    const res = await request(app).get(`/api/maintenance/${req._id}/messages`);
+    const token = await getToken();
+    const res = await request(app)
+      .get(`/api/maintenance/${req._id}/messages`)
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body.data).toHaveLength(1);
     expect(res.body.data[0].content).toBe('Hi');
@@ -164,9 +197,11 @@ describe('Maintenance API', () => {
       subject: 'Leak',
       description: 'Water'
     });
+    const token = await getToken();
     const res = await request(app)
       .post(`/api/maintenance/${req._id}/messages`)
-      .send({ senderId: 1, content: 'Hello' });
+      .set('Authorization', `Bearer ${token}`)
+      .send({ content: 'Hello' });
     expect(res.status).toBe(201);
     expect(res.body.data.content).toBe('Hello');
   });
@@ -177,8 +212,10 @@ describe('Maintenance API', () => {
       subject: 'Leak',
       description: 'Water'
     });
+    const token = await getToken();
     const res = await request(app)
       .post(`/api/maintenance/${req._id}`)
+      .set('Authorization', `Bearer ${token}`)
       .send({ status: 'closed' });
     expect(res.status).toBe(200);
     expect(res.body.status).toBe('closed');
