@@ -92,7 +92,9 @@ class _LoginPageState extends State<LoginPage> {
         context,
       ).showSnackBar(SnackBar(content: Text('Login failed: $e')));
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -227,24 +229,23 @@ class _LoginPageState extends State<LoginPage> {
                                 setState(() => _isLoading = true);
                                 try {
                                   final user = await _handleGoogleSignIn();
+                                  if (!context.mounted) return;
                                   if (user != null) {
                                     final userBox = Hive.box<User>('userBox');
                                     await userBox.put('currentUser', user);
                                     widget.onLoginSuccess();
                                   }
                                 } catch (e) {
-                                  if (mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          'Google sign-in failed: $e',
-                                        ),
-                                      ),
-                                    );
-                                  }
+                                  if (!context.mounted) return;
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Google sign-in failed: $e'),
+                                    ),
+                                  );
                                 } finally {
-                                  if (mounted)
+                                  if (mounted) {
                                     setState(() => _isLoading = false);
+                                  }
                                 }
                               },
                       icon: const Icon(Icons.login),
@@ -263,24 +264,25 @@ class _LoginPageState extends State<LoginPage> {
                                 setState(() => _isLoading = true);
                                 try {
                                   final user = await _handleAppleSignIn();
+                                  if (!context.mounted) return;
                                   if (user != null) {
                                     final userBox = Hive.box<User>('userBox');
                                     await userBox.put('currentUser', user);
                                     widget.onLoginSuccess();
                                   }
                                 } catch (e) {
-                                  if (mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
+                                  if (!context.mounted) return;
+                                  ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text(
                                           'Apple sign-in failed: $e',
                                         ),
                                       ),
                                     );
-                                  }
-                                } finally {
-                                  if (mounted)
+                                  } finally {
+                                  if (mounted) {
                                     setState(() => _isLoading = false);
+                                  }
                                 }
                               },
                       icon: const Icon(Icons.apple),

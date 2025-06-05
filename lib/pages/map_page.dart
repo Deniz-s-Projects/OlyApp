@@ -90,14 +90,12 @@ class _MapPageState extends State<MapPage> {
         return Colors.orange;
       case MapPinCategory.food:
         return Colors.brown;
-      default:
-        return Colors.purple;
     }
   }
 
   TileProvider _safeProvider() {
     try {
-      return FMTCStore('mapTiles').getTileProvider();
+      return FMTCTileProvider(stores: {'mapTiles': BrowseStoreStrategy.readUpdateCreate});
     } catch (_) {
       return NetworkTileProvider();
     }
