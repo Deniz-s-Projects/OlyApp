@@ -66,6 +66,29 @@ flutter test
 All tests live in the `test/` directory and are executed automatically in CI.
 ---
 
+## 🖥️ Backend Server
+
+The optional Node.js backend lives in the `server/` directory.
+
+1. Install dependencies:
+   ```bash
+   cd server
+   npm install
+   ```
+
+2. Create a `.env` file to configure your MongoDB connection (optional):
+   ```env
+   MONGODB_URI=mongodb://localhost:27017/olyapp
+   PORT=3000
+   ```
+   If no `MONGODB_URI` is provided, an in-memory database is used.
+
+3. Start the server:
+   ```bash
+   npm start
+   ```
+
+
 ## 📲 Coming Soon
 
 - Admin-only management of events and reports
