@@ -155,9 +155,11 @@ class _MainPageState extends State<MainPage> {
         };
       case 2:
         return () async {
-          await showAddEventDialog(context, (title, date) async {
+          await showAddEventDialog(context, (title, date, location) async {
             final service = EventService();
-            await service.createEvent(CalendarEvent(title: title, date: date));
+            await service.createEvent(
+              CalendarEvent(title: title, date: date, location: location),
+            );
           });
         };
       case 3:

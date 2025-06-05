@@ -23,7 +23,8 @@ void main() {
                 'id': 1,
                 'title': 'Party',
                 'date': '1970-01-01T00:00:00.000Z',
-                'description': 'fun'
+                'description': 'fun',
+                'location': 'loc1'
               }
             ]
           }),
@@ -35,12 +36,14 @@ void main() {
       final events = await service.fetchEvents();
       expect(events, hasLength(1));
       expect(events.first.title, 'Party');
+      expect(events.first.location, 'loc1');
     });
 
     test('createEvent sends POST and parses event', () async {
       final input = CalendarEvent(
         title: 'Meet',
         date: DateTime.fromMillisecondsSinceEpoch(0),
+        location: 'loc2',
       );
       final mockClient = MockClient((request) async {
         expect(request.method, equals('POST'));
@@ -48,6 +51,7 @@ void main() {
         expect(request.url.path, '/api/events');
         final body = jsonDecode(request.body) as Map<String, dynamic>;
         expect(body['title'], input.title);
+        expect(body['location'], input.location);
         return http.Response(
           jsonEncode({
             'data': {
@@ -63,22 +67,30 @@ void main() {
       final event = await service.createEvent(input);
       expect(event.id, 2);
       expect(event.title, 'Meet');
+      expect(event.location, input.location);
     });
 
     test('updateEvent posts to event id', () async {
-      final input = CalendarEvent(id: 1, title: 'Edit', date: DateTime.fromMillisecondsSinceEpoch(0));
+      final input = CalendarEvent(
+        id: 1,
+        title: 'Edit',
+        date: DateTime.fromMillisecondsSinceEpoch(0),
+        location: 'loc3',
+      );
       final mockClient = MockClient((request) async {
         expect(request.method, equals('POST'));
         expect(request.url.origin, Uri.parse(apiUrl).origin);
         expect(request.url.path, '/api/events/1');
         final body = jsonDecode(request.body) as Map<String, dynamic>;
         expect(body['title'], input.title);
+        expect(body['location'], input.location);
         return http.Response(jsonEncode(input.toJson()), 200);
       });
 
       final service = EventService(client: mockClient);
       final event = await service.updateEvent(input);
       expect(event.title, 'Edit');
+      expect(event.location, input.location);
     });
 
     test('rsvpEvent posts to rsvp endpoint', () async {
