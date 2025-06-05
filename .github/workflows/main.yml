@@ -1,4 +1,4 @@
-name: CI
+name: Flutter CI
 
 on:
   pull_request:
@@ -24,7 +24,7 @@ jobs:
           architecture: x64
 
       # ─────────── Cache Flutter (pub) dependencies ───────────
-      - name: Cache Flutter dependencies
+      - name: Cache Flutter pub‐cache
         uses: actions/cache@v3
         with:
           path: ~/.pub-cache
@@ -35,7 +35,14 @@ jobs:
       - name: Install Flutter dependencies
         run: flutter pub get
 
-      # ─────────── Set up Node.js ───────────
+      # ─────────── Run Flutter tests ───────────
+      - name: Run Flutter tests
+        run: flutter test
+
+      # ─────────── Analyze Flutter project ───────────
+      - name: Analyze Flutter project
+        run: flutter analyze
+ 
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
@@ -45,20 +52,16 @@ jobs:
       - name: Cache npm dependencies
         uses: actions/cache@v3
         with:
-          # Since there is no package-lock.json, we key off package.json instead
           path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package.json') }}
+          # Make sure this path matches where your package.json lives:
+          key: ${{ runner.os }}-node-${{ hashFiles('server/package.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
 
       - name: Install npm dependencies
+        working-directory: server
         run: npm install
 
-      - name: Run Flutter tests
-        run: flutter test
-
       - name: Run npm tests
+        working-directory: server
         run: npm test
-
-      - name: Analyze Flutter project
-        run: flutter analyze
