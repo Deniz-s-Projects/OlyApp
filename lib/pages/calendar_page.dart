@@ -187,7 +187,7 @@ class _CalendarPageState extends State<CalendarPage> {
                     ),
                   );
                 },
-                child: const Text('Open Map'),
+                child: const Text('View on Map'),
               ),
           ],
         ),

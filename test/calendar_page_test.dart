@@ -144,7 +144,7 @@ void main() {
     expect(find.text('1'), findsWidgets);
     expect(find.textContaining('Location:'), findsOneWidget);
 
-    await tester.tap(find.text('Open Map'));
+    await tester.tap(find.text('View on Map'));
     await tester.pumpAndSettle();
     expect(find.byType(MapPage), findsOneWidget);
 
