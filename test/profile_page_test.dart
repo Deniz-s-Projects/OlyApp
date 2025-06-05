@@ -15,6 +15,7 @@ void main() {
     Hive.init(dir.path);
     Hive.registerAdapter(UserAdapter());
     await Hive.openBox<User>('userBox');
+    await Hive.openBox('settingsBox');
   });
 
   tearDown(() async {

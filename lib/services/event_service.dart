@@ -52,4 +52,8 @@ class EventService extends ApiService {
       return list.map((e) => e as int).toList();
     });
   }
+
+  Future<void> deleteEvent(int id) async {
+    await delete('/events/$id', (_) => null);
+  }
 }
