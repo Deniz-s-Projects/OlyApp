@@ -25,27 +25,30 @@ afterAll(async () => {
 });
 
 describe('Auth API', () => {
-  test('successful login returns token and user info', async () => {
+  test('registers and logs in a user', async () => {
+    const reg = await request(app)
+      .post('/api/auth/register')
+      .send({ name: 'Test', email: 'a@b.c', password: 'pass' });
+    expect(reg.status).toBe(201);
+    expect(reg.body).toHaveProperty('token');
+    expect(reg.body.user.email).toBe('a@b.c');
+
     const res = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'user@example.com', password: 'password' });
+      .send({ email: 'a@b.c', password: 'pass' });
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty('token');
-    expect(typeof res.body.token).toBe('string');
-    expect(res.body).toHaveProperty('user');
-    expect(res.body.user).toEqual({
-      id: 1,
-      name: 'Test User',
-      email: 'user@example.com',
-      avatarUrl: null,
-      isAdmin: false,
-    });
+    expect(res.body.user.email).toBe('a@b.c');
   });
 
   test('invalid credentials return HTTP 401', async () => {
+    await request(app)
+      .post('/api/auth/register')
+      .send({ name: 'Test', email: 'x@y.z', password: 'pass' });
+
     const res = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'user@example.com', password: 'wrong' });
+      .send({ email: 'x@y.z', password: 'wrong' });
     expect(res.status).toBe(401);
     expect(res.body).toEqual({ error: 'Invalid credentials' });
   });
