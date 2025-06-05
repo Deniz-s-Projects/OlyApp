@@ -18,6 +18,7 @@ class User {
   @HiveField(2)
   final String email;
   @HiveField(3)
+  // Path or URL to the user's avatar image
   final String? avatarUrl;
   @HiveField(4)
   final bool isAdmin;
