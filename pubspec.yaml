@@ -45,12 +45,14 @@ dependencies:
   http: any
   google_sign_in: ^6.3.0
   sign_in_with_apple: ^7.0.1
+  image_picker: ^1.1.2
 dev_dependencies:
   test: any
   flutter_test:
     sdk: flutter
   google_sign_in_mocks: ^0.3.0
   network_image_mock: ^2.1.1
+  image_picker_platform_interface: ^2.10.1
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
