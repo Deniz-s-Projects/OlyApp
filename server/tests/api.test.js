@@ -73,6 +73,19 @@ describe('Events API', () => {
     expect(res.body.data.title).toBe('New');
   });
 
+  test('DELETE /events/:id removes event', async () => {
+    const event = await Event.create({ title: 'Temp', date: new Date(0) });
+    const admin = await User.create({ name: 'a', email: 'a@b.c', passwordHash: 'x', isAdmin: true });
+    const token = jwt.sign({ userId: admin._id }, SECRET);
+
+    const res = await request(app)
+      .delete(`/api/events/${event._id}`)
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    const remaining = await Event.findById(event._id);
+    expect(remaining).toBeNull();
+  });
+
   test('POST /events/:id/rsvp adds attendee', async () => {
     const event = await Event.create({ title: 'Party', date: new Date(0) });
     const token = await getToken();

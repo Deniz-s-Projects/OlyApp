@@ -82,6 +82,31 @@ void main() {
       await service.cancelBooking('1');
     });
 
+    test('createSlot posts to admin endpoint', () async {
+      final time = DateTime.parse('2024-01-05T10:00:00.000Z');
+      final mockClient = MockClient((request) async {
+        expect(request.method, equals('POST'));
+        expect(request.url.path, '/api/bookings/slots');
+        final body = jsonDecode(request.body) as Map<String, dynamic>;
+        expect(body['time'], time.toIso8601String());
+        return http.Response('{}', 201);
+      });
+
+      final service = BookingService(client: mockClient);
+      await service.createSlot(time);
+    });
+
+    test('deleteSlot sends DELETE', () async {
+      final mockClient = MockClient((request) async {
+        expect(request.method, equals('DELETE'));
+        expect(request.url.path, '/api/bookings/slots/123');
+        return http.Response('{}', 200);
+      });
+
+      final service = BookingService(client: mockClient);
+      await service.deleteSlot('123');
+    });
+
     test('throws on error status', () async {
       final mockClient =
           MockClient((_) async => http.Response('error', 500));

@@ -58,6 +58,11 @@ class _EventAdminPageState extends State<EventAdminPage> {
     }
   }
 
+  Future<void> _deleteEvent(int id) async {
+    await _service.deleteEvent(id);
+    _load();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -77,7 +82,23 @@ class _EventAdminPageState extends State<EventAdminPage> {
         itemCount: _events.length,
         itemBuilder: (ctx, i) {
           final e = _events[i];
-          return ListTile(title: Text(e.title), onTap: () => _editEvent(e));
+          return ListTile(
+            title: Text(e.title),
+            onTap: () => _editEvent(e),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.edit),
+                  onPressed: () => _editEvent(e),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete),
+                  onPressed: () => _deleteEvent(e.id!),
+                ),
+              ],
+            ),
+          );
         },
       ),
     );

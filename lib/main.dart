@@ -51,14 +51,14 @@ void main() async {
 class OlyApp extends StatefulWidget {
   const OlyApp({super.key});
 
-  static _OlyAppState? of(BuildContext context) =>
-      context.findAncestorStateOfType<_OlyAppState>();
+  static OlyAppState? of(BuildContext context) =>
+      context.findAncestorStateOfType<OlyAppState>();
 
   @override
-  State<OlyApp> createState() => _OlyAppState();
+  State<OlyApp> createState() => OlyAppState();
 }
 
-class _OlyAppState extends State<OlyApp> {
+class OlyAppState extends State<OlyApp> {
   bool _loggedIn = false;
   bool _isAdmin = false;
   ThemeMode _themeMode = ThemeMode.light;
