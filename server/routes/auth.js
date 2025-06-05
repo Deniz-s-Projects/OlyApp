@@ -1,20 +1,66 @@
 const express = require('express');
+const bcrypt = require('bcryptjs');
+const User = require('../models/User');
+
 const router = express.Router();
 
-// Simple in-memory user store
-const users = [
-  { id: 1, name: 'Test User', email: 'user@example.com', password: 'password', avatarUrl: null, isAdmin: false },
-  { id: 2, name: 'Admin User', email: 'admin@example.com', password: 'admin', avatarUrl: null, isAdmin: true }
-];
+// POST /auth/register - create user
+router.post('/register', async (req, res) => {
+  try {
+    const { name, email, password, avatarUrl, isAdmin } = req.body;
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+    const existing = await User.findOne({ email });
+    if (existing) {
+      return res.status(400).json({ error: 'Email already registered' });
+    }
+    const passwordHash = await bcrypt.hash(password, 10);
+    const user = await User.create({
+      name,
+      email,
+      passwordHash,
+      avatarUrl,
+      isAdmin: !!isAdmin,
+    });
+    const token = Buffer.from(`${user._id}:${Date.now()}`).toString('base64');
+    res.status(201).json({
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        avatarUrl: user.avatarUrl,
+        isAdmin: user.isAdmin,
+      },
+    });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
 
-router.post('/login', (req, res) => {
-  const { email, password } = req.body;
-  const user = users.find(u => u.email === email && u.password === password);
-  if (!user) return res.status(401).json({ error: 'Invalid credentials' });
-  // Generate simple token (for demo purposes only)
-  const token = Buffer.from(`${user.id}:${Date.now()}`).toString('base64');
-  const { id, name, avatarUrl, isAdmin } = user;
-  res.json({ token, user: { id, name, email, avatarUrl, isAdmin } });
+// POST /auth/login - verify user
+router.post('/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) return res.status(401).json({ error: 'Invalid credentials' });
+    const match = await bcrypt.compare(password, user.passwordHash);
+    if (!match) return res.status(401).json({ error: 'Invalid credentials' });
+    const token = Buffer.from(`${user._id}:${Date.now()}`).toString('base64');
+    res.json({
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        avatarUrl: user.avatarUrl,
+        isAdmin: user.isAdmin,
+      },
+    });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 });
 
 module.exports = router;

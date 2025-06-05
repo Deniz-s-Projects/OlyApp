@@ -81,7 +81,13 @@ class _LoginPageState extends State<LoginPage> {
 
       // Store user info
       final userMap = response['user'] as Map<String, dynamic>;
-      final user = User.fromMap(userMap);
+      final user = User(
+        id: userMap['id'] is int ? userMap['id'] as int : null,
+        name: userMap['name'] as String,
+        email: userMap['email'] as String,
+        avatarUrl: userMap['avatarUrl'] as String?,
+        isAdmin: (userMap['isAdmin'] ?? false) as bool,
+      );
       final userBox = Hive.box<User>('userBox');
       await userBox.put('currentUser', user);
 
