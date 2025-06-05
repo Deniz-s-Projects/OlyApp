@@ -1,37 +1,40 @@
 import '../models/models.dart';
+import 'api_service.dart';
 
-class BulletinService {
-  final List<BulletinPost> _posts = [];
-  final Map<int, List<BulletinComment>> _comments = {};
+class BulletinService extends ApiService {
+  BulletinService({super.client});
 
   Future<List<BulletinPost>> fetchPosts() async {
-    return List.unmodifiable(_posts);
+    return get('/bulletin', (json) {
+      final list = json['data'] as List<dynamic>;
+      return list
+          .map((e) => BulletinPost.fromJson(e as Map<String, dynamic>))
+          .toList();
+    });
   }
 
-  Future<BulletinPost> addPost(BulletinPost post) async {
-    final newPost = BulletinPost(
-      id: _posts.length + 1,
-      content: post.content,
-      date: post.date,
+  Future<BulletinPost> addPost(BulletinPost bulletin) async {
+    return post(
+      '/bulletin',
+      bulletin.toJson(),
+      (json) => BulletinPost.fromJson(json['data'] as Map<String, dynamic>),
     );
-    _posts.add(newPost);
-    _comments[newPost.id!] = [];
-    return newPost;
   }
 
   Future<List<BulletinComment>> fetchComments(int postId) async {
-    return List.unmodifiable(_comments[postId] ?? const []);
+    return get('/bulletin/$postId/comments', (json) {
+      final list = json['data'] as List<dynamic>;
+      return list
+          .map((e) => BulletinComment.fromJson(e as Map<String, dynamic>))
+          .toList();
+    });
   }
 
   Future<BulletinComment> addComment(BulletinComment comment) async {
-    final list = _comments.putIfAbsent(comment.postId, () => []);
-    final newComment = BulletinComment(
-      id: list.length + 1,
-      postId: comment.postId,
-      content: comment.content,
-      date: comment.date,
+    return post(
+      '/bulletin/${comment.postId}/comments',
+      comment.toJson(),
+      (json) => BulletinComment.fromJson(json['data'] as Map<String, dynamic>),
     );
-    list.add(newComment);
-    return newComment;
   }
 }
