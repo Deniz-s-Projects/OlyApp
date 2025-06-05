@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 
 import '../models/models.dart';
 import 'api_service.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 /// Service for item-related API calls.
 class ItemService extends ApiService {
@@ -12,10 +13,26 @@ class ItemService extends ApiService {
 
   /// Fetches all marketplace items.
   Future<List<Item>> fetchItems() async {
-    return get('/items', (json) {
-      final list = json['data'] as List<dynamic>;
-      return list.map((e) => Item.fromJson(e as Map<String, dynamic>)).toList();
-    });
+    final box = Hive.isBoxOpen('itemsBox') ? Hive.box('itemsBox') : null;
+    try {
+      final items = await get('/items', (json) {
+        final list = json['data'] as List<dynamic>;
+        return list
+            .map((e) => Item.fromJson(e as Map<String, dynamic>))
+            .toList();
+      });
+      await box?.put('items', items.map((e) => e.toJson()).toList());
+      return items;
+    } catch (e) {
+      final cached = box?.get('items', defaultValue: const <dynamic>[])
+          as List?;
+      if (cached == null || cached.isEmpty) {
+        rethrow;
+      }
+      return cached
+          .map((e) => Item.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+    }
   }
 
   /// Creates a new item listing.

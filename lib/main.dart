@@ -24,6 +24,7 @@ void main() async {
   await Hive.openBox('maintenanceBox');
   await Hive.openBox('messagesBox');
   await Hive.openBox('calendarBox');
+  await Hive.openBox('eventsBox');
   await Hive.openBox('itemsBox');
   await Hive.openBox('userBox');
   await Hive.openBox('authBox');

@@ -252,6 +252,13 @@ class _CalendarPageState extends State<CalendarPage> {
             ),
           ),
           const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerRight,
+            child: IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: _loadEvents,
+            ),
+          ),
           Expanded(
             child: ValueListenableBuilder<List<CalendarEvent>>(
               valueListenable: _selectedEvents,
