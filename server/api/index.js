@@ -8,6 +8,7 @@ const bookingsRouter = require('../routes/bookings');
 const bulletinRouter = require('../routes/bulletin');
 const pinsRouter = require('../routes/pins');
 const notificationsRouter = require('../routes/notifications');
+const usersRouter = require('../routes/users');
 
 router.get('/', (req, res) => {
   res.json({ message: 'API is running' });
@@ -21,4 +22,5 @@ router.use('/bookings', bookingsRouter);
 router.use('/bulletin', bulletinRouter);
 router.use('/pins', pinsRouter);
 router.use('/notifications', notificationsRouter);
+router.use('/users', usersRouter);
 module.exports = router;

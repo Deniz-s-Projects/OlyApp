@@ -5,6 +5,16 @@ import 'package:network_image_mock/network_image_mock.dart';
 import 'package:hive/hive.dart';
 import 'package:oly_app/models/models.dart';
 import 'package:oly_app/pages/profile_page.dart';
+import 'package:oly_app/services/user_service.dart';
+
+class FakeUserService extends UserService {
+  User? updated;
+  @override
+  Future<User> updateProfile(User user) async {
+    updated = user;
+    return user;
+  }
+}
 
 void main() {
   late Directory dir;
@@ -31,8 +41,10 @@ void main() {
         final box = Hive.box<User>('userBox');
         await box.put('currentUser', User(name: 'Old', email: 'old@test.com'));
 
+        final service = FakeUserService();
+
         // 2) Pump ProfilePage:
-        await tester.pumpWidget(const MaterialApp(home: ProfilePage()));
+        await tester.pumpWidget(MaterialApp(home: ProfilePage(service: service)));
         // Give 300ms for any images/animations to complete (instead of pumpAndSettle):
         await tester.pump(const Duration(milliseconds: 300));
  
@@ -61,13 +73,16 @@ void main() {
         // Wait 300ms for any save‐animation or Hive write to complete:
         await tester.pump(const Duration(milliseconds: 300));
 
-        // 7) Verify that Hive actually wrote the updated user:
+        // 7) Verify that service was called and Hive wrote the updated user:
+        expect(service.updated!.name, 'New Name');
+        expect(service.updated!.email, 'new@example.com');
+        
         final saved = Hive.box<User>('userBox').get('currentUser')!;
         expect(saved.name, 'New Name');
         expect(saved.email, 'new@example.com');
 
         // 8) Re‐pump the ProfilePage and give it time to rebuild:
-        await tester.pumpWidget(const MaterialApp(home: ProfilePage()));
+        await tester.pumpWidget(MaterialApp(home: ProfilePage(service: service)));
         await tester.pump(const Duration(milliseconds: 300));
 
         // 9) Finally, confirm that the text fields now show “New Name” / “new@example.com”:

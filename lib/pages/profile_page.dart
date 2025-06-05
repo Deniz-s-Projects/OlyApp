@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../models/models.dart';
 import '../main.dart';
+import '../services/user_service.dart';
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key});
+  final UserService? service;
+  const ProfilePage({super.key, this.service});
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -14,6 +16,7 @@ class _ProfilePageState extends State<ProfilePage> {
   late final Box<User> _userBox;
   late User _user;
   bool _darkMode = false;
+  late final UserService _service;
 
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameCtrl;
@@ -23,6 +26,7 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
+    _service = widget.service ?? UserService();
     _userBox = Hive.box<User>('userBox');
     _user = _userBox.get('currentUser')!;
     _nameCtrl = TextEditingController(text: _user.name);
@@ -52,12 +56,19 @@ class _ProfilePageState extends State<ProfilePage> {
           : _avatarCtrl.text.trim(),
       isAdmin: _user.isAdmin,
     );
-    await _userBox.put('currentUser', updated);
-    if (mounted) {
-      setState(() => _user = updated);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Profile updated')));
+    try {
+      final user = await _service.updateProfile(updated);
+      await _userBox.put('currentUser', user);
+      if (mounted) {
+        setState(() => _user = user);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Profile updated')));
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Failed: $e')));
     }
   }
 
