@@ -6,8 +6,10 @@ import 'package:http/testing.dart';
 import 'package:oly_app/services/maintenance_service.dart';
 import 'package:oly_app/models/models.dart';
 
-const apiUrl =
-    String.fromEnvironment('API_URL', defaultValue: 'http://localhost:3000');
+const apiUrl = String.fromEnvironment(
+  'API_URL',
+  defaultValue: 'http://localhost:3000',
+);
 
 void main() {
   group('MaintenanceService', () {
@@ -25,9 +27,9 @@ void main() {
                 'subject': 'Leak',
                 'description': 'Water',
                 'createdAt': '1970-01-01T00:00:00.000Z',
-                'status': 'open'
-              }
-            ]
+                'status': 'open',
+              },
+            ],
           }),
           200,
         );
@@ -40,19 +42,22 @@ void main() {
     });
 
     test('createRequest uses POST', () async {
-      final input = MaintenanceRequest(userId: 1, subject: 'Leak', description: 'Water');
+      final input = MaintenanceRequest(
+        userId: 1,
+        subject: 'Leak',
+        description: 'Water',
+        imageUrl: 'path.png',
+      );
       final mockClient = MockClient((request) async {
         expect(request.method, equals('POST'));
         expect(request.url.origin, Uri.parse(apiUrl).origin);
         expect(request.url.path, '/api/maintenance');
         final body = jsonDecode(request.body) as Map<String, dynamic>;
         expect(body['subject'], input.subject);
+        expect(body['imageUrl'], 'path.png');
         return http.Response(
           jsonEncode({
-            'data': {
-              'id': 2,
-              ...input.toJson(),
-            }
+            'data': {'id': 2, ...input.toJson()},
           }),
           201,
         );
@@ -76,9 +81,9 @@ void main() {
                 'requestId': 1,
                 'senderId': 2,
                 'content': 'Hi',
-                'timestamp': '1970-01-01T00:00:00.000Z'
-              }
-            ]
+                'timestamp': '1970-01-01T00:00:00.000Z',
+              },
+            ],
           }),
           200,
         );
@@ -100,10 +105,7 @@ void main() {
         expect(body['content'], input.content);
         return http.Response(
           jsonEncode({
-            'data': {
-              'id': 3,
-              ...input.toJson(),
-            }
+            'data': {'id': 3, ...input.toJson()},
           }),
           201,
         );
@@ -121,7 +123,17 @@ void main() {
         expect(request.url.path, '/api/maintenance/1');
         final body = jsonDecode(request.body) as Map<String, dynamic>;
         expect(body['status'], 'closed');
-        return http.Response(jsonEncode({'id': 1, 'userId': 1, 'subject': 'a', 'description': 'b', 'createdAt': 0, 'status': 'closed'}), 200);
+        return http.Response(
+          jsonEncode({
+            'id': 1,
+            'userId': 1,
+            'subject': 'a',
+            'description': 'b',
+            'createdAt': 0,
+            'status': 'closed',
+          }),
+          200,
+        );
       });
 
       final service = MaintenanceService(client: mockClient);

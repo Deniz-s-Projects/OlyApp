@@ -69,13 +69,14 @@ class MaintenanceRequestAdapter extends TypeAdapter<MaintenanceRequest> {
       description: fields[3] as String,
       createdAt: fields[4] as DateTime?,
       status: fields[5] as String,
+      imageUrl: fields[6] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, MaintenanceRequest obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(7)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -87,7 +88,9 @@ class MaintenanceRequestAdapter extends TypeAdapter<MaintenanceRequest> {
       ..writeByte(4)
       ..write(obj.createdAt)
       ..writeByte(5)
-      ..write(obj.status);
+      ..write(obj.status)
+      ..writeByte(6)
+      ..write(obj.imageUrl);
   }
 
   @override
@@ -162,7 +165,7 @@ class CalendarEventAdapter extends TypeAdapter<CalendarEvent> {
       title: fields[1] as String,
       date: fields[2] as DateTime,
       description: fields[3] as String?,
-      attendees: (fields[4] as List?)?.cast<int>() ?? const [],
+      attendees: (fields[4] as List).cast<int>(),
     );
   }
 
@@ -276,12 +279,16 @@ class ItemCategoryAdapter extends TypeAdapter<ItemCategory> {
     switch (obj) {
       case ItemCategory.furniture:
         writer.writeByte(0);
+        break;
       case ItemCategory.books:
         writer.writeByte(1);
+        break;
       case ItemCategory.electronics:
         writer.writeByte(2);
+        break;
       case ItemCategory.other:
         writer.writeByte(3);
+        break;
     }
   }
 

@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import '../models/models.dart';
+import 'package:image_picker/image_picker.dart';
 import '../services/maintenance_service.dart';
 import 'maintenance_chat_page.dart';
 
@@ -16,6 +19,7 @@ class _MaintenancePageState extends State<MaintenancePage> {
   int _selectedTab = 0;
   final _subjectController = TextEditingController();
   final _descriptionController = TextEditingController();
+  XFile? _imageFile;
 
   List<MaintenanceRequest> _tickets = [];
 
@@ -33,9 +37,17 @@ class _MaintenancePageState extends State<MaintenancePage> {
       setState(() => _tickets = tickets);
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to load tickets')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Failed to load tickets')));
+    }
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    final picker = ImagePicker();
+    final file = await picker.pickImage(source: source);
+    if (file != null) {
+      setState(() => _imageFile = file);
     }
   }
 
@@ -70,7 +82,8 @@ class _MaintenancePageState extends State<MaintenancePage> {
             ),
           ),
           Expanded(
-            child: _selectedTab == 0 ? _buildForm(context) : _buildConversations(),
+            child:
+                _selectedTab == 0 ? _buildForm(context) : _buildConversations(),
           ),
         ],
       ),
@@ -92,25 +105,47 @@ class _MaintenancePageState extends State<MaintenancePage> {
             maxLines: 5,
             decoration: const InputDecoration(labelText: 'Description'),
           ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              ElevatedButton.icon(
+                onPressed: () => _pickImage(ImageSource.gallery),
+                icon: const Icon(Icons.photo_library),
+                label: const Text('Gallery'),
+              ),
+              const SizedBox(width: 12),
+              ElevatedButton.icon(
+                onPressed: () => _pickImage(ImageSource.camera),
+                icon: const Icon(Icons.camera_alt),
+                label: const Text('Camera'),
+              ),
+            ],
+          ),
+          if (_imageFile != null) ...[
+            const SizedBox(height: 12),
+            Image.file(File(_imageFile!.path), height: 150),
+          ],
           const SizedBox(height: 20),
           ElevatedButton(
             onPressed: () async {
               final subject = _subjectController.text.trim();
               final desc = _descriptionController.text.trim();
               if (subject.isEmpty || desc.isEmpty) return;
-                await _service.createRequest(
-                  MaintenanceRequest(
-                    userId: 1,
-                    subject: subject,
-                    description: desc,
-                  ),
-                );
-                if (!context.mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Request submitted!')),
-                );
+              await _service.createRequest(
+                MaintenanceRequest(
+                  userId: 1,
+                  subject: subject,
+                  description: desc,
+                  imageUrl: _imageFile?.path,
+                ),
+              );
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Request submitted!')),
+              );
               _subjectController.clear();
               _descriptionController.clear();
+              setState(() => _imageFile = null);
               _loadTickets();
             },
             child: const Text('Send Request'),
@@ -166,18 +201,20 @@ class _TabButton extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: selected
-                ? colorScheme.primaryContainer
-                : colorScheme.surfaceContainerHighest,
+            color:
+                selected
+                    ? colorScheme.primaryContainer
+                    : colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Center(
             child: Text(
               label,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: selected
-                    ? colorScheme.onPrimaryContainer
-                    : colorScheme.onSurfaceVariant,
+                color:
+                    selected
+                        ? colorScheme.onPrimaryContainer
+                        : colorScheme.onSurfaceVariant,
                 fontWeight: FontWeight.w600,
               ),
             ),
