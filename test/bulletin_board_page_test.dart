@@ -7,6 +7,8 @@ import 'package:oly_app/models/models.dart';
 class FakeBulletinService extends BulletinService {
   final List<BulletinPost> posts;
   final Map<int, List<BulletinComment>> comments;
+  BulletinPost? updated;
+  int? deletedId;
   FakeBulletinService(this.posts, this.comments);
 
   @override
@@ -39,6 +41,21 @@ class FakeBulletinService extends BulletinService {
     );
     list.add(saved);
     return saved;
+  }
+
+  @override
+  Future<BulletinPost> updatePost(BulletinPost post) async {
+    updated = post;
+    final idx = posts.indexWhere((p) => p.id == post.id);
+    if (idx != -1) posts[idx] = post;
+    return post;
+  }
+
+  @override
+  Future<void> deletePost(int id) async {
+    deletedId = id;
+    posts.removeWhere((p) => p.id == id);
+    comments.remove(id);
   }
 }
 
@@ -87,5 +104,40 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Hi'), findsWidgets);
+  });
+
+  testWidgets('Edit icon updates post', (tester) async {
+    final service = FakeBulletinService(
+      [BulletinPost(id: 1, content: 'Old', date: DateTime.now())],
+      {1: []},
+    );
+    await tester.pumpWidget(
+      MaterialApp(home: BulletinBoardPage(service: service)),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('editPost_1')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).last, 'New');
+    await tester.tap(find.text('Save'));
+    await tester.pump();
+
+    expect(service.updated?.content, 'New');
+  });
+
+  testWidgets('Delete icon removes post', (tester) async {
+    final service = FakeBulletinService(
+      [BulletinPost(id: 1, content: 'Bye', date: DateTime.now())],
+      {1: []},
+    );
+    await tester.pumpWidget(
+      MaterialApp(home: BulletinBoardPage(service: service)),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('deletePost_1')));
+    await tester.pump();
+
+    expect(service.deletedId, 1);
   });
 }

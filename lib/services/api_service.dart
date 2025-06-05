@@ -46,4 +46,33 @@ class ApiService {
       throw Exception('Request failed: ${response.statusCode}');
     }
   }
+
+  Future<T> put<T>(
+    String path,
+    dynamic body,
+    T Function(dynamic json) parser,
+  ) async {
+    final response = await _client.put(
+      buildUri(path),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(body),
+    );
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return parser(data);
+    } else {
+      throw Exception('Request failed: ${response.statusCode}');
+    }
+  }
+
+  Future<T> delete<T>(String path, T Function(dynamic json) parser) async {
+    final response = await _client.delete(buildUri(path));
+    if (response.statusCode == 200) {
+      final body = response.body.isEmpty ? '{}' : response.body;
+      final data = jsonDecode(body);
+      return parser(data);
+    } else {
+      throw Exception('Request failed: ${response.statusCode}');
+    }
+  }
 }

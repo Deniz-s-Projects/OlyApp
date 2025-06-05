@@ -104,6 +104,30 @@ void main() {
       expect(comment.content, input.content);
     });
 
+    test('updatePost sends PUT', () async {
+      final input = BulletinPost(id: 1, content: 'n', date: DateTime.fromMillisecondsSinceEpoch(0));
+      final mockClient = MockClient((request) async {
+        expect(request.method, equals('PUT'));
+        expect(request.url.path, '/api/bulletin/1');
+        final body = jsonDecode(request.body) as Map<String, dynamic>;
+        expect(body['content'], input.content);
+        return http.Response(jsonEncode({'data': input.toJson()}), 200);
+      });
+      final service = BulletinService(client: mockClient);
+      final res = await service.updatePost(input);
+      expect(res.content, 'n');
+    });
+
+    test('deletePost sends DELETE', () async {
+      final mockClient = MockClient((request) async {
+        expect(request.method, equals('DELETE'));
+        expect(request.url.path, '/api/bulletin/1');
+        return http.Response('{}', 200);
+      });
+      final service = BulletinService(client: mockClient);
+      await service.deletePost(1);
+    });
+
     test('throws on error status', () async {
       final mockClient = MockClient((_) async => http.Response('err', 500));
       final service = BulletinService(client: mockClient);

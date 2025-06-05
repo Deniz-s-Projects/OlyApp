@@ -37,4 +37,17 @@ class BulletinService extends ApiService {
       (json) => BulletinComment.fromJson(json['data'] as Map<String, dynamic>),
     );
   }
+
+  Future<BulletinPost> updatePost(BulletinPost post) async {
+    if (post.id == null) throw ArgumentError('id required');
+    return put(
+      '/bulletin/${post.id}',
+      post.toJson(),
+      (json) => BulletinPost.fromJson(json['data'] as Map<String, dynamic>),
+    );
+  }
+
+  Future<void> deletePost(int id) async {
+    await delete('/bulletin/$id', (_) => null);
+  }
 }
