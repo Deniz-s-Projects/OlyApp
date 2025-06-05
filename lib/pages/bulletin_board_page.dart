@@ -64,6 +64,87 @@ class _BulletinBoardPageState extends State<BulletinBoardPage> {
     ctrl.clear();
   }
 
+  Future<void> _editPost(BulletinPost post) async {
+    final ctrl = TextEditingController(text: post.content);
+    final result = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Edit post'),
+        content: TextField(controller: ctrl),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, ctrl.text.trim()),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+    if (result != null && result.isNotEmpty) {
+      final updated = await _service.updatePost(
+        BulletinPost(id: post.id, content: result, date: post.date),
+      );
+      if (!mounted) return;
+      setState(() {
+        final idx = _posts.indexWhere((p) => p.id == post.id);
+        if (idx != -1) _posts[idx] = updated;
+      });
+    }
+  }
+
+  Future<void> _deletePost(int id) async {
+    await _service.deletePost(id);
+    if (!mounted) return;
+    setState(() {
+      _posts.removeWhere((p) => p.id == id);
+      _comments.remove(id);
+    });
+  }
+
+  Future<void> _editComment(int postId, BulletinComment comment) async {
+    final ctrl = TextEditingController(text: comment.content);
+    final result = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Edit comment'),
+        content: TextField(controller: ctrl),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, ctrl.text.trim()),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+    if (result != null && result.isNotEmpty) {
+      setState(() {
+        final list = _comments[postId];
+        final idx = list?.indexWhere((c) => c.id == comment.id) ?? -1;
+        if (idx != -1) {
+          list![idx] = BulletinComment(
+            id: comment.id,
+            postId: postId,
+            content: result,
+            date: comment.date,
+          );
+        }
+      });
+    }
+  }
+
+  void _deleteComment(int postId, int id) {
+    setState(() {
+      _comments[postId]?.removeWhere((c) => c.id == id);
+    });
+  }
+
   @override
   void dispose() {
     _textCtrl.dispose();
@@ -103,18 +184,52 @@ class _BulletinBoardPageState extends State<BulletinBoardPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(p.content),
-                              Text(
-                                '${p.date.day}/${p.date.month}/${p.date.year}',
-                                style: Theme.of(context).textTheme.bodySmall,
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(p.content),
+                                        Text(
+                                          '${p.date.day}/${p.date.month}/${p.date.year}',
+                                          style: Theme.of(context).textTheme.bodySmall,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  IconButton(
+                                    key: ValueKey('editPost_${p.id}'),
+                                    icon: const Icon(Icons.edit),
+                                    onPressed: () => _editPost(p),
+                                  ),
+                                  IconButton(
+                                    key: ValueKey('deletePost_${p.id}'),
+                                    icon: const Icon(Icons.delete),
+                                    onPressed: () => _deletePost(p.id!),
+                                  ),
+                                ],
                               ),
                               const SizedBox(height: 4),
                               for (final c in comments)
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 2,
+                                  padding: const EdgeInsets.symmetric(vertical: 2),
+                                  child: Row(
+                                    children: [
+                                      Expanded(child: Text(c.content)),
+                                      IconButton(
+                                        key: ValueKey('editComment_${p.id}_${c.id}'),
+                                        icon: const Icon(Icons.edit, size: 18),
+                                        onPressed: () => _editComment(p.id!, c),
+                                      ),
+                                      IconButton(
+                                        key: ValueKey('deleteComment_${p.id}_${c.id}'),
+                                        icon: const Icon(Icons.delete, size: 18),
+                                        onPressed: () => _deleteComment(p.id!, c.id!),
+                                      ),
+                                    ],
                                   ),
-                                  child: Text(c.content),
                                 ),
                               Row(
                                 children: [

@@ -256,4 +256,21 @@ describe('Bulletin API', () => {
     expect(res.status).toBe(201);
     expect(res.body.data.content).toBe('c');
   });
+
+  test('PUT /bulletin/:id updates post', async () => {
+    await BulletinPost.create({ id: 1, content: 'old' });
+    const res = await request(app)
+      .put('/api/bulletin/1')
+      .send({ content: 'new' });
+    expect(res.status).toBe(200);
+    expect(res.body.data.content).toBe('new');
+  });
+
+  test('DELETE /bulletin/:id deletes post', async () => {
+    await BulletinPost.create({ id: 1, content: 'old' });
+    const res = await request(app).delete('/api/bulletin/1');
+    expect(res.status).toBe(200);
+    const posts = await BulletinPost.find();
+    expect(posts).toHaveLength(0);
+  });
 });

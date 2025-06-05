@@ -59,4 +59,30 @@ router.post('/:id/comments', async (req, res) => {
   }
 });
 
+// PUT /bulletin/:id - update post
+router.put('/:id', async (req, res) => {
+  try {
+    const post = await BulletinPost.findOneAndUpdate(
+      { id: Number(req.params.id) },
+      { content: req.body.content },
+      { new: true }
+    );
+    if (!post) return res.status(404).json({ error: 'Post not found' });
+    res.json({ data: post });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// DELETE /bulletin/:id - delete post
+router.delete('/:id', async (req, res) => {
+  try {
+    await BulletinPost.findOneAndDelete({ id: Number(req.params.id) });
+    await BulletinComment.deleteMany({ postId: Number(req.params.id) });
+    res.json({});
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 module.exports = router;
