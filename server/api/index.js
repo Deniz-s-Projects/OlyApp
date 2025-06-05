@@ -3,6 +3,7 @@ const router = express.Router();
 const authRouter = require('../routes/auth');
 const eventsRouter = require('../routes/events');
 const itemsRouter = require('../routes/items');
+const maintenanceRouter = require('../routes/maintenance');
 
 router.get('/', (req, res) => {
   res.json({ message: 'API is running' });
@@ -11,5 +12,6 @@ router.get('/', (req, res) => {
 router.use('/auth', authRouter);
 router.use('/events', eventsRouter);
 router.use('/items', itemsRouter);
+router.use('/maintenance', maintenanceRouter);
 
 module.exports = router;
