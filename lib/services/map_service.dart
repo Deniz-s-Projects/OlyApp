@@ -51,4 +51,40 @@ class MapService {
     }
     return [];
   }
+
+  Future<MapPin> createPin(MapPin pin) async {
+    final uri = ApiService().buildUri('/pins');
+    final res = await _client.post(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(pin.toMap()),
+    );
+    if (res.statusCode == 200 || res.statusCode == 201) {
+      final data = jsonDecode(res.body) as Map<String, dynamic>;
+      return MapPin.fromMap(data['data'] as Map<String, dynamic>);
+    }
+    throw Exception('Request failed: ${res.statusCode}');
+  }
+
+  Future<MapPin> updatePin(MapPin pin) async {
+    final uri = ApiService().buildUri('/pins/${pin.id}');
+    final res = await _client.post(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(pin.toMap()),
+    );
+    if (res.statusCode == 200) {
+      final data = jsonDecode(res.body) as Map<String, dynamic>;
+      return MapPin.fromMap(data['data'] as Map<String, dynamic>);
+    }
+    throw Exception('Request failed: ${res.statusCode}');
+  }
+
+  Future<void> deletePin(String id) async {
+    final uri = ApiService().buildUri('/pins/$id');
+    final res = await _client.delete(uri);
+    if (res.statusCode != 200) {
+      throw Exception('Request failed: ${res.statusCode}');
+    }
+  }
 }

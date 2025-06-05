@@ -36,4 +36,15 @@ router.post('/:id', async (req, res) => {
   }
 });
 
+// DELETE /pins/:id - remove a pin
+router.delete('/:id', async (req, res) => {
+  try {
+    const pin = await MapPin.findOneAndDelete({ id: req.params.id });
+    if (!pin) return res.status(404).json({ error: 'Pin not found' });
+    res.json({ data: pin });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 module.exports = router;
