@@ -83,12 +83,12 @@ The optional Node.js backend lives in the `server/` directory.
    npm install
    ```
 
-2. Create a `.env` file to configure your MongoDB connection (optional):
-   ```env
-   MONGODB_URI=mongodb://localhost:27017/olyapp
-   PORT=3000
+2. Copy the example environment file and adjust values if needed:
+   ```bash
+   cp .env.example .env
    ```
-   If no `MONGODB_URI` is provided, an in-memory database is used.
+   This file sets `MONGODB_URI` and `PORT`. If no `MONGODB_URI` is provided,
+   an in-memory database is used.
 
 ### Running
 
