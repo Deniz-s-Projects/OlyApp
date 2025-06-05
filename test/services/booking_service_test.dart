@@ -46,6 +46,42 @@ void main() {
       await service.createBooking(time, name);
     });
 
+    test('fetchMyBookings parses list', () async {
+      final mockClient = MockClient((request) async {
+        expect(request.method, equals('GET'));
+        expect(request.url.path, '/api/bookings/my');
+        return http.Response(
+          jsonEncode({
+            'data': [
+              {
+                '_id': '1',
+                'time': '2024-01-02T10:00:00.000Z',
+                'name': 'Me'
+              }
+            ]
+          }),
+          200,
+        );
+      });
+
+      final service = BookingService(client: mockClient);
+      final result = await service.fetchMyBookings();
+      expect(result, hasLength(1));
+      expect(result.first['_id'], '1');
+      expect(result.first['time'], DateTime.parse('2024-01-02T10:00:00.000Z'));
+    });
+
+    test('cancelBooking uses DELETE', () async {
+      final mockClient = MockClient((request) async {
+        expect(request.method, equals('DELETE'));
+        expect(request.url.path, '/api/bookings/1');
+        return http.Response('{}', 200);
+      });
+
+      final service = BookingService(client: mockClient);
+      await service.cancelBooking('1');
+    });
+
     test('throws on error status', () async {
       final mockClient =
           MockClient((_) async => http.Response('error', 500));

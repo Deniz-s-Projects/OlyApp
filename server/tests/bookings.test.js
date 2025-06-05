@@ -37,7 +37,11 @@ describe('Bookings API', () => {
     const t1 = new Date('2023-01-01T10:00:00Z');
     const t2 = new Date('2023-01-01T11:00:00Z');
     const t3 = new Date('2023-01-01T12:00:00Z');
-    await BookingSlot.create([{ time: t1 }, { time: t2, name: 'Bob' }, { time: t3 }]);
+    await BookingSlot.create([
+      { time: t1 },
+      { time: t2, name: 'Bob', userId: 2 },
+      { time: t3 }
+    ]);
 
     const token = getToken();
     const res = await request(app)
@@ -58,6 +62,7 @@ describe('Bookings API', () => {
       .send({ time: time.toISOString(), name: 'Alice' });
     expect(first.status).toBe(200);
     expect(first.body.data.name).toBe('Alice');
+    expect(first.body.data.userId).toBe(1);
 
     const second = await request(app)
       .post('/api/bookings')
@@ -67,5 +72,37 @@ describe('Bookings API', () => {
 
     const slot = await BookingSlot.findOne({ time });
     expect(slot.name).toBe('Alice');
+    expect(slot.userId).toBe(1);
+  });
+
+  test('GET /bookings/my returns user bookings', async () => {
+    const t = new Date('2023-01-03T10:00:00Z');
+    const mine = await BookingSlot.create({ time: t, name: 'Me', userId: 1 });
+    await BookingSlot.create({ time: new Date('2023-01-03T11:00:00Z'), name: 'Other', userId: 2 });
+
+    const token = getToken();
+    const res = await request(app)
+      .get('/api/bookings/my')
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    expect(res.body.data).toHaveLength(1);
+    expect(res.body.data[0]._id).toBe(mine._id.toString());
+  });
+
+  test('DELETE /bookings/:id clears booking', async () => {
+    const slot = await BookingSlot.create({
+      time: new Date('2023-01-04T10:00:00Z'),
+      name: 'Delete',
+      userId: 1
+    });
+
+    const token = getToken();
+    const res = await request(app)
+      .delete(`/api/bookings/${slot._id}`)
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    const updated = await BookingSlot.findById(slot._id);
+    expect(updated.name).toBeUndefined();
+    expect(updated.userId).toBeUndefined();
   });
 });

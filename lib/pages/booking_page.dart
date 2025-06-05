@@ -13,6 +13,7 @@ class BookingPage extends StatefulWidget {
 class _BookingPageState extends State<BookingPage> {
   late final BookingService _service;
   final Map<DateTime, List<DateTime>> _slots = {};
+  List<Map<String, dynamic>> _bookings = [];
   DateTime _focusedDay = DateTime.now();
   DateTime _selectedDay = DateTime.now();
 
@@ -21,6 +22,7 @@ class _BookingPageState extends State<BookingPage> {
     super.initState();
     _service = widget.service ?? BookingService();
     _loadSlots();
+    _loadBookings();
   }
 
   Future<void> _loadSlots() async {
@@ -38,6 +40,19 @@ class _BookingPageState extends State<BookingPage> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Failed to load slots')),
+      );
+    }
+  }
+
+  Future<void> _loadBookings() async {
+    try {
+      final list = await _service.fetchMyBookings();
+      if (!mounted) return;
+      setState(() => _bookings = list);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to load bookings')),
       );
     }
   }
@@ -83,6 +98,7 @@ class _BookingPageState extends State<BookingPage> {
           final key = DateTime(slot.year, slot.month, slot.day);
           _slots[key]?.remove(slot);
         });
+        await _loadBookings();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Booking confirmed')),
         );
@@ -92,6 +108,22 @@ class _BookingPageState extends State<BookingPage> {
           const SnackBar(content: Text('Failed to create booking')),
         );
       }
+    }
+  }
+
+  Future<void> _cancel(String id) async {
+    try {
+      await _service.cancelBooking(id);
+      if (!mounted) return;
+      setState(() {
+        _bookings.removeWhere((b) => b['_id'] == id);
+      });
+      _loadSlots();
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to cancel booking')),
+      );
     }
   }
 
@@ -132,23 +164,50 @@ class _BookingPageState extends State<BookingPage> {
           ),
           const SizedBox(height: 8),
           Expanded(
-            child: slots.isEmpty
-                ? const Center(child: Text('No slots available.'))
-                : ListView.builder(
-                    itemCount: slots.length,
-                    itemBuilder: (ctx, i) {
-                      final slot = slots[i];
-                      final label =
-                          '${slot.hour.toString().padLeft(2, '0')}:${slot.minute.toString().padLeft(2, '0')}';
-                      return ListTile(
-                        title: Text(label),
-                        trailing: TextButton(
-                          onPressed: () => _book(slot),
-                          child: const Text('Book'),
-                        ),
-                      );
-                    },
-                  ),
+            child: ListView(
+              children: [
+                const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Text('My Bookings',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+                if (_bookings.isEmpty)
+                  const ListTile(title: Text('No bookings yet.'))
+                else
+                  ..._bookings.map((b) {
+                    final time = b['time'] as DateTime;
+                    final label =
+                        '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+                    return ListTile(
+                      title: Text(label),
+                      trailing: TextButton(
+                        onPressed: () => _cancel(b['_id'] as String),
+                        child: const Text('Cancel'),
+                      ),
+                    );
+                  }),
+                const Divider(),
+                const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Text('Available Slots',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+                if (slots.isEmpty)
+                  const ListTile(title: Text('No slots available.'))
+                else
+                  ...slots.map((slot) {
+                    final label =
+                        '${slot.hour.toString().padLeft(2, '0')}:${slot.minute.toString().padLeft(2, '0')}';
+                    return ListTile(
+                      title: Text(label),
+                      trailing: TextButton(
+                        onPressed: () => _book(slot),
+                        child: const Text('Book'),
+                      ),
+                    );
+                  }),
+              ],
+            ),
           ),
         ],
       ),

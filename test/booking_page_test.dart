@@ -6,6 +6,7 @@ import 'package:oly_app/services/booking_service.dart';
 class FakeBookingService extends BookingService {
   final List<DateTime> slots;
   FakeBookingService(this.slots);
+  final List<Map<String, dynamic>> bookings = [];
 
   @override
   Future<List<DateTime>> fetchAvailableTimes() async => slots;
@@ -13,12 +14,24 @@ class FakeBookingService extends BookingService {
   @override
   Future<void> createBooking(DateTime time, String name) async {
     slots.remove(time);
+    bookings.add({'_id': '1', 'time': time, 'name': name});
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> fetchMyBookings() async => bookings;
+
+  @override
+  Future<void> cancelBooking(String id) async {
+    bookings.removeWhere((b) => b['_id'] == id);
   }
 }
 
 class ErrorBookingService extends BookingService {
   @override
   Future<List<DateTime>> fetchAvailableTimes() async => throw Exception('fail');
+
+  @override
+  Future<List<Map<String, dynamic>>> fetchMyBookings() async => [];
 }
 
 void main() {
@@ -38,7 +51,8 @@ void main() {
     await tester.tap(find.widgetWithText(ElevatedButton, 'Book'));
     await tester.pumpAndSettle();
 
-    expect(find.text('10:00'), findsNothing);
+    expect(find.widgetWithText(TextButton, 'Book'), findsNothing);
+    expect(find.widgetWithText(TextButton, 'Cancel'), findsOneWidget);
     expect(find.text('Booking confirmed'), findsOneWidget);
   });
 
