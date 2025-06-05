@@ -70,22 +70,32 @@ class _ItemExchangePageState extends State<ItemExchangePage> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Search field
-            TextField(
-              controller: _searchCtrl,
-              decoration: InputDecoration(
-                prefixIcon: const Icon(Icons.search),
-                hintText: 'Search items…',
-                filled: true,
-                fillColor:
-                    Theme.of(context).colorScheme.surfaceContainerHighest,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide.none,
+          // Search field with refresh
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _searchCtrl,
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.search),
+                    hintText: 'Search items…',
+                    filled: true,
+                    fillColor:
+                        Theme.of(context).colorScheme.surfaceContainerHighest,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                  onChanged: (_) => _filter(),
                 ),
               ),
-              onChanged: (_) => _filter(),
-            ),
+              IconButton(
+                icon: const Icon(Icons.refresh),
+                onPressed: _loadItems,
+              ),
+            ],
+          ),
             const SizedBox(height: 12),
 
             // Category chips

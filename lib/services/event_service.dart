@@ -1,16 +1,31 @@
 import '../models/models.dart';
 import 'api_service.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class EventService extends ApiService {
   EventService({super.client});
 
   Future<List<CalendarEvent>> fetchEvents() async {
-    return get('/events', (json) {
-      final list = (json['data'] as List<dynamic>);
-      return list
-          .map((e) => CalendarEvent.fromJson(e as Map<String, dynamic>))
+    final box = Hive.isBoxOpen('eventsBox') ? Hive.box('eventsBox') : null;
+    try {
+      final events = await get('/events', (json) {
+        final list = (json['data'] as List<dynamic>);
+        return list
+            .map((e) => CalendarEvent.fromJson(e as Map<String, dynamic>))
+            .toList();
+      });
+      await box?.put('events', events.map((e) => e.toJson()).toList());
+      return events;
+    } catch (e) {
+      final cached = box?.get('events', defaultValue: const <dynamic>[])
+          as List?;
+      if (cached == null || cached.isEmpty) {
+        rethrow;
+      }
+      return cached
+          .map((e) => CalendarEvent.fromJson(Map<String, dynamic>.from(e)))
           .toList();
-    });
+    }
   }
 
   Future<CalendarEvent> createEvent(CalendarEvent event) async {
