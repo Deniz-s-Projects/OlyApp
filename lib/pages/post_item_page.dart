@@ -35,8 +35,7 @@ class _PostItemPageState extends State<PostItemPage> {
     final item = widget.item;
     _titleCtrl = TextEditingController(text: item?.title ?? '');
     _descCtrl = TextEditingController(text: item?.description ?? '');
-    _priceCtrl =
-        TextEditingController(text: item?.price?.toString() ?? '');
+    _priceCtrl = TextEditingController(text: item?.price?.toString() ?? '');
     _imageCtrl = TextEditingController(text: item?.imageUrl ?? '');
     _category = item?.category ?? ItemCategory.other;
   }
@@ -65,8 +64,9 @@ class _PostItemPageState extends State<PostItemPage> {
       final priceText = _priceCtrl.text.trim();
       final price = priceText.isNotEmpty ? double.tryParse(priceText) : null;
       final imagePath =
-          _imageFile?.path ??
-          (_imageCtrl.text.trim().isEmpty ? null : _imageCtrl.text.trim());
+          _imageFile == null && _imageCtrl.text.trim().isNotEmpty
+              ? _imageCtrl.text.trim()
+              : null;
       final editing = _editing;
       final item = Item(
         id: editing ? widget.item!.id : null,
@@ -82,13 +82,15 @@ class _PostItemPageState extends State<PostItemPage> {
       if (editing) {
         await _service.updateItem(item);
       } else {
-        await _service.createItem(item);
+        await _service.createItem(
+          item,
+          imageFile: _imageFile != null ? File(_imageFile!.path) : null,
+        );
       }
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(
-            content: Text(editing ? 'Item updated!' : 'Item posted!')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(editing ? 'Item updated!' : 'Item posted!')),
+        );
         Navigator.pop(context, true);
       }
     } catch (e) {
@@ -104,9 +106,7 @@ class _PostItemPageState extends State<PostItemPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_editing ? 'Edit Item' : 'Post Item'),
-      ),
+      appBar: AppBar(title: Text(_editing ? 'Edit Item' : 'Post Item')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -187,7 +187,12 @@ class _PostItemPageState extends State<PostItemPage> {
               ElevatedButton(
                 onPressed: _submitting ? null : _submit,
                 child: Text(
-                    _submitting ? (_editing ? 'Updating…' : 'Posting…') : _editing ? 'Update Item' : 'Post Item'),
+                  _submitting
+                      ? (_editing ? 'Updating…' : 'Posting…')
+                      : _editing
+                      ? 'Update Item'
+                      : 'Post Item',
+                ),
               ),
             ],
           ),

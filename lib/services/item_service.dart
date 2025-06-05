@@ -1,3 +1,8 @@
+import 'dart:io';
+import 'dart:convert';
+
+import 'package:http/http.dart' as http;
+
 import '../models/models.dart';
 import 'api_service.dart';
 
@@ -9,14 +14,29 @@ class ItemService extends ApiService {
   Future<List<Item>> fetchItems() async {
     return get('/items', (json) {
       final list = json['data'] as List<dynamic>;
-      return list
-          .map((e) => Item.fromJson(e as Map<String, dynamic>))
-          .toList();
+      return list.map((e) => Item.fromJson(e as Map<String, dynamic>)).toList();
     });
   }
 
   /// Creates a new item listing.
-  Future<Item> createItem(Item item) async {
+  Future<Item> createItem(Item item, {File? imageFile}) async {
+    if (imageFile != null) {
+      final request =
+          http.MultipartRequest('POST', buildUri('/items'))
+            ..fields.addAll(item.toJson().map((k, v) => MapEntry(k, '$v')))
+            ..files.add(
+              await http.MultipartFile.fromPath('image', imageFile.path),
+            );
+      final streamed = await client.send(request);
+      final response = await http.Response.fromStream(streamed);
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return Item.fromJson(data['data'] as Map<String, dynamic>);
+      } else {
+        throw Exception('Request failed: ${response.statusCode}');
+      }
+    }
+
     return post(
       '/items',
       item.toJson(),

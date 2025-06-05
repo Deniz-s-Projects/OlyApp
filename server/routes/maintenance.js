@@ -1,6 +1,19 @@
 const express = require('express');
 const MaintenanceRequest = require('../models/MaintenanceRequest');
 const Message = require('../models/Message');
+const multer = require('multer');
+const path = require('path');
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, '../uploads'));
+  },
+  filename: (req, file, cb) => {
+    const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    cb(null, unique + path.extname(file.originalname));
+  }
+});
+const upload = multer({ storage });
 
 const router = express.Router();
 
@@ -15,9 +28,13 @@ router.get('/', async (req, res) => {
 });
 
 // POST /maintenance - create maintenance request
-router.post('/', async (req, res) => {
+router.post('/', upload.single('image'), async (req, res) => {
   try {
-    const request = await MaintenanceRequest.create(req.body);
+    const data = { ...req.body };
+    if (req.file) {
+      data.imageUrl = `/uploads/${req.file.filename}`;
+    }
+    const request = await MaintenanceRequest.create(data);
     res.status(201).json({ data: request });
   } catch (err) {
     res.status(400).json({ error: err.message });
