@@ -110,7 +110,6 @@ void main() {
     });
 
     test('updateItem posts update and parses item', () async {
-      final item = Item(id: 5, ownerId: 1, title: 'Old');
       final updated = Item(id: 5, ownerId: 1, title: 'New');
       final mockClient = MockClient((request) async {
         expect(request.method, equals('POST'));

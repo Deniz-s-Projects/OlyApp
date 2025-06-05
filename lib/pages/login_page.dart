@@ -1,12 +1,9 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:http/http.dart' as http;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import '../models/models.dart';
 import '../utils/validators.dart';
-import '../services/api_service.dart';
 import '../services/auth_service.dart';
 
 /// A simple login page with email/password and placeholder Google/Apple login buttons.
