@@ -10,6 +10,27 @@ class BookingService extends ApiService {
     });
   }
 
+  Future<List<Map<String, dynamic>>> fetchSlotsForAdmin() async {
+    return get('/bookings/slots/manage', (json) {
+      final list = json['data'] as List<dynamic>;
+      return list.map<Map<String, dynamic>>((e) {
+        final map = Map<String, dynamic>.from(e as Map);
+        map['time'] = DateTime.parse(map['time'] as String);
+        return map;
+      }).toList();
+    });
+  }
+
+  Future<void> createSlot(DateTime time) async {
+    await post('/bookings/slots', {
+      'time': time.toIso8601String(),
+    }, (_) => null);
+  }
+
+  Future<void> deleteSlot(String id) async {
+    await delete('/bookings/slots/$id', (_) => null);
+  }
+
   Future<void> createBooking(DateTime time, String name) async {
     await post('/bookings', {
       'time': time.toIso8601String(),

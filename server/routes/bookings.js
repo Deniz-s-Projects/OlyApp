@@ -1,6 +1,7 @@
 const express = require('express');
 const BookingSlot = require('../models/BookingSlot');
 const auth = require('../middleware/auth');
+const requireAdmin = require('../middleware/requireAdmin');
 
 const router = express.Router();
 router.use(auth);
@@ -12,6 +13,39 @@ router.get('/slots', async (req, res) => {
     res.json({ data: slots.map(s => s.time.toISOString()) });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /bookings/slots/manage - list slots with ids (admin only)
+router.get('/slots/manage', requireAdmin, async (req, res) => {
+  try {
+    const slots = await BookingSlot.find({ name: { $exists: false } }).sort('time');
+    res.json({ data: slots });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /bookings/slots - create a new booking slot (admin only)
+router.post('/slots', requireAdmin, async (req, res) => {
+  const { time } = req.body;
+  if (!time) return res.status(400).json({ error: 'time required' });
+  try {
+    const slot = await BookingSlot.create({ time });
+    res.status(201).json({ data: slot });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// DELETE /bookings/slots/:id - delete a booking slot (admin only)
+router.delete('/slots/:id', requireAdmin, async (req, res) => {
+  try {
+    const slot = await BookingSlot.findByIdAndDelete(req.params.id);
+    if (!slot) return res.status(404).json({ error: 'Slot not found' });
+    res.json({ data: slot });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
 });
 
