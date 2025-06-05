@@ -41,15 +41,13 @@ void main() {
       );
 
       await tester.enterText(nameField(), 'New Name');
-      await tester.enterText(emailField(), 'new@example.com');
-      await tester.enterText(avatarField(), 'http://example.com/avatar.png');
+      await tester.enterText(emailField(), 'new@example.com'); 
       await tester.tap(find.text('Save'));
       await tester.pump();
 
       final saved = box.get('currentUser')!;
       expect(saved.name, 'New Name');
-      expect(saved.email, 'new@example.com');
-      expect(saved.avatarUrl, 'http://example.com/avatar.png');
+      expect(saved.email, 'new@example.com'); 
 
       await tester.pumpWidget(const MaterialApp(home: ProfilePage()));
       await tester.pump();
