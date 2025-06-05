@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../models/models.dart';
+import '../main.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -12,6 +13,7 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   late final Box<User> _userBox;
   late User _user;
+  bool _darkMode = false;
 
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameCtrl;
@@ -27,6 +29,8 @@ class _ProfilePageState extends State<ProfilePage> {
     _emailCtrl = TextEditingController(text: _user.email);
     _avatarCtrl = TextEditingController(text: _user.avatarUrl ?? '');
     _avatarCtrl.addListener(() => setState(() {}));
+    final settingsBox = Hive.box('settingsBox');
+    _darkMode = settingsBox.get('themeMode', defaultValue: 'light') == 'dark';
   }
 
   @override
@@ -97,6 +101,15 @@ class _ProfilePageState extends State<ProfilePage> {
               TextFormField(
                 controller: _avatarCtrl,
                 decoration: const InputDecoration(labelText: 'Avatar URL'),
+              ),
+              SwitchListTile(
+                title: const Text('Dark Mode'),
+                value: _darkMode,
+                onChanged: (val) {
+                  setState(() => _darkMode = val);
+                  final mode = val ? ThemeMode.dark : ThemeMode.light;
+                  OlyApp.of(context)?.updateThemeMode(mode);
+                },
               ),
               const SizedBox(height: 20),
               ElevatedButton(onPressed: _save, child: const Text('Save')),
