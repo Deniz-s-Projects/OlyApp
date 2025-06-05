@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'calendar_page.dart';
 import 'item_exchange_page.dart';
 import 'maintenance_page.dart';
+import 'booking_page.dart';
 import 'admin/admin_home_page.dart';
 import 'map_page.dart';
 import 'profile_page.dart';
@@ -12,6 +13,7 @@ import '../services/event_service.dart';
 
 class MainPage extends StatefulWidget {
   final CalendarPage? calendarPage;
+  final BookingPage? bookingPage;
   final MaintenancePage? maintenancePage;
   final ItemExchangePage? itemExchangePage;
   final bool isAdmin;
@@ -20,6 +22,7 @@ class MainPage extends StatefulWidget {
     super.key,
     this.calendarPage,
     this.maintenancePage,
+    this.bookingPage,
     this.itemExchangePage,
     this.isAdmin = false,
     this.onLogout,
@@ -36,6 +39,7 @@ class _MainPageState extends State<MainPage> {
     'Dashboard',
     'Map',
     'Calendar',
+    'Booking',
     'Item Exchange',
     'Maintenance',
   ];
@@ -49,6 +53,7 @@ class _MainPageState extends State<MainPage> {
       DashboardPage(onNavigate: _onDashboardNavigate, isAdmin: widget.isAdmin),
       const MapPage(),
       widget.calendarPage ?? const CalendarPage(),
+      widget.bookingPage ?? const BookingPage(),
       widget.itemExchangePage ?? const ItemExchangePage(),
       widget.maintenancePage ?? const MaintenancePage(),
     ];
@@ -104,6 +109,10 @@ class _MainPageState extends State<MainPage> {
             label: 'Calendar',
           ),
           NavigationDestination(
+            icon: Icon(Icons.schedule),
+            label: 'Booking',
+          ),
+          NavigationDestination(
             icon: Icon(Icons.swap_horiz),
             label: 'Exchange',
           ),
@@ -122,6 +131,8 @@ class _MainPageState extends State<MainPage> {
       case 2:
         return Icons.event;
       case 3:
+        return Icons.book_online;
+      case 4:
         return Icons.add_shopping_cart;
       default:
         return Icons.add;
@@ -150,6 +161,8 @@ class _MainPageState extends State<MainPage> {
           });
         };
       case 3:
+        return null;
+      case 4:
         return () {
           Navigator.push(
             context,
@@ -231,10 +244,16 @@ class DashboardPage extends StatelessWidget {
                   onTap: () => _navigate(2),
                 ),
                 DashboardCard(
+                  icon: Icons.schedule,
+                  label: 'Booking',
+                  colorScheme: colorScheme,
+                  onTap: () => _navigate(3),
+                ),
+                DashboardCard(
                   icon: Icons.swap_horiz,
                   label: 'Exchange',
                   colorScheme: colorScheme,
-                  onTap: () => _navigate(3),
+                  onTap: () => _navigate(4),
                 ),
                 DashboardCard(
                   icon: Icons.message,
@@ -251,7 +270,7 @@ class DashboardPage extends StatelessWidget {
                   icon: Icons.build,
                   label: 'Maintenance',
                   colorScheme: colorScheme,
-                  onTap: () => _navigate(4),
+                  onTap: () => _navigate(5),
                 ),
                 if (isAdmin)
                   DashboardCard(
