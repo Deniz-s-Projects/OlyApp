@@ -246,14 +246,16 @@ class Item {
     description: map['description'] as String?,
     imageUrl: map['imageUrl'] as String?,
     price: map['price'] != null ? (map['price'] as num).toDouble() : null,
-    isFree: map['isFree'] is bool
-        ? map['isFree'] as bool
-        : (map['isFree'] as int) == 1,
-    category: map['category'] is int
-        ? ItemCategory.values[map['category'] as int]
-        : ItemCategory.values.firstWhere(
-            (e) => e.name == map['category'] as String,
-          ),
+    isFree:
+        map['isFree'] is bool
+            ? map['isFree'] as bool
+            : (map['isFree'] as int) == 1,
+    category:
+        map['category'] is int
+            ? ItemCategory.values[map['category'] as int]
+            : ItemCategory.values.firstWhere(
+              (e) => e.name == map['category'] as String,
+            ),
     createdAt: _parseDate(map['createdAt']),
   );
 
@@ -298,5 +300,37 @@ class BulletinPost {
 
   factory BulletinPost.fromJson(Map<String, dynamic> json) =>
       BulletinPost.fromMap(json);
+  Map<String, dynamic> toJson() => toMap();
+}
+
+class BulletinComment {
+  final int? id;
+  final int postId;
+  final String content;
+  final DateTime date;
+
+  BulletinComment({
+    this.id,
+    required this.postId,
+    required this.content,
+    DateTime? date,
+  }) : date = date ?? DateTime.now();
+
+  factory BulletinComment.fromMap(Map<String, dynamic> map) => BulletinComment(
+    id: map['id'] as int?,
+    postId: map['postId'] as int,
+    content: map['content'] as String,
+    date: _parseDate(map['date']),
+  );
+
+  Map<String, dynamic> toMap() => {
+    if (id != null) 'id': id,
+    'postId': postId,
+    'content': content,
+    'date': date.toIso8601String(),
+  };
+
+  factory BulletinComment.fromJson(Map<String, dynamic> json) =>
+      BulletinComment.fromMap(json);
   Map<String, dynamic> toJson() => toMap();
 }
