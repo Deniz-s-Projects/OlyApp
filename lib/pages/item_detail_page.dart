@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../services/item_service.dart';
 import 'item_chat_page.dart';
+import 'post_item_page.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class ItemDetailPage extends StatelessWidget {
   final Item item;
@@ -26,12 +28,46 @@ class ItemDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    User? user;
+    if (Hive.isBoxOpen('userBox')) {
+      user = Hive.box<User>('userBox').get('currentUser');
+    }
+    final isOwner = user != null && user.id == item.ownerId;
     return Scaffold(
       appBar: AppBar(
         title: Text(item.title),
         backgroundColor: colorScheme.primaryContainer,
         foregroundColor: colorScheme.onPrimaryContainer,
         elevation: 1,
+        actions: isOwner
+            ? [
+                IconButton(
+                  key: const Key('editItem'),
+                  icon: const Icon(Icons.edit),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => PostItemPage(
+                          item: item,
+                          service: service,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                IconButton(
+                  key: const Key('deleteItem'),
+                  icon: const Icon(Icons.delete),
+                  onPressed: () async {
+                    if (item.id == null) return;
+                    final svc = service ?? ItemService();
+                    await svc.deleteItem(item.id!);
+                    if (context.mounted) Navigator.pop(context, true);
+                  },
+                ),
+              ]
+            : null,
       ),
       body: SingleChildScrollView(
         child: Column(

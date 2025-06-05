@@ -6,7 +6,10 @@ import '../models/models.dart';
 import '../services/item_service.dart';
 
 class PostItemPage extends StatefulWidget {
-  const PostItemPage({super.key});
+  final Item? item;
+  final ItemService? service;
+
+  const PostItemPage({super.key, this.item, this.service});
 
   @override
   State<PostItemPage> createState() => _PostItemPageState();
@@ -14,14 +17,29 @@ class PostItemPage extends StatefulWidget {
 
 class _PostItemPageState extends State<PostItemPage> {
   final _formKey = GlobalKey<FormState>();
-  final _titleCtrl = TextEditingController();
-  final _descCtrl = TextEditingController();
-  final _priceCtrl = TextEditingController();
-  final _imageCtrl = TextEditingController();
+  late final TextEditingController _titleCtrl;
+  late final TextEditingController _descCtrl;
+  late final TextEditingController _priceCtrl;
+  late final TextEditingController _imageCtrl;
   XFile? _imageFile;
-  ItemCategory _category = ItemCategory.other;
-  final ItemService _service = ItemService();
+  late ItemCategory _category;
+  late final ItemService _service;
   bool _submitting = false;
+
+  bool get _editing => widget.item != null;
+
+  @override
+  void initState() {
+    super.initState();
+    _service = widget.service ?? ItemService();
+    final item = widget.item;
+    _titleCtrl = TextEditingController(text: item?.title ?? '');
+    _descCtrl = TextEditingController(text: item?.description ?? '');
+    _priceCtrl =
+        TextEditingController(text: item?.price?.toString() ?? '');
+    _imageCtrl = TextEditingController(text: item?.imageUrl ?? '');
+    _category = item?.category ?? ItemCategory.other;
+  }
 
   @override
   void dispose() {
@@ -49,8 +67,10 @@ class _PostItemPageState extends State<PostItemPage> {
       final imagePath =
           _imageFile?.path ??
           (_imageCtrl.text.trim().isEmpty ? null : _imageCtrl.text.trim());
+      final editing = _editing;
       final item = Item(
-        ownerId: 1,
+        id: editing ? widget.item!.id : null,
+        ownerId: editing ? widget.item!.ownerId : 1,
         title: _titleCtrl.text.trim(),
         description:
             _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
@@ -59,11 +79,16 @@ class _PostItemPageState extends State<PostItemPage> {
         isFree: price == null || price == 0,
         category: _category,
       );
-      await _service.createItem(item);
+      if (editing) {
+        await _service.updateItem(item);
+      } else {
+        await _service.createItem(item);
+      }
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('Item posted!')));
+        ).showSnackBar(SnackBar(
+            content: Text(editing ? 'Item updated!' : 'Item posted!')));
         Navigator.pop(context, true);
       }
     } catch (e) {
@@ -79,7 +104,9 @@ class _PostItemPageState extends State<PostItemPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Post Item')),
+      appBar: AppBar(
+        title: Text(_editing ? 'Edit Item' : 'Post Item'),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -159,7 +186,8 @@ class _PostItemPageState extends State<PostItemPage> {
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _submitting ? null : _submit,
-                child: Text(_submitting ? 'Posting…' : 'Post Item'),
+                child: Text(
+                    _submitting ? (_editing ? 'Updating…' : 'Posting…') : _editing ? 'Update Item' : 'Post Item'),
               ),
             ],
           ),

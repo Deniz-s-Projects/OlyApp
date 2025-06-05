@@ -47,4 +47,19 @@ class ItemService extends ApiService {
   Future<void> requestItem(int itemId) async {
     await post('/items/$itemId/request', {}, (_) => null);
   }
+
+  /// Updates an existing [item].
+  Future<Item> updateItem(Item item) async {
+    if (item.id == null) throw ArgumentError('Item id required');
+    return post(
+      '/items/${item.id}',
+      item.toJson(),
+      (json) => Item.fromJson(json['data'] as Map<String, dynamic>),
+    );
+  }
+
+  /// Deletes the item with the given [id].
+  Future<void> deleteItem(int id) async {
+    await post('/items/$id/delete', {}, (_) => null);
+  }
 }
