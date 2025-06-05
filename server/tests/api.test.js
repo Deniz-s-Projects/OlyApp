@@ -95,7 +95,12 @@ describe('Items API', () => {
 
   test('GET /items/:id/messages returns messages', async () => {
     const item = await Item.create({ ownerId: 1, title: 'Chair' });
-    await Message.create({ requestId: item._id, senderId: 2, content: 'Hi' });
+    await Message.create({
+      requestType: 'Item',
+      requestId: item._id,
+      senderId: 2,
+      content: 'Hi'
+    });
     const res = await request(app).get(`/api/items/${item._id}/messages`);
     expect(res.status).toBe(200);
     expect(res.body).toHaveLength(1);
@@ -139,7 +144,12 @@ describe('Maintenance API', () => {
       subject: 'Leak',
       description: 'Water'
     });
-    await Message.create({ requestId: req._id, senderId: 2, content: 'Hi' });
+    await Message.create({
+      requestType: 'MaintenanceRequest',
+      requestId: req._id,
+      senderId: 2,
+      content: 'Hi'
+    });
     const res = await request(app).get(`/api/maintenance/${req._id}/messages`);
     expect(res.status).toBe(200);
     expect(res.body.data).toHaveLength(1);

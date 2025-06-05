@@ -27,7 +27,10 @@ router.post('/', async (req, res) => {
 // GET /items/:id/messages - list messages
 router.get('/:id/messages', async (req, res) => {
   try {
-    const messages = await Message.find({ requestId: req.params.id });
+    const messages = await Message.find({
+      requestId: req.params.id,
+      requestType: 'Item'
+    });
     res.json(messages);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -37,7 +40,11 @@ router.get('/:id/messages', async (req, res) => {
 // POST /items/:id/messages - create message
 router.post('/:id/messages', async (req, res) => {
   try {
-    const messageData = { ...req.body, requestId: req.params.id };
+    const messageData = {
+      ...req.body,
+      requestId: req.params.id,
+      requestType: 'Item'
+    };
     const message = await Message.create(messageData);
     res.status(201).json(message);
   } catch (err) {
