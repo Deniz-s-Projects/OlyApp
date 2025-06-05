@@ -61,6 +61,7 @@ Install dependencies and run the unit tests:
 flutter pub get
 flutter analyze
 flutter test
+npm test
 ```
 
 All tests live in the `test/` directory and are executed automatically in CI.
