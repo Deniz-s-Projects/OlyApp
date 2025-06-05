@@ -9,7 +9,8 @@ import 'package:latlong2/latlong.dart';
 
 class CalendarPage extends StatefulWidget {
   final EventService? service;
-  const CalendarPage({super.key, this.service});
+  final bool isAdmin;
+  const CalendarPage({super.key, this.service, this.isAdmin = false});
 
   @override
   State<CalendarPage> createState() => _CalendarPageState();
@@ -115,7 +116,11 @@ class _CalendarPageState extends State<CalendarPage> {
           attendees: attendees,
           location: event.location,
         );
-        final dayKey = DateTime(event.date.year, event.date.month, event.date.day);
+        final dayKey = DateTime(
+          event.date.year,
+          event.date.month,
+          event.date.day,
+        );
         final list = _events[dayKey];
         if (list != null) {
           final index = list.indexWhere((e) => e.id == event.id);
@@ -125,8 +130,9 @@ class _CalendarPageState extends State<CalendarPage> {
       });
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Failed to RSVP')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Failed to RSVP')));
     }
   }
 
@@ -195,7 +201,11 @@ class _CalendarPageState extends State<CalendarPage> {
           attendees: attendees,
           location: event.location,
         );
-        final dayKey = DateTime(event.date.year, event.date.month, event.date.day);
+        final dayKey = DateTime(
+          event.date.year,
+          event.date.month,
+          event.date.day,
+        );
         final list = _events[dayKey];
         if (list != null) {
           final index = list.indexWhere((e) => e.id == event.id);
@@ -205,8 +215,9 @@ class _CalendarPageState extends State<CalendarPage> {
       });
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Failed to load attendees')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Failed to load attendees')));
     }
   }
 
@@ -273,8 +284,7 @@ class _CalendarPageState extends State<CalendarPage> {
                     return ListTile(
                       leading: const Icon(Icons.event_note),
                       title: Text(event.title),
-                      subtitle:
-                          Text('Attendees: ${event.attendees.length}'),
+                      subtitle: Text('Attendees: ${event.attendees.length}'),
                       trailing: TextButton(
                         onPressed: () => _rsvp(event),
                         child: const Text('RSVP'),
@@ -288,12 +298,14 @@ class _CalendarPageState extends State<CalendarPage> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: cs.secondary,
-        foregroundColor: cs.onSecondary,
-        onPressed: _addEvent,
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: widget.isAdmin
+          ? FloatingActionButton(
+              backgroundColor: cs.secondary,
+              foregroundColor: cs.onSecondary,
+              onPressed: _addEvent,
+              child: const Icon(Icons.add),
+            )
+          : null,
     );
   }
 }

@@ -9,6 +9,7 @@ const Message = require('../models/Message');
 const MaintenanceRequest = require('../models/MaintenanceRequest');
 const BulletinPost = require('../models/BulletinPost');
 const BulletinComment = require('../models/BulletinComment');
+const User = require('../models/User');
 
 function getToken(id = 1) {
   return Buffer.from(`${id}:${Date.now()}`).toString('base64');
@@ -47,7 +48,8 @@ describe('Events API', () => {
   });
 
   test('POST /events creates event', async () => {
-    const token = await getToken();
+    const admin = await User.create({ name: 'a', email: 'a@b.c', passwordHash: 'x', isAdmin: true });
+    const token = Buffer.from(`${admin._id}:${Date.now()}`).toString('base64');
     const res = await request(app)
       .post('/api/events')
       .set('Authorization', `Bearer ${token}`)
@@ -56,11 +58,12 @@ describe('Events API', () => {
     expect(res.body.data.title).toBe('Meet');
   });
 
-  test('POST /events/:id updates event', async () => {
+  test('PUT /events/:id updates event', async () => {
     const event = await Event.create({ title: 'Old', date: new Date(0) });
-    const token = await getToken();
+    const admin = await User.create({ name: 'a', email: 'a@b.c', passwordHash: 'x', isAdmin: true });
+    const token = Buffer.from(`${admin._id}:${Date.now()}`).toString('base64');
     const res = await request(app)
-      .post(`/api/events/${event._id}`)
+      .put(`/api/events/${event._id}`)
       .set('Authorization', `Bearer ${token}`)
       .send({ title: 'New' });
     expect(res.status).toBe(200);
@@ -206,15 +209,16 @@ describe('Maintenance API', () => {
     expect(res.body.data.content).toBe('Hello');
   });
 
-  test('POST /maintenance/:id updates status', async () => {
+  test('PUT /maintenance/:id updates status', async () => {
     const req = await MaintenanceRequest.create({
       userId: 1,
       subject: 'Leak',
       description: 'Water'
     });
-    const token = await getToken();
+    const admin = await User.create({ name: 'a', email: 'a@b.c', passwordHash: 'x', isAdmin: true });
+    const token = Buffer.from(`${admin._id}:${Date.now()}`).toString('base64');
     const res = await request(app)
-      .post(`/api/maintenance/${req._id}`)
+      .put(`/api/maintenance/${req._id}`)
       .set('Authorization', `Bearer ${token}`)
       .send({ status: 'closed' });
     expect(res.status).toBe(200);

@@ -116,9 +116,9 @@ void main() {
       expect(message.id, 3);
     });
 
-    test('updateStatus posts update', () async {
+    test('updateStatus uses PUT', () async {
       final mockClient = MockClient((request) async {
-        expect(request.method, equals('POST'));
+        expect(request.method, equals('PUT'));
         expect(request.url.origin, Uri.parse(apiUrl).origin);
         expect(request.url.path, '/api/maintenance/1');
         final body = jsonDecode(request.body) as Map<String, dynamic>;
