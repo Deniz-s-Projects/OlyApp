@@ -70,6 +70,13 @@ All tests live in the `test/` directory and are executed automatically in CI.
 
 The optional Node.js backend lives in the `server/` directory.
 
+### Prerequisites
+
+- **Node.js** installed (v18+ recommended)
+- **MongoDB** running locally if you want persistent storage
+
+### Setup
+
 1. Install dependencies:
    ```bash
    cd server
@@ -83,10 +90,25 @@ The optional Node.js backend lives in the `server/` directory.
    ```
    If no `MONGODB_URI` is provided, an in-memory database is used.
 
-3. Start the server:
-   ```bash
-   npm start
-   ```
+### Running
+
+Start the server:
+```bash
+npm start
+```
+
+When running the Flutter app, point it at this backend with:
+```bash
+flutter run --dart-define=API_URL=http://localhost:3000
+```
+
+### Backend Tests
+
+Run server tests with:
+```bash
+cd server
+npm test
+```
 
 
 ## 📲 Coming Soon
