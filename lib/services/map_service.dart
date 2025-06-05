@@ -5,6 +5,9 @@ import 'package:latlong2/latlong.dart';
 import '../models/map_pin.dart';
 
 class MapService {
+  MapService({http.Client? client}) : _client = client ?? http.Client();
+
+  final http.Client _client;
   Future<List<MapPin>> fetchPins() async {
     // In real implementation, fetch from API
     await Future.delayed(const Duration(milliseconds: 100));
@@ -50,7 +53,7 @@ class MapService {
   Future<List<LatLng>> fetchRoute(LatLng start, LatLng end) async {
     final url =
         'https://router.project-osrm.org/route/v1/foot/${start.longitude},${start.latitude};${end.longitude},${end.latitude}?overview=full&geometries=geojson';
-    final res = await http.get(Uri.parse(url));
+    final res = await _client.get(Uri.parse(url));
     if (res.statusCode == 200) {
       final data = jsonDecode(res.body) as Map<String, dynamic>;
       final coords = (data['routes'][0]['geometry']['coordinates'] as List)
