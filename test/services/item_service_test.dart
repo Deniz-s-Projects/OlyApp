@@ -109,6 +109,38 @@ void main() {
       expect(message.id, 2);
     });
 
+    test('updateItem posts update and parses item', () async {
+      final item = Item(id: 5, ownerId: 1, title: 'Old');
+      final updated = Item(id: 5, ownerId: 1, title: 'New');
+      final mockClient = MockClient((request) async {
+        expect(request.method, equals('POST'));
+        expect(request.url.origin, Uri.parse(apiUrl).origin);
+        expect(request.url.path, '/api/items/5');
+        final body = jsonDecode(request.body) as Map<String, dynamic>;
+        expect(body['title'], updated.title);
+        return http.Response(
+          jsonEncode({'data': updated.toJson()}),
+          200,
+        );
+      });
+
+      final service = ItemService(client: mockClient);
+      final result = await service.updateItem(updated);
+      expect(result.title, 'New');
+    });
+
+    test('deleteItem posts delete', () async {
+      final mockClient = MockClient((request) async {
+        expect(request.method, equals('POST'));
+        expect(request.url.origin, Uri.parse(apiUrl).origin);
+        expect(request.url.path, '/api/items/5/delete');
+        return http.Response('{}', 200);
+      });
+
+      final service = ItemService(client: mockClient);
+      await service.deleteItem(5);
+    });
+
     test('throws on non-success status', () async {
       final mockClient = MockClient((request) async {
         return http.Response('error', 500);
