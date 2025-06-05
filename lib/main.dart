@@ -27,6 +27,7 @@ void main() async {
   await Hive.openBox('itemsBox');
   await Hive.openBox('userBox');
   await Hive.openBox('authBox');
+  await Hive.openBox('favoritesBox');
 
   // Initialize tile caching store when not running tests
   if (!Platform.environment.containsKey('FLUTTER_TEST')) {
@@ -90,9 +91,10 @@ class _OlyAppState extends State<OlyApp> {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.white38),
         useMaterial3: true,
       ),
-      home: _loggedIn
-          ? MainPage(isAdmin: _isAdmin, onLogout: _logout)
-          : LoginPage(onLoginSuccess: _handleLogin),
+      home:
+          _loggedIn
+              ? MainPage(isAdmin: _isAdmin, onLogout: _logout)
+              : LoginPage(onLoginSuccess: _handleLogin),
     );
   }
 }

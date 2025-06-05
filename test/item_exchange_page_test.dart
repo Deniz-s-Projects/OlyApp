@@ -40,11 +40,50 @@ void main() {
     dir = await Directory.systemTemp.createTemp();
     Hive.init(dir.path);
     await Hive.openBox<User>('userBox');
+    await Hive.openBox('favoritesBox');
   });
 
   tearDown(() async {
     await Hive.close();
     await dir.delete(recursive: true);
+  });
+
+  testWidgets('Favorites filter shows only bookmarked items', (tester) async {
+    await tester.runAsync(() async {
+      final service = FakeItemService([
+        Item(id: 1, ownerId: 1, title: 'Fav', category: ItemCategory.books),
+        Item(id: 2, ownerId: 1, title: 'Other', category: ItemCategory.books),
+      ]);
+
+      await tester.pumpWidget(
+        MaterialApp(home: ItemExchangePage(service: service)),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('toggleFavorite_1')));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Favorites'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Fav'), findsOneWidget);
+      expect(find.text('Other'), findsNothing);
+    });
+  });
+
+  testWidgets('Detail page toggles favorite', (tester) async {
+    await tester.runAsync(() async {
+      final item = Item(id: 5, ownerId: 2, title: 'Chair');
+
+      await tester.pumpWidget(MaterialApp(home: ItemDetailPage(item: item)));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('toggleFavoriteDetail')));
+      await tester.pumpAndSettle();
+
+      final favs = (Hive.box('favoritesBox').get('ids') as List?)?.cast<int>();
+      expect(favs, contains(5));
+    });
   });
   testWidgets('Search text or category filters items', (tester) async {
     final service = FakeItemService([
@@ -97,52 +136,67 @@ void main() {
 
   testWidgets('Owner can edit an item', (tester) async {
     await tester.runAsync(() async {
-      await Hive.box<User>('userBox')
-          .put('currentUser', User(id: 1, name: 'Owner', email: 'o@test.com'));
+      await Hive.box<User>(
+        'userBox',
+      ).put('currentUser', User(id: 1, name: 'Owner', email: 'o@test.com'));
 
-    final item = Item(id: 1, ownerId: 1, title: 'Old', category: ItemCategory.books);
-    final service = FakeItemService([item]);
+      final item = Item(
+        id: 1,
+        ownerId: 1,
+        title: 'Old',
+        category: ItemCategory.books,
+      );
+      final service = FakeItemService([item]);
 
-    await tester.pumpWidget(MaterialApp(
-      home: ItemDetailPage(item: item, service: service),
-    ));
-    await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        MaterialApp(home: ItemDetailPage(item: item, service: service)),
+      );
+      await tester.pumpAndSettle();
 
-    expect(find.byKey(const Key('editItem')), findsOneWidget);
-    await tester.tap(find.byKey(const Key('editItem')));
-    await tester.pumpAndSettle();
+      expect(find.byKey(const Key('editItem')), findsOneWidget);
+      await tester.tap(find.byKey(const Key('editItem')));
+      await tester.pumpAndSettle();
 
-    // title field prefilled
-    final titleEditable = tester.widget<EditableText>(find.descendant(
-        of: find.byType(TextFormField).first, matching: find.byType(EditableText)));
-    expect(titleEditable.controller.text, 'Old');
+      // title field prefilled
+      final titleEditable = tester.widget<EditableText>(
+        find.descendant(
+          of: find.byType(TextFormField).first,
+          matching: find.byType(EditableText),
+        ),
+      );
+      expect(titleEditable.controller.text, 'Old');
 
-    await tester.enterText(find.byType(TextFormField).first, 'New');
-    await tester.tap(find.text('Update Item'));
-    await tester.pump();
+      await tester.enterText(find.byType(TextFormField).first, 'New');
+      await tester.tap(find.text('Update Item'));
+      await tester.pump();
 
-    expect(service.updated?.title, 'New');
-
+      expect(service.updated?.title, 'New');
     });
   });
 
   testWidgets('Owner can delete an item', (tester) async {
     await tester.runAsync(() async {
-      await Hive.box<User>('userBox')
-          .put('currentUser', User(id: 1, name: 'Owner', email: 'o@test.com'));
+      await Hive.box<User>(
+        'userBox',
+      ).put('currentUser', User(id: 1, name: 'Owner', email: 'o@test.com'));
 
-    final item = Item(id: 1, ownerId: 1, title: 'Del', category: ItemCategory.books);
-    final service = FakeItemService([item]);
+      final item = Item(
+        id: 1,
+        ownerId: 1,
+        title: 'Del',
+        category: ItemCategory.books,
+      );
+      final service = FakeItemService([item]);
 
-    await tester.pumpWidget(MaterialApp(
-      home: ItemDetailPage(item: item, service: service),
-    ));
-    await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        MaterialApp(home: ItemDetailPage(item: item, service: service)),
+      );
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('deleteItem')));
-    await tester.pump();
+      await tester.tap(find.byKey(const Key('deleteItem')));
+      await tester.pump();
 
-    expect(service.deletedId, 1);
+      expect(service.deletedId, 1);
     });
   });
 }
