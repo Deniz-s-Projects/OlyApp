@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../services/maintenance_service.dart';
+import '../utils/user_helpers.dart';
 
 class MaintenanceChatPage extends StatefulWidget {
   final MaintenanceRequest request;
@@ -33,7 +34,7 @@ class _MaintenanceChatPageState extends State<MaintenanceChatPage> {
     if (text.isEmpty || widget.request.id == null) return;
     final message = Message(
       requestId: widget.request.id!,
-      senderId: 1,
+      senderId: currentUserId(),
       content: text,
     );
     final saved = await _service.sendMessage(message);
@@ -65,7 +66,7 @@ class _MaintenanceChatPageState extends State<MaintenanceChatPage> {
               itemCount: _messages.length,
               itemBuilder: (context, index) {
                 final msg = _messages[index];
-                final isMe = msg.senderId == 1;
+                final isMe = msg.senderId == currentUserId();
                 return Align(
                   alignment:
                       isMe ? Alignment.centerRight : Alignment.centerLeft,

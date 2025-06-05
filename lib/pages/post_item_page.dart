@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/models.dart';
 import '../services/item_service.dart';
+import '../utils/user_helpers.dart';
 
 class PostItemPage extends StatefulWidget {
   final Item? item;
@@ -70,7 +71,7 @@ class _PostItemPageState extends State<PostItemPage> {
       final editing = _editing;
       final item = Item(
         id: editing ? widget.item!.id : null,
-        ownerId: editing ? widget.item!.ownerId : 1,
+        ownerId: editing ? widget.item!.ownerId : currentUserId(),
         title: _titleCtrl.text.trim(),
         description:
             _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),

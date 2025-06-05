@@ -5,6 +5,7 @@ import '../models/models.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/maintenance_service.dart';
 import 'maintenance_chat_page.dart';
+import '../utils/user_helpers.dart';
 
 class MaintenancePage extends StatefulWidget {
   final MaintenanceService? service;
@@ -133,7 +134,7 @@ class _MaintenancePageState extends State<MaintenancePage> {
               if (subject.isEmpty || desc.isEmpty) return;
               await _service.createRequest(
                 MaintenanceRequest(
-                  userId: 1,
+                  userId: currentUserId(),
                   subject: subject,
                   description: desc,
                 ),

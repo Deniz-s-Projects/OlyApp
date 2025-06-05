@@ -39,6 +39,17 @@ router.put('/:id', requireAdmin, async (req, res) => {
   }
 });
 
+// DELETE /events/:id - remove event
+router.delete('/:id', requireAdmin, async (req, res) => {
+  try {
+    const event = await Event.findByIdAndDelete(req.params.id);
+    if (!event) return res.status(404).json({ error: 'Event not found' });
+    res.json({ data: event });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 // POST /events/:id/rsvp - add attendee
 router.post('/:id/rsvp', async (req, res) => {
   try {

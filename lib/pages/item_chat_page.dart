@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../services/item_service.dart';
+import '../utils/user_helpers.dart';
 
 class ItemChatPage extends StatefulWidget {
   final Item item;
@@ -40,7 +41,7 @@ class _ItemChatPageState extends State<ItemChatPage> {
     if (text.isEmpty || widget.item.id == null) return;
     final message = Message(
       requestId: widget.item.id!,
-      senderId: 1,
+      senderId: currentUserId(),
       content: text,
     );
     try {
@@ -77,7 +78,7 @@ class _ItemChatPageState extends State<ItemChatPage> {
               itemCount: _messages.length,
               itemBuilder: (context, index) {
                 final msg = _messages[index];
-                final isMe = msg.senderId == 1;
+                final isMe = msg.senderId == currentUserId();
                 return Align(
                   alignment:
                       isMe ? Alignment.centerRight : Alignment.centerLeft,
