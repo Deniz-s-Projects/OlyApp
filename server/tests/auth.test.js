@@ -2,7 +2,10 @@ const request = require('supertest');
 const mongoose = require('mongoose');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const express = require('express');
+const jwt = require('jsonwebtoken');
 const apiRouter = require('../api');
+
+const SECRET = process.env.JWT_SECRET || 'secretkey';
 
 let app;
 let mongo;
@@ -31,6 +34,7 @@ describe('Auth API', () => {
       .send({ name: 'Test', email: 'a@b.c', password: 'pass' });
     expect(reg.status).toBe(201);
     expect(reg.body).toHaveProperty('token');
+    expect(() => jwt.verify(reg.body.token, SECRET)).not.toThrow();
     expect(reg.body.user.email).toBe('a@b.c');
 
     const res = await request(app)
@@ -38,6 +42,7 @@ describe('Auth API', () => {
       .send({ email: 'a@b.c', password: 'pass' });
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty('token');
+    expect(() => jwt.verify(res.body.token, SECRET)).not.toThrow();
     expect(res.body.user.email).toBe('a@b.c');
   });
 

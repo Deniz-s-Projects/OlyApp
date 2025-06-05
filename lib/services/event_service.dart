@@ -17,8 +17,8 @@ class EventService extends ApiService {
       await box?.put('events', events.map((e) => e.toJson()).toList());
       return events;
     } catch (e) {
-      final cached = box?.get('events', defaultValue: const <dynamic>[])
-          as List?;
+      final cached =
+          box?.get('events', defaultValue: const <dynamic>[]) as List?;
       if (cached == null || cached.isEmpty) {
         rethrow;
       }
@@ -35,11 +35,10 @@ class EventService extends ApiService {
   }
 
   Future<CalendarEvent> updateEvent(CalendarEvent event) async {
-    return post(
+    return put(
       '/events/${event.id}',
       event.toJson(),
-      (json) =>
-          CalendarEvent.fromJson(json['data'] as Map<String, dynamic>),
+      (json) => CalendarEvent.fromJson(json['data'] as Map<String, dynamic>),
     );
   }
 

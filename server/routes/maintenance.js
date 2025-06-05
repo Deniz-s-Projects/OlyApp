@@ -2,6 +2,7 @@ const express = require('express');
 const MaintenanceRequest = require('../models/MaintenanceRequest');
 const Message = require('../models/Message');
 const auth = require('../middleware/auth');
+const requireAdmin = require('../middleware/requireAdmin');
 const multer = require('multer');
 const path = require('path');
 
@@ -72,8 +73,8 @@ router.post('/:id/messages', async (req, res) => {
   }
 });
 
-// POST /maintenance/:id - update status
-router.post('/:id', async (req, res) => {
+// PUT /maintenance/:id - update status
+router.put('/:id', requireAdmin, async (req, res) => {
   try {
     const request = await MaintenanceRequest.findByIdAndUpdate(
       req.params.id,

@@ -7,6 +7,7 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import '../models/models.dart';
 import '../utils/validators.dart';
 import '../services/api_service.dart';
+import '../services/auth_service.dart';
 
 /// A simple login page with email/password and placeholder Google/Apple login buttons.
 class LoginPage extends StatefulWidget {
@@ -53,17 +54,8 @@ class _LoginPageState extends State<LoginPage> {
       };
     }
 
-    final uri = ApiService().buildUri('/auth/login');
-    final response = await http.post(
-      uri,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'email': email, 'password': password}),
-    );
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body) as Map<String, dynamic>;
-    } else {
-      throw Exception('Failed to login: ${response.statusCode}');
-    }
+    final service = AuthService();
+    return service.login(email, password);
   }
 
   void _handleLogin() async {
@@ -74,10 +66,6 @@ class _LoginPageState extends State<LoginPage> {
       final email = _emailController.text.trim();
       final password = _passwordController.text;
       final response = await _authenticate(email, password);
-
-      // Store auth token
-      final authBox = Hive.box('authBox');
-      await authBox.put('token', response['token']);
 
       // Store user info
       final userMap = response['user'] as Map<String, dynamic>;
@@ -293,13 +281,20 @@ class _LoginPageState extends State<LoginPage> {
                               },
                       icon: const Icon(Icons.apple),
                       label: const Text('Apple'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: cs.primaryContainer,
-                        foregroundColor: cs.onPrimaryContainer,
-                      ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: cs.primaryContainer,
+                      foregroundColor: cs.onPrimaryContainer,
                     ),
-                  ],
-                ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              TextButton(
+                onPressed: _isLoading
+                    ? null
+                    : () => Navigator.pushNamed(context, '/register'),
+                child: const Text('Create an account'),
+              ),
               ],
             ),
           ),

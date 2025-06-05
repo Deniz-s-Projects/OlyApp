@@ -48,6 +48,7 @@ void main() {
           calendarPage: CalendarPage(service: fakeEventService),
           maintenancePage: MaintenancePage(service: fakeMaintenanceService),
           onLogout: () {},
+          notifications: const [],
         ),
       ),
     );
@@ -65,8 +66,8 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.widgetWithText(AppBar, 'Calendar'), findsOneWidget);
-    // Calendar page includes its own FAB so at least one is present.
-    expect(find.byType(FloatingActionButton), findsWidgets);
+    // No FABs visible for regular user.
+    expect(find.byType(FloatingActionButton), findsNothing);
 
     // Navigate to Maintenance tab
     await tester.tap(
@@ -82,7 +83,9 @@ void main() {
 
   testWidgets('Admin card visible for admins', (tester) async {
     await tester.pumpWidget(
-      const MaterialApp(home: MainPage(isAdmin: true, onLogout: null)),
+      const MaterialApp(
+        home: MainPage(isAdmin: true, onLogout: null, notifications: []),
+      ),
     );
     await tester.pumpAndSettle();
 
@@ -90,7 +93,9 @@ void main() {
   });
 
   testWidgets('Admin card hidden for regular user', (tester) async {
-    await tester.pumpWidget(const MaterialApp(home: MainPage(onLogout: null)));
+    await tester.pumpWidget(
+      const MaterialApp(home: MainPage(onLogout: null, notifications: [])),
+    );
     await tester.pumpAndSettle();
     expect(find.text('Admin'), findsNothing);
   });
@@ -102,7 +107,9 @@ void main() {
       MaterialApp(
         home: MainPage(
           calendarPage: CalendarPage(service: fakeEventService),
+          isAdmin: true,
           onLogout: () {},
+          notifications: const [],
         ),
       ),
     );
@@ -131,6 +138,7 @@ void main() {
         home: MainPage(
           itemExchangePage: ItemExchangePage(service: fakeItemService),
           onLogout: null,
+          notifications: const [],
         ),
       ),
     );
