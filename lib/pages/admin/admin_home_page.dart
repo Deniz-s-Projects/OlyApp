@@ -5,12 +5,22 @@ import 'notification_admin_page.dart';
 import 'bulletin_admin_page.dart';
 import 'booking_admin_page.dart';
 import 'map_admin_page.dart';
+import '../../utils/user_helpers.dart';
 
 class AdminHomePage extends StatelessWidget {
   const AdminHomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    if (!currentUserIsAdmin()) {
+      Future.microtask(() {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Admin access required')),
+        );
+      });
+      return const SizedBox.shrink();
+    }
     return Scaffold(
       appBar: AppBar(title: const Text('Admin Tools')),
       body: Padding(

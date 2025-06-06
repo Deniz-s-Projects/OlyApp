@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 import '../../services/notification_service.dart';
+import '../../utils/user_helpers.dart';
 
 class NotificationAdminPage extends StatefulWidget {
   const NotificationAdminPage({super.key});
@@ -44,6 +45,7 @@ class _NotificationAdminPageState extends State<NotificationAdminPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (!currentUserIsAdmin()) return const SizedBox.shrink();
     return Scaffold(
       appBar: AppBar(title: const Text('Send Notification')),
       body: Padding(

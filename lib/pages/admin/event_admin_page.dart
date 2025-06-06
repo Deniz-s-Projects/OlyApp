@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../models/models.dart';
 import '../../services/event_service.dart';
 import '../calendar_page.dart' show showAddEventDialog;
+import '../../utils/user_helpers.dart';
 
 class EventAdminPage extends StatefulWidget {
   final EventService? service;
@@ -18,8 +19,17 @@ class _EventAdminPageState extends State<EventAdminPage> {
   @override
   void initState() {
     super.initState();
-    _service = widget.service ?? EventService();
-    _load();
+    if (!currentUserIsAdmin()) {
+      Future.microtask(() {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Admin access required')),
+        );
+      });
+    } else {
+      _service = widget.service ?? EventService();
+      _load();
+    }
   }
 
   Future<void> _load() async {
@@ -65,6 +75,7 @@ class _EventAdminPageState extends State<EventAdminPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (!currentUserIsAdmin()) return const SizedBox.shrink();
     return Scaffold(
       appBar: AppBar(title: const Text('Manage Events')),
       floatingActionButton: FloatingActionButton(

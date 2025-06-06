@@ -69,4 +69,17 @@ class MaintenanceService extends ApiService {
       (json) => MaintenanceRequest.fromJson(json as Map<String, dynamic>),
     );
   }
+
+  Future<MaintenanceRequest> updateRequest(MaintenanceRequest req) async {
+    if (req.id == null) throw ArgumentError('id required');
+    return put(
+      '/maintenance/${req.id}',
+      req.toJson(),
+      (json) => MaintenanceRequest.fromJson(json as Map<String, dynamic>),
+    );
+  }
+
+  Future<void> deleteRequest(int id) async {
+    await delete('/maintenance/$id', (_) => null);
+  }
 }

@@ -7,3 +7,10 @@ int currentUserId() {
   final user = Hive.box<User>('userBox').get('currentUser');
   return user?.id ?? 0;
 }
+
+/// Returns true if the currently logged in user is an admin.
+bool currentUserIsAdmin() {
+  if (!Hive.isBoxOpen('userBox')) return false;
+  final user = Hive.box<User>('userBox').get('currentUser');
+  return user?.isAdmin ?? false;
+}
