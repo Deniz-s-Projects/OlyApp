@@ -5,18 +5,35 @@ import 'item_chat_page.dart';
 import 'post_item_page.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-class ItemDetailPage extends StatelessWidget {
+class ItemDetailPage extends StatefulWidget {
   final Item item;
   final ItemService? service;
 
   const ItemDetailPage({super.key, required this.item, this.service});
 
+  @override
+  State<ItemDetailPage> createState() => _ItemDetailPageState();
+}
+
+class _ItemDetailPageState extends State<ItemDetailPage> {
+  late Item _item;
+  late ItemService _service;
+  final _ratingCtrl = TextEditingController();
+  final _reviewCtrl = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _item = widget.item;
+    _service = widget.service ?? ItemService();
+  }
+
   Future<void> _requestItem(BuildContext context) async {
-    if (item.id == null) return;
-    final svc = service ?? ItemService();
+    if (_item.id == null) return;
+    final svc = _service;
     final messenger = ScaffoldMessenger.of(context);
     try {
-      await svc.requestItem(item.id!);
+      await svc.requestItem(_item.id!);
       messenger.showSnackBar(const SnackBar(content: Text('Request sent!')));
     } catch (e) {
       messenger.showSnackBar(SnackBar(content: Text('Failed: $e')));
@@ -30,32 +47,32 @@ class ItemDetailPage extends StatelessWidget {
     if (Hive.isBoxOpen('userBox')) {
       user = Hive.box<User>('userBox').get('currentUser');
     }
-    final isOwner = user != null && user.id == item.ownerId;
+    final isOwner = user != null && user.id == _item.ownerId;
     final favBox = Hive.box('favoritesBox');
     return Scaffold(
       appBar: AppBar(
-        title: Text(item.title),
+        title: Text(_item.title),
         backgroundColor: colorScheme.primaryContainer,
         foregroundColor: colorScheme.onPrimaryContainer,
         elevation: 1,
         actions: [
-          if (item.id != null)
+          if (_item.id != null)
             ValueListenableBuilder(
               valueListenable: favBox.listenable(),
               builder: (context, Box box, _) {
                 final ids =
                     (box.get('ids', defaultValue: const <int>[]) as List)
                         .cast<int>();
-                final isFav = ids.contains(item.id);
+                final isFav = ids.contains(_item.id);
                 return IconButton(
                   key: const Key('toggleFavoriteDetail'),
                   icon: Icon(isFav ? Icons.star : Icons.star_border),
                   onPressed: () {
                     final set = ids.toSet();
                     if (isFav) {
-                      set.remove(item.id);
+                      set.remove(_item.id);
                     } else {
-                      set.add(item.id as int);
+                      set.add(_item.id as int);
                     }
                     box.put('ids', set.toList());
                   },
@@ -70,7 +87,7 @@ class ItemDetailPage extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => PostItemPage(item: item, service: service),
+                    builder: (_) => PostItemPage(item: _item, service: _service),
                   ),
                 );
               },
@@ -79,9 +96,9 @@ class ItemDetailPage extends StatelessWidget {
               key: const Key('deleteItem'),
               icon: const Icon(Icons.delete),
               onPressed: () async {
-                if (item.id == null) return;
-                final svc = service ?? ItemService();
-                await svc.deleteItem(item.id!);
+                if (_item.id == null) return;
+                final svc = _service;
+                await svc.deleteItem(_item.id!);
                 if (context.mounted) Navigator.pop(context, true);
               },
             ),
@@ -93,9 +110,9 @@ class ItemDetailPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Item Image
-            item.imageUrl != null
+            _item.imageUrl != null
                 ? Image.network(
-                  item.imageUrl!,
+                  _item.imageUrl!,
                   height: 200,
                   width: double.infinity,
                   fit: BoxFit.cover,
@@ -118,21 +135,21 @@ class ItemDetailPage extends StatelessWidget {
                 children: [
                   // Title & Price/Free Badge
                   Text(
-                    item.title,
+                    _item.title,
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       color: colorScheme.primary,
                     ),
                   ),
                   const SizedBox(height: 8),
-                  if (item.isFree)
+                  if (_item.isFree)
                     Chip(
                       label: const Text('Free'),
                       backgroundColor: colorScheme.primary,
                       labelStyle: TextStyle(color: colorScheme.onPrimary),
                     )
-                  else if (item.price != null)
+                  else if (_item.price != null)
                     Text(
-                      '\$${item.price!.toStringAsFixed(2)}',
+                      '\$${_item.price!.toStringAsFixed(2)}',
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
 
@@ -147,7 +164,7 @@ class ItemDetailPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    item.description ?? 'No description provided.',
+                    _item.description ?? 'No description provided.',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
 
@@ -161,14 +178,14 @@ class ItemDetailPage extends StatelessWidget {
                           icon: const Icon(Icons.chat),
                           label: const Text('Chat Owner'),
                           onPressed: () {
-                            if (item.id == null) return;
+                            if (_item.id == null) return;
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder:
                                     (_) => ItemChatPage(
-                                      item: item,
-                                      service: service,
+                                      item: _item,
+                                      service: _service,
                                     ),
                               ),
                             );
@@ -184,16 +201,47 @@ class ItemDetailPage extends StatelessWidget {
                             backgroundColor: colorScheme.primary,
                             foregroundColor: colorScheme.onPrimary,
                           ),
-                          onPressed: () {
-                            _requestItem(context);
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                  onPressed: () {
+                    _requestItem(context);
+                  },
+                ),
               ),
+            ],
+          ),
+          if (_item.completed && !isOwner) ...[
+            const SizedBox(height: 16),
+            TextField(
+              controller: _ratingCtrl,
+              decoration: const InputDecoration(labelText: 'Rating (1-5)'),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: false),
             ),
+            TextField(
+              controller: _reviewCtrl,
+              decoration: const InputDecoration(labelText: 'Review'),
+            ),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: () async {
+                if (_item.id == null) return;
+                final rating = int.tryParse(_ratingCtrl.text) ?? 0;
+                await _service.submitRating(
+                  _item.id!,
+                  rating,
+                  review: _reviewCtrl.text,
+                );
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Rating submitted')),
+                  );
+                }
+              },
+              child: const Text('Submit Rating'),
+            ),
+          ],
+        ],
+      ),
+    ),
           ],
         ),
       ),
