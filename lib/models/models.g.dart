@@ -257,65 +257,6 @@ class ItemAdapter extends TypeAdapter<Item> {
           typeId == other.typeId;
 }
 
-class ItemCategoryAdapter extends TypeAdapter<ItemCategory> {
-  @override
-  final int typeId = 4;
-
-  @override
-  ItemCategory read(BinaryReader reader) {
-    switch (reader.readByte()) {
-      case 0:
-        return ItemCategory.furniture;
-      case 1:
-        return ItemCategory.books;
-      case 2:
-        return ItemCategory.electronics;
-      case 3:
-        return ItemCategory.other;
-      case 4:
-        return ItemCategory.appliances;
-      case 5:
-        return ItemCategory.clothing;
-      default:
-        return ItemCategory.furniture;
-    }
-  }
-
-  @override
-  void write(BinaryWriter writer, ItemCategory obj) {
-    switch (obj) {
-      case ItemCategory.furniture:
-        writer.writeByte(0);
-        return;
-      case ItemCategory.books:
-        writer.writeByte(1);
-        return;
-      case ItemCategory.electronics:
-        writer.writeByte(2);
-        return;
-      case ItemCategory.other:
-        writer.writeByte(3);
-        return;
-      case ItemCategory.appliances:
-        writer.writeByte(4);
-        return;
-      case ItemCategory.clothing:
-        writer.writeByte(5);
-        return;
-    }
-  }
-
-  @override
-  int get hashCode => typeId.hashCode;
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is ItemCategoryAdapter &&
-          runtimeType == other.runtimeType &&
-          typeId == other.typeId;
-}
-
 class NotificationRecordAdapter extends TypeAdapter<NotificationRecord> {
   @override
   final int typeId = 6;
@@ -352,6 +293,102 @@ class NotificationRecordAdapter extends TypeAdapter<NotificationRecord> {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is NotificationRecordAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
+class TransitStopAdapter extends TypeAdapter<TransitStop> {
+  @override
+  final int typeId = 7;
+
+  @override
+  TransitStop read(BinaryReader reader) {
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
+    return TransitStop(
+      id: fields[0] as String,
+      name: fields[1] as String,
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, TransitStop obj) {
+    writer
+      ..writeByte(2)
+      ..writeByte(0)
+      ..write(obj.id)
+      ..writeByte(1)
+      ..write(obj.name);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TransitStopAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
+class ItemCategoryAdapter extends TypeAdapter<ItemCategory> {
+  @override
+  final int typeId = 4;
+
+  @override
+  ItemCategory read(BinaryReader reader) {
+    switch (reader.readByte()) {
+      case 0:
+        return ItemCategory.furniture;
+      case 1:
+        return ItemCategory.books;
+      case 2:
+        return ItemCategory.electronics;
+      case 3:
+        return ItemCategory.other;
+      case 4:
+        return ItemCategory.appliances;
+      case 5:
+        return ItemCategory.clothing;
+      default:
+        return ItemCategory.furniture;
+    }
+  }
+
+  @override
+  void write(BinaryWriter writer, ItemCategory obj) {
+    switch (obj) {
+      case ItemCategory.furniture:
+        writer.writeByte(0);
+        break;
+      case ItemCategory.books:
+        writer.writeByte(1);
+        break;
+      case ItemCategory.electronics:
+        writer.writeByte(2);
+        break;
+      case ItemCategory.other:
+        writer.writeByte(3);
+        break;
+      case ItemCategory.appliances:
+        writer.writeByte(4);
+        break;
+      case ItemCategory.clothing:
+        writer.writeByte(5);
+        break;
+    }
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ItemCategoryAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
