@@ -7,7 +7,9 @@ const UserSchema = new mongoose.Schema({
   // Path to user's avatar image under /uploads
   avatarUrl: String,
   isAdmin: { type: Boolean, default: false },
-  deviceTokens: { type: [String], default: [] }
+  deviceTokens: { type: [String], default: [] },
+  passwordResetToken: String,
+  passwordResetExpires: Date,
 });
 
 module.exports = mongoose.model('User', UserSchema);

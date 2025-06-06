@@ -1,9 +1,15 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 const User = require('../models/User');
 
 const SECRET = process.env.JWT_SECRET || 'secretkey';
+
+const transporter = nodemailer.createTransport({
+  jsonTransport: true,
+});
 
 const router = express.Router();
 
@@ -61,6 +67,53 @@ router.post('/login', async (req, res) => {
         isAdmin: user.isAdmin,
       },
     });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// POST /auth/reset - request password reset token
+router.post('/reset', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email required' });
+    const user = await User.findOne({ email });
+    if (!user) {
+      // prevent user enumeration
+      return res.json({ message: 'If that email exists, a reset link has been sent' });
+    }
+    const token = crypto.randomBytes(20).toString('hex');
+    user.passwordResetToken = token;
+    user.passwordResetExpires = new Date(Date.now() + 3600_000);
+    await user.save();
+    await transporter.sendMail({
+      to: user.email,
+      subject: 'Password Reset',
+      text: `Your password reset token is: ${token}`,
+    });
+    res.json({ message: 'Reset email sent' });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// POST /auth/reset/confirm - set new password
+router.post('/reset/confirm', async (req, res) => {
+  try {
+    const { token, password } = req.body;
+    if (!token || !password) {
+      return res.status(400).json({ error: 'Missing fields' });
+    }
+    const user = await User.findOne({
+      passwordResetToken: token,
+      passwordResetExpires: { $gt: new Date() },
+    });
+    if (!user) return res.status(400).json({ error: 'Invalid or expired token' });
+    user.passwordHash = await bcrypt.hash(password, 10);
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save();
+    res.json({ message: 'Password updated' });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
