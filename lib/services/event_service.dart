@@ -49,7 +49,7 @@ class EventService extends ApiService {
   Future<List<String>> fetchAttendees(String eventId) async {
     return get('/events/$eventId/attendees', (json) {
       final list = json['data'] as List<dynamic>;
-      return list.map((e) => e as String).toList();
+      return list.map((e) => e.toString()).toList();
     });
   }
 
