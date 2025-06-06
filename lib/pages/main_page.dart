@@ -13,7 +13,7 @@ import 'notifications_page.dart';
 import 'transit_page.dart';
 import 'directory_page.dart';
 import 'polls_page.dart';
-import 'lost_found_page.dart';
+import 'lost_found_page.dart'; 
 import '../models/models.dart';
 import '../services/event_service.dart';
 
@@ -305,6 +305,15 @@ class DashboardPage extends StatelessWidget {
                   label: 'Transit',
                   colorScheme: colorScheme,
                   onTap: () => _navigate(7),
+                ),
+                DashboardCard(
+                  icon: Icons.miscellaneous_services,
+                  label: 'Services',
+                  colorScheme: colorScheme,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ServicesPage()),
+                  ),
                 ),
                 DashboardCard(
                   icon: Icons.miscellaneous_services,
