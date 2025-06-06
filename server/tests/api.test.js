@@ -280,6 +280,22 @@ describe('Maintenance API', () => {
     expect(res.status).toBe(200);
     expect(res.body.status).toBe('closed');
   });
+
+  test('DELETE /maintenance/:id removes request', async () => {
+    const reqItem = await MaintenanceRequest.create({
+      userId: 1,
+      subject: 'Leak',
+      description: 'Water',
+    });
+    const admin = await User.create({ name: 'a', email: 'a@b.c', passwordHash: 'x', isAdmin: true });
+    const token = jwt.sign({ userId: admin._id }, SECRET);
+    const res = await request(app)
+      .delete(`/api/maintenance/${reqItem._id}`)
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    const remaining = await MaintenanceRequest.findById(reqItem._id);
+    expect(remaining).toBeNull();
+  });
 });
 
 describe('Bulletin API', () => {
