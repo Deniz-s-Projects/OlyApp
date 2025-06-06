@@ -136,7 +136,7 @@ npm test
 
 ## 📲 Coming Soon
 
-- Laundry monitor
+- Will announce more features 
 
 ---
 
