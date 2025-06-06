@@ -10,6 +10,7 @@ const pinsRouter = require('../routes/pins');
 const notificationsRouter = require('../routes/notifications');
 const usersRouter = require('../routes/users');
 const directoryRouter = require('../routes/directory');
+const servicesRouter = require('../routes/services');
 const pollsRouter = require('../routes/polls');
 
 router.get('/', (req, res) => {
@@ -26,5 +27,6 @@ router.use('/pins', pinsRouter);
 router.use('/notifications', notificationsRouter);
 router.use('/users', usersRouter);
 router.use('/directory', directoryRouter);
+router.use('/services', servicesRouter);
 router.use('/polls', pollsRouter);
 module.exports = router;
