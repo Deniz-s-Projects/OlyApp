@@ -140,7 +140,12 @@ class _CalendarPageState extends State<CalendarPage> {
     if (event.id == null) return;
     try {
       final attendees = await _service.fetchAttendees(event.id!);
-      final comments = await _service.fetchComments(event.id!);
+      List<EventComment> comments = [];
+      try {
+        comments = await _service.fetchComments(event.id!);
+      } catch (_) {
+        // Ignore comment loading errors
+      }
       MapPin? pin;
       if (event.location != null) {
         final pins = await MapService().fetchPins();
@@ -162,6 +167,7 @@ class _CalendarPageState extends State<CalendarPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const Text('Attendees'),
                   Text(attendees.isEmpty ? 'None' : attendees.join(', ')),
                   if (event.location != null)
                     Padding(
