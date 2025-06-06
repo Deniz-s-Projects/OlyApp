@@ -20,6 +20,9 @@ OlyApp is a mobile app built by and for residents of the Olympiadorf (Olydorf) i
 - Submit issues in your room or building directly from the app.
 - Attach photos, chat with admins and track ticket status.
 
+### ✅ Directory
+- Browse residents who opted in to be listed and start private chats.
+
 ### ✅ Map
 - Interactive map of Olydorf with filterable pins and route planning.
 
