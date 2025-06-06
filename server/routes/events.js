@@ -1,6 +1,7 @@
 const express = require('express');
-const Event = require('../models/Event'); 
-const EventComment = require('../models/EventComment'); 
+const Event = require('../models/Event');
+const EventComment = require('../models/EventComment');
+const User = require('../models/User');
 const auth = require('../middleware/auth');
 const requireAdmin = require('../middleware/requireAdmin');
 
