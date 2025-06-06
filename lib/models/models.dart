@@ -184,8 +184,9 @@ class CalendarEvent {
     title: map['title'] as String,
     date: _parseDate(map['date']),
     description: map['description'] as String?,
-    attendees:
-        (map['attendees'] as List<dynamic>? ?? const []).map((e) => e.toString()).toList(),
+    attendees: (map['attendees'] as List<dynamic>? ?? const [])
+        .map((e) => e.toString())
+        .toList(),
     location: map['location'] as String?,
   );
 
@@ -262,16 +263,14 @@ class Item {
     description: map['description'] as String?,
     imageUrl: map['imageUrl'] as String?,
     price: map['price'] != null ? (map['price'] as num).toDouble() : null,
-    isFree:
-        map['isFree'] is bool
-            ? map['isFree'] as bool
-            : (map['isFree'] as int) == 1,
-    category:
-        map['category'] is int
-            ? ItemCategory.values[map['category'] as int]
-            : ItemCategory.values.firstWhere(
-              (e) => e.name == map['category'] as String,
-            ),
+    isFree: map['isFree'] is bool
+        ? map['isFree'] as bool
+        : (map['isFree'] as int) == 1,
+    category: map['category'] is int
+        ? ItemCategory.values[map['category'] as int]
+        : ItemCategory.values.firstWhere(
+            (e) => e.name == map['category'] as String,
+          ),
     createdAt: _parseDate(map['createdAt']),
   );
 
@@ -294,14 +293,58 @@ class Item {
       Item.fromMap(jsonDecode(source));
 }
 
+class ServiceListing {
+  final int? id;
+  final String userId;
+  final String title;
+  final String description;
+  final String? contact;
+  final DateTime createdAt;
+
+  ServiceListing({
+    this.id,
+    required this.userId,
+    required this.title,
+    required this.description,
+    this.contact,
+    DateTime? createdAt,
+  }) : createdAt = createdAt ?? DateTime.now();
+
+  factory ServiceListing.fromMap(Map<String, dynamic> map) => ServiceListing(
+    id: map['id'] as int?,
+    userId: map['userId'] as String,
+    title: map['title'] as String,
+    description: map['description'] as String,
+    contact: map['contact'] as String?,
+    createdAt: _parseDate(map['createdAt']),
+  );
+
+  Map<String, dynamic> toMap() => {
+    if (id != null) 'id': id,
+    'userId': userId,
+    'title': title,
+    'description': description,
+    'contact': contact,
+    'createdAt': createdAt.toIso8601String(),
+  };
+
+  factory ServiceListing.fromJson(Map<String, dynamic> json) =>
+      ServiceListing.fromMap(json);
+  Map<String, dynamic> toJson() => toMap();
+}
+
 class BulletinPost {
   final int? id;
   final String userId;
   final String content;
   final DateTime date;
 
-  BulletinPost({this.id, required this.userId, required this.content, DateTime? date})
-    : date = date ?? DateTime.now();
+  BulletinPost({
+    this.id,
+    required this.userId,
+    required this.content,
+    DateTime? date,
+  }) : date = date ?? DateTime.now();
 
   factory BulletinPost.fromMap(Map<String, dynamic> map) => BulletinPost(
     id: map['id'] as int?,
@@ -372,20 +415,20 @@ class EventComment {
   }) : date = date ?? DateTime.now();
 
   factory EventComment.fromMap(Map<String, dynamic> map) => EventComment(
-        id: map['id'] as String?,
-        eventId: map['eventId'] is int
-            ? map['eventId'] as int
-            : int.parse(map['eventId'].toString()),
-        content: map['content'] as String,
-        date: _parseDate(map['date']),
-      );
+    id: map['id'] as String?,
+    eventId: map['eventId'] is int
+        ? map['eventId'] as int
+        : int.parse(map['eventId'].toString()),
+    content: map['content'] as String,
+    date: _parseDate(map['date']),
+  );
 
   Map<String, dynamic> toMap() => {
-        if (id != null) 'id': id,
-        'eventId': eventId,
-        'content': content,
-        'date': date.toIso8601String(),
-      };
+    if (id != null) 'id': id,
+    'eventId': eventId,
+    'content': content,
+    'date': date.toIso8601String(),
+  };
 
   factory EventComment.fromJson(Map<String, dynamic> json) =>
       EventComment.fromMap(json);
@@ -401,11 +444,8 @@ class NotificationRecord {
   @HiveField(2)
   final DateTime timestamp;
 
-  NotificationRecord({
-    this.title,
-    this.body,
-    DateTime? timestamp,
-  }) : timestamp = timestamp ?? DateTime.now();
+  NotificationRecord({this.title, this.body, DateTime? timestamp})
+    : timestamp = timestamp ?? DateTime.now();
 
   factory NotificationRecord.fromMap(Map<String, dynamic> map) =>
       NotificationRecord(
@@ -415,10 +455,10 @@ class NotificationRecord {
       );
 
   Map<String, dynamic> toMap() => {
-        'title': title,
-        'body': body,
-        'timestamp': timestamp.toIso8601String(),
-      };
+    'title': title,
+    'body': body,
+    'timestamp': timestamp.toIso8601String(),
+  };
 
   factory NotificationRecord.fromJson(Map<String, dynamic> json) =>
       NotificationRecord.fromMap(json);
@@ -427,6 +467,7 @@ class NotificationRecord {
   factory NotificationRecord.fromJsonString(String source) =>
       NotificationRecord.fromMap(jsonDecode(source));
 }
+
 @HiveType(typeId: 7)
 class TransitStop {
   @HiveField(0)
@@ -436,10 +477,8 @@ class TransitStop {
 
   TransitStop({required this.id, required this.name});
 
-  factory TransitStop.fromMap(Map<String, dynamic> map) => TransitStop(
-        id: map['id'].toString(),
-        name: map['name'] as String,
-      );
+  factory TransitStop.fromMap(Map<String, dynamic> map) =>
+      TransitStop(id: map['id'].toString(), name: map['name'] as String);
 
   Map<String, dynamic> toMap() => {'id': id, 'name': name};
 
@@ -459,15 +498,16 @@ class TransitDeparture {
     required this.time,
   });
 
-  factory TransitDeparture.fromMap(Map<String, dynamic> map) => TransitDeparture(
+  factory TransitDeparture.fromMap(Map<String, dynamic> map) =>
+      TransitDeparture(
         line: map['line'] as String,
         destination: map['destination'] as String,
         time: _parseDate(map['time']),
       );
 
   Map<String, dynamic> toMap() => {
-        'line': line,
-        'destination': destination,
-        'time': time.toIso8601String(),
-      };
+    'line': line,
+    'destination': destination,
+    'time': time.toIso8601String(),
+  };
 }
