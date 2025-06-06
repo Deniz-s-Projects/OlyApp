@@ -11,8 +11,9 @@ import 'bulletin_board_page.dart';
 import 'services_page.dart';
 import 'notifications_page.dart';
 import 'transit_page.dart';
-import 'directory_page.dart'; 
+import 'directory_page.dart';
 import 'polls_page.dart';
+import 'lost_found_page.dart'; 
 import '../models/models.dart';
 import '../services/event_service.dart';
 
@@ -46,6 +47,7 @@ class _MainPageState extends State<MainPage> {
     'Calendar',
     'Booking',
     'Item Exchange',
+    'Lost & Found',
     'Maintenance',
     'Transit',
     'Directory',
@@ -63,6 +65,7 @@ class _MainPageState extends State<MainPage> {
       widget.calendarPage ?? CalendarPage(isAdmin: widget.isAdmin),
       widget.bookingPage ?? const BookingPage(),
       widget.itemExchangePage ?? const ItemExchangePage(),
+      const LostFoundPage(),
       widget.maintenancePage ?? const MaintenancePage(),
       const TransitPage(),
       const DirectoryPage(),
@@ -124,6 +127,7 @@ class _MainPageState extends State<MainPage> {
             icon: Icon(Icons.swap_horiz),
             label: 'Exchange',
           ),
+          NavigationDestination(icon: Icon(Icons.help), label: 'Lost'),
           NavigationDestination(icon: Icon(Icons.build), label: 'Maintenance'),
           NavigationDestination(
             icon: Icon(Icons.directions_bus),
@@ -274,6 +278,12 @@ class DashboardPage extends StatelessWidget {
                   onTap: () => _navigate(4),
                 ),
                 DashboardCard(
+                  icon: Icons.help,
+                  label: 'Lost & Found',
+                  colorScheme: colorScheme,
+                  onTap: () => _navigate(5),
+                ),
+                DashboardCard(
                   icon: Icons.message,
                   label: 'Bulletin',
                   colorScheme: colorScheme,
@@ -288,13 +298,22 @@ class DashboardPage extends StatelessWidget {
                   icon: Icons.build,
                   label: 'Maintenance',
                   colorScheme: colorScheme,
-                  onTap: () => _navigate(5),
+                  onTap: () => _navigate(6),
                 ),
                 DashboardCard(
                   icon: Icons.directions_bus,
                   label: 'Transit',
                   colorScheme: colorScheme,
-                  onTap: () => _navigate(6),
+                  onTap: () => _navigate(7),
+                ),
+                DashboardCard(
+                  icon: Icons.miscellaneous_services,
+                  label: 'Services',
+                  colorScheme: colorScheme,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ServicesPage()),
+                  ),
                 ),
                 DashboardCard(
                   icon: Icons.miscellaneous_services,

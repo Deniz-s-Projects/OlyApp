@@ -7,7 +7,7 @@ const MessageSchema = new mongoose.Schema({
   },
   requestType: {
     type: String,
-    enum: ['Item', 'MaintenanceRequest']
+    enum: ['Item', 'MaintenanceRequest', 'LostItem']
   },
   requestId: {
     type: mongoose.Schema.Types.ObjectId,
