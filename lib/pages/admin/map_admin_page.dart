@@ -19,7 +19,7 @@ class _MapAdminPageState extends State<MapAdminPage> {
   void initState() {
     super.initState();
     if (!currentUserIsAdmin()) {
-      Future.microtask(() {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Admin access required')),
