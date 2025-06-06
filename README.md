@@ -8,17 +8,32 @@ OlyApp is a mobile app built by and for residents of the Olympiadorf (Olydorf) i
 
 ## 🚀 Features
 
-### ✅ Calendar (Live)
+### ✅ Calendar
 - View events, parties, meetings, and administrative deadlines.
-- Server integration for dynamic event loading (in progress).
+- Events are synced from the server and admins can create new ones.
 
-### ✅ Item Exchange (Mockup)
-- A scrollable list of items you can give away or grab.
-- Add new listings (to be integrated with backend soon).
+### ✅ Item Exchange
+- Browse items your neighbors are giving away or selling.
+- Add new listings with images and chat with interested people.
 
 ### ✅ Maintenance Requests
 - Submit issues in your room or building directly from the app.
-- Simple form with subject and description.
+- Attach photos, chat with admins and track ticket status.
+
+### ✅ Map
+- Interactive map of Olydorf with filterable pins and route planning.
+
+### ✅ Booking
+- Reserve shared spaces and manage your bookings.
+
+### ✅ Bulletin Board
+- Post announcements or offers and comment on posts.
+
+### ✅ Push Notifications
+- Get notified about new events and important announcements.
+
+### ✅ Admin Tools
+- Manage events, maintenance tickets, bookings, pins and notifications.
 
 ---
 
@@ -26,7 +41,7 @@ OlyApp is a mobile app built by and for residents of the Olympiadorf (Olydorf) i
 
 - **Flutter** for cross-platform mobile development (Android + iOS)
 - **Dart** as the main programming language
-- Planned backend: Node.js / Express + MongoDB (TBD)
+- Node.js / Express + MongoDB backend
 
 ---
 
@@ -114,10 +129,7 @@ npm test
 
 ## 📲 Coming Soon
 
-- Admin-only management of events and reports
 - Laundry monitor
-- Push notifications for announcements
-- Server API integration for events, item exchange, and maintenance
 
 ---
 
