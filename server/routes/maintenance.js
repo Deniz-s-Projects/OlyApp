@@ -88,4 +88,15 @@ router.put('/:id', requireAdmin, async (req, res) => {
   }
 });
 
+// DELETE /maintenance/:id - remove request
+router.delete('/:id', requireAdmin, async (req, res) => {
+  try {
+    const request = await MaintenanceRequest.findByIdAndDelete(req.params.id);
+    if (!request) return res.status(404).json({ error: 'Request not found' });
+    res.json({ data: request });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 module.exports = router;

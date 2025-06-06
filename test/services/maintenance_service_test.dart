@@ -141,6 +141,18 @@ void main() {
       expect(result.status, 'closed');
     });
 
+    test('deleteRequest sends DELETE', () async {
+      final mockClient = MockClient((request) async {
+        expect(request.method, equals('DELETE'));
+        expect(request.url.origin, Uri.parse(apiUrl).origin);
+        expect(request.url.path, '/api/maintenance/1');
+        return http.Response('{}', 200);
+      });
+
+      final service = MaintenanceService(client: mockClient);
+      await service.deleteRequest(1);
+    });
+
     test('throws on error status', () async {
       final mockClient = MockClient((_) async => http.Response('err', 500));
       final service = MaintenanceService(client: mockClient);
