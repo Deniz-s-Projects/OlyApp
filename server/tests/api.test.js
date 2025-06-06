@@ -365,3 +365,39 @@ describe('Bulletin API', () => {
     expect(posts).toHaveLength(0);
   });
 });
+
+describe('Directory API', () => {
+  test('GET /directory returns listed users', async () => {
+    await User.create({
+      name: 'Alice',
+      email: 'a@b.c',
+      passwordHash: 'x',
+      isListed: true
+    });
+    const token = getToken();
+    const res = await request(app)
+      .get('/api/directory')
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    expect(res.body.data).toHaveLength(1);
+    expect(res.body.data[0].name).toBe('Alice');
+  });
+
+  test('POST /directory/:id/messages creates conversation', async () => {
+    const bob = await User.create({
+      name: 'Bob',
+      email: 'b@c.d',
+      passwordHash: 'x',
+      isListed: true
+    });
+    const token = getToken();
+    const res = await request(app)
+      .post(`/api/directory/${bob._id}/messages`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ content: 'Hi' });
+    expect(res.status).toBe(201);
+    expect(res.body.data.content).toBe('Hi');
+    const convoMessages = await Message.find();
+    expect(convoMessages).toHaveLength(1);
+  });
+});

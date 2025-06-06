@@ -9,6 +9,7 @@ import 'profile_page.dart';
 import 'post_item_page.dart';
 import 'bulletin_board_page.dart';
 import 'notifications_page.dart';
+import 'directory_page.dart';
 import '../models/models.dart';
 import '../services/event_service.dart';
 
@@ -43,6 +44,7 @@ class _MainPageState extends State<MainPage> {
     'Booking',
     'Item Exchange',
     'Maintenance',
+    'Directory',
   ];
 
   late final List<Widget> _pages;
@@ -57,6 +59,7 @@ class _MainPageState extends State<MainPage> {
       widget.bookingPage ?? const BookingPage(),
       widget.itemExchangePage ?? const ItemExchangePage(),
       widget.maintenancePage ?? const MaintenancePage(),
+      const DirectoryPage(),
     ];
   }
 
@@ -115,6 +118,7 @@ class _MainPageState extends State<MainPage> {
             label: 'Exchange',
           ),
           NavigationDestination(icon: Icon(Icons.build), label: 'Maintenance'),
+          NavigationDestination(icon: Icon(Icons.people), label: 'Directory'),
         ],
       ),
     );
