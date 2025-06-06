@@ -99,13 +99,13 @@ void main() {
     expect(find.text('Dart Book'), findsOneWidget);
     expect(find.text('Laptop'), findsOneWidget);
 
-    await tester.enterText(find.byType(TextField), 'laptop');
+    await tester.enterText(find.byType(TextField).first, 'laptop');
     await tester.pumpAndSettle();
 
     expect(find.text('Laptop'), findsOneWidget);
     expect(find.text('Dart Book'), findsNothing);
 
-    await tester.enterText(find.byType(TextField), '');
+    await tester.enterText(find.byType(TextField).first, '');
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Books'));

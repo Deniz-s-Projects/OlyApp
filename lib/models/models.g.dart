@@ -272,6 +272,10 @@ class ItemCategoryAdapter extends TypeAdapter<ItemCategory> {
         return ItemCategory.electronics;
       case 3:
         return ItemCategory.other;
+      case 4:
+        return ItemCategory.appliances;
+      case 5:
+        return ItemCategory.clothing;
       default:
         return ItemCategory.furniture;
     }
@@ -291,6 +295,12 @@ class ItemCategoryAdapter extends TypeAdapter<ItemCategory> {
         return;
       case ItemCategory.other:
         writer.writeByte(3);
+        return;
+      case ItemCategory.appliances:
+        writer.writeByte(4);
+        return;
+      case ItemCategory.clothing:
+        writer.writeByte(5);
         return;
     }
   }

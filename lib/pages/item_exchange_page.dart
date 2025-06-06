@@ -18,10 +18,19 @@ class ItemExchangePage extends StatefulWidget {
 class _ItemExchangePageState extends State<ItemExchangePage> {
   late final ItemService _service;
   final _searchCtrl = TextEditingController();
+  final _minPriceCtrl = TextEditingController();
+  final _maxPriceCtrl = TextEditingController();
   String _selectedCategory = 'All';
   bool _onlyFavorites = false;
 
-  final _categories = ['All', 'Furniture', 'Books', 'Electronics'];
+  final _categories = [
+    'All',
+    'Furniture',
+    'Books',
+    'Electronics',
+    'Appliances',
+    'Clothing'
+  ];
 
   List<Item> _allItems = [];
   List<Item> _filteredItems = [];
@@ -46,12 +55,25 @@ class _ItemExchangePageState extends State<ItemExchangePage> {
       _allItems = items;
       _filteredItems = List.from(_allItems);
     });
+    _filter();
   }
 
   void _filter() {
     final query = _searchCtrl.text;
+    final minPrice = double.tryParse(_minPriceCtrl.text);
+    final maxPrice = double.tryParse(_maxPriceCtrl.text);
     setState(() {
       var results = filterItems(_allItems, query, _selectedCategory);
+      if (minPrice != null) {
+        results = results
+            .where((item) => (item.price ?? 0) >= minPrice)
+            .toList();
+      }
+      if (maxPrice != null) {
+        results = results
+            .where((item) => (item.price ?? 0) <= maxPrice)
+            .toList();
+      }
       if (_onlyFavorites) {
         final favs = _favoriteIds();
         results =
@@ -136,6 +158,34 @@ class _ItemExchangePageState extends State<ItemExchangePage> {
                   });
                 },
               ),
+            ),
+
+            const SizedBox(height: 12),
+
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _minPriceCtrl,
+                    decoration:
+                        const InputDecoration(labelText: 'Min Price'),
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    onChanged: (_) => _filter(),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: TextField(
+                    controller: _maxPriceCtrl,
+                    decoration:
+                        const InputDecoration(labelText: 'Max Price'),
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    onChanged: (_) => _filter(),
+                  ),
+                ),
+              ],
             ),
 
             const SizedBox(height: 16),
