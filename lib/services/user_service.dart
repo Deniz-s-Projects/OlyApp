@@ -30,4 +30,8 @@ class UserService extends ApiService {
       throw Exception('Request failed: ${response.statusCode}');
     }
   }
+
+  Future<void> deleteAccount() async {
+    await delete('/users/me', (_) => null);
+  }
 }

@@ -53,4 +53,15 @@ router.post('/me/avatar', upload.single('avatar'), async (req, res) => {
   }
 });
 
+// DELETE /users/me - remove current user
+router.delete('/me', async (req, res) => {
+  try {
+    const user = await User.findByIdAndDelete(req.userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json({ message: 'Account deleted' });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 module.exports = router;
