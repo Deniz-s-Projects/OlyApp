@@ -150,6 +150,27 @@ describe('Events API', () => {
     expect(res.status).toBe(201);
     expect(res.body.data.content).toBe('c');
   });
+
+  test('GET /events/:id/qr returns png', async () => {
+    const event = await Event.create({ title: 'Party', date: new Date(0) });
+    const token = getToken();
+    const res = await request(app)
+      .get(`/api/events/${event._id}/qr`)
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toBe('image/png');
+  });
+
+  test('POST /events/:id/checkin records user', async () => {
+    const event = await Event.create({ title: 'Party', date: new Date(0) });
+    const token = getToken();
+    const res = await request(app)
+      .post(`/api/events/${event._id}/checkin`)
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    const updated = await Event.findById(event._id);
+    expect(updated.checkIns).toContain(1);
+  });
 });
 
 describe('Items API', () => {

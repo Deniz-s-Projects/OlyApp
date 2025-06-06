@@ -6,6 +6,7 @@ const EventSchema = new mongoose.Schema({
   description: String,
   attendees: { type: [Number], default: [] },
   deviceTokens: { type: [String], default: [] },
+  checkIns: { type: [Number], default: [] },
   reminderSent: { type: Boolean, default: false },
   location: String,
 }, { timestamps: true });
