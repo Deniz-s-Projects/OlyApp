@@ -10,6 +10,7 @@ const pinsRouter = require('../routes/pins');
 const notificationsRouter = require('../routes/notifications');
 const usersRouter = require('../routes/users');
 const directoryRouter = require('../routes/directory');
+const lostFoundRouter = require('../routes/lostfound');
 
 router.get('/', (req, res) => {
   res.json({ message: 'API is running' });
@@ -25,4 +26,5 @@ router.use('/pins', pinsRouter);
 router.use('/notifications', notificationsRouter);
 router.use('/users', usersRouter);
 router.use('/directory', directoryRouter);
+router.use('/lostfound', lostFoundRouter);
 module.exports = router;
