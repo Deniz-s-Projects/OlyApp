@@ -34,7 +34,7 @@ void main() {
     tester,
   ) async {
     final service = FakeItemService();
-    final item = Item(id: 1, ownerId: 1, title: 'Chair');
+    final item = Item(id: 1, ownerId: '1', title: 'Chair');
     await tester.pumpWidget(
       MaterialApp(home: ItemDetailPage(item: item, service: service)),
     );

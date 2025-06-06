@@ -27,7 +27,7 @@ router.post('/', async (req, res) => {
   try {
     const post = await BulletinPost.create({
       id: await nextId(BulletinPost),
-      userId: Number(req.userId),
+      userId: req.userId,
       content: req.body.content,
       date: req.body.date,
     });
@@ -53,7 +53,7 @@ router.post('/:id/comments', async (req, res) => {
     const comment = await BulletinComment.create({
       id: await nextId(BulletinComment),
       postId: Number(req.params.id),
-      userId: Number(req.userId),
+      userId: req.userId,
       content: req.body.content,
       date: req.body.date,
     });

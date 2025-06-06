@@ -107,8 +107,8 @@ class _CalendarPageState extends State<CalendarPage> {
   Future<void> _rsvp(CalendarEvent event) async {
     if (event.id == null) return;
     try {
-      await _service.rsvpEvent(event.id!, 1);
-      final attendees = await _service.fetchAttendees(event.id!);
+      await _service.rsvpEvent(event.id!.toString());
+      final attendees = await _service.fetchAttendees(event.id!.toString());
       if (!mounted) return;
       setState(() {
         final updated = CalendarEvent(
@@ -142,7 +142,7 @@ class _CalendarPageState extends State<CalendarPage> {
   Future<void> _showEventDetails(CalendarEvent event) async {
     if (event.id == null) return;
     try {
-      final attendees = await _service.fetchAttendees(event.id!);
+      final attendees = await _service.fetchAttendees(event.id!.toString());
       List<EventComment> comments = [];
       try {
         comments = await _service.fetchComments(event.id!);
