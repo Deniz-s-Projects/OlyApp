@@ -216,7 +216,11 @@ class _ItemExchangePageState extends State<ItemExchangePage> {
                             ),
                           );
                         },
-                        child: ItemCard(title: item.title),
+                        child: ItemCard(
+                          title: item.title,
+                          averageRating:
+                              item.ratings.isNotEmpty ? item.averageRating : null,
+                        ),
                       ),
                       if (item.id != null)
                         Positioned(

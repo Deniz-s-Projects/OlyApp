@@ -222,6 +222,34 @@ describe('Items API', () => {
     expect(res.status).toBe(201);
     expect(res.body.content).toBe('Hello');
   });
+
+  test('POST /items/:id/ratings adds rating', async () => {
+    const item = await Item.create({ ownerId: 1, title: 'Chair' });
+    const token = await getToken();
+    const res = await request(app)
+      .post(`/api/items/${item._id}/ratings`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ rating: 5, review: 'Great' });
+    expect(res.status).toBe(201);
+    const updated = await Item.findById(item._id);
+    expect(updated.ratings).toHaveLength(1);
+    expect(updated.ratings[0].rating).toBe(5);
+  });
+
+  test('GET /items/:id/ratings returns list', async () => {
+    const item = await Item.create({
+      ownerId: 1,
+      title: 'Chair',
+      ratings: [{ rating: 4, review: 'Good' }],
+    });
+    const token = await getToken();
+    const res = await request(app)
+      .get(`/api/items/${item._id}/ratings`)
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    expect(res.body.data).toHaveLength(1);
+    expect(res.body.data[0].rating).toBe(4);
+  });
 });
 
 describe('Maintenance API', () => {

@@ -13,7 +13,14 @@ const ItemSchema = new mongoose.Schema({
     default: 'other'
   },
   createdAt: { type: Date, default: Date.now },
-  requested: { type: Boolean, default: false }
+  requested: { type: Boolean, default: false },
+  completed: { type: Boolean, default: false },
+  ratings: [
+    {
+      rating: { type: Number, required: true },
+      review: String
+    }
+  ]
 });
 
 module.exports = mongoose.model('Item', ItemSchema);

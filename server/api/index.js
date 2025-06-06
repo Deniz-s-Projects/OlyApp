@@ -11,6 +11,8 @@ const notificationsRouter = require('../routes/notifications');
 const usersRouter = require('../routes/users');
 const directoryRouter = require('../routes/directory');
 const lostFoundRouter = require('../routes/lostfound');
+const servicesRouter = require('../routes/services');
+const pollsRouter = require('../routes/polls');
 
 router.get('/', (req, res) => {
   res.json({ message: 'API is running' });
@@ -27,4 +29,6 @@ router.use('/notifications', notificationsRouter);
 router.use('/users', usersRouter);
 router.use('/directory', directoryRouter);
 router.use('/lostfound', lostFoundRouter);
+router.use('/services', servicesRouter);
+router.use('/polls', pollsRouter);
 module.exports = router;
