@@ -1,7 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../services/lost_found_service.dart';
 import '../utils/user_helpers.dart';
+import 'lost_found_detail_page.dart';
+import 'package:image_picker/image_picker.dart';
 
 class LostFoundPage extends StatefulWidget {
   final LostFoundService? service;
@@ -15,6 +19,7 @@ class _LostFoundPageState extends State<LostFoundPage> {
   late final LostFoundService _service;
   final _titleCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
+  XFile? _imageFile;
   List<LostItem> _items = [];
 
   @override
@@ -30,6 +35,12 @@ class _LostFoundPageState extends State<LostFoundPage> {
     setState(() => _items = items);
   }
 
+  Future<void> _pickImage(ImageSource source) async {
+    final picker = ImagePicker();
+    final file = await picker.pickImage(source: source);
+    if (file != null) setState(() => _imageFile = file);
+  }
+
   Future<void> _submit() async {
     final title = _titleCtrl.text.trim();
     if (title.isEmpty) return;
@@ -41,11 +52,13 @@ class _LostFoundPageState extends State<LostFoundPage> {
             ? null
             : _descCtrl.text.trim(),
       ),
+      imageFile: _imageFile != null ? File(_imageFile!.path) : null,
     );
     if (!mounted) return;
     setState(() => _items.add(item));
     _titleCtrl.clear();
     _descCtrl.clear();
+    setState(() => _imageFile = null);
   }
 
   @override
@@ -79,6 +92,19 @@ class _LostFoundPageState extends State<LostFoundPage> {
                         subtitle: item.description != null
                             ? Text(item.description!)
                             : null,
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () async {
+                          final changed = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => LostFoundDetailPage(
+                                item: item,
+                                service: _service,
+                              ),
+                            ),
+                          );
+                          if (changed == true) _loadItems();
+                        },
                       );
                     },
                   ),
@@ -97,10 +123,27 @@ class _LostFoundPageState extends State<LostFoundPage> {
                   decoration: const InputDecoration(labelText: 'Description'),
                 ),
                 const SizedBox(height: 8),
-                ElevatedButton(
-                  onPressed: _submit,
-                  child: const Text('Post'),
+                Row(
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: () => _pickImage(ImageSource.gallery),
+                      icon: const Icon(Icons.photo_library),
+                      label: const Text('Gallery'),
+                    ),
+                    const SizedBox(width: 12),
+                    ElevatedButton.icon(
+                      onPressed: () => _pickImage(ImageSource.camera),
+                      icon: const Icon(Icons.camera_alt),
+                      label: const Text('Camera'),
+                    ),
+                  ],
                 ),
+                if (_imageFile != null) ...[
+                  const SizedBox(height: 8),
+                  Image.file(File(_imageFile!.path), height: 150),
+                ],
+                const SizedBox(height: 8),
+                ElevatedButton(onPressed: _submit, child: const Text('Post')),
               ],
             ),
           ),
