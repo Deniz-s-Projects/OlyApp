@@ -200,7 +200,7 @@ class _CalendarPageState extends State<CalendarPage> {
                             Padding(
                               padding: const EdgeInsets.symmetric(vertical: 8),
                               child: Image.memory(
-                                qrImage!,
+                                qrImage,
                                 width: 150,
                                 height: 150,
                               ),

@@ -362,22 +362,16 @@ class ItemCategoryAdapter extends TypeAdapter<ItemCategory> {
     switch (obj) {
       case ItemCategory.furniture:
         writer.writeByte(0);
-        break;
       case ItemCategory.books:
         writer.writeByte(1);
-        break;
       case ItemCategory.electronics:
         writer.writeByte(2);
-        break;
       case ItemCategory.other:
         writer.writeByte(3);
-        break;
       case ItemCategory.appliances:
         writer.writeByte(4);
-        break;
       case ItemCategory.clothing:
         writer.writeByte(5);
-        break;
     }
   }
 

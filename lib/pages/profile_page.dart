@@ -119,6 +119,7 @@ class _ProfilePageState extends State<ProfilePage> {
     if (confirm != true) return;
     try {
       await _service.deleteAccount();
+      if (!mounted) return;
       await OlyApp.of(context)?.logout();
     } catch (e) {
       if (!mounted) return;
