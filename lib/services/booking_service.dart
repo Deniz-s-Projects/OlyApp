@@ -31,6 +31,12 @@ class BookingService extends ApiService {
     await delete('/bookings/slots/$id', (_) => null);
   }
 
+  Future<void> updateSlot(String id, DateTime time) async {
+    await put('/bookings/slots/$id', {
+      'time': time.toIso8601String(),
+    }, (_) => null);
+  }
+
   Future<void> createBooking(DateTime time, String name) async {
     await post('/bookings', {
       'time': time.toIso8601String(),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/models.dart';
 import '../../services/bulletin_service.dart';
+import '../../utils/user_helpers.dart';
 
 class BulletinAdminPage extends StatefulWidget {
   final BulletinService? service;
@@ -17,8 +18,17 @@ class _BulletinAdminPageState extends State<BulletinAdminPage> {
   @override
   void initState() {
     super.initState();
-    _service = widget.service ?? BulletinService();
-    _load();
+    if (!currentUserIsAdmin()) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Admin access required')),
+        );
+      });
+    } else {
+      _service = widget.service ?? BulletinService();
+      _load();
+    }
   }
 
   Future<void> _load() async {
@@ -65,6 +75,7 @@ class _BulletinAdminPageState extends State<BulletinAdminPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (!currentUserIsAdmin()) return const SizedBox.shrink();
     return Scaffold(
       appBar: AppBar(title: const Text('Bulletin Posts')),
       body: ListView.builder(

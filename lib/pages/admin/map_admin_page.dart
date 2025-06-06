@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/map_pin.dart';
 import '../../services/map_service.dart';
+import '../../utils/user_helpers.dart';
 
 class MapAdminPage extends StatefulWidget {
   final MapService? service;
@@ -17,8 +18,17 @@ class _MapAdminPageState extends State<MapAdminPage> {
   @override
   void initState() {
     super.initState();
-    _service = widget.service ?? MapService();
-    _load();
+    if (!currentUserIsAdmin()) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Admin access required')),
+        );
+      });
+    } else {
+      _service = widget.service ?? MapService();
+      _load();
+    }
   }
 
   Future<void> _load() async {
@@ -132,6 +142,7 @@ class _MapAdminPageState extends State<MapAdminPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (!currentUserIsAdmin()) return const SizedBox.shrink();
     return Scaffold(
       appBar: AppBar(title: const Text('Manage Map Pins')),
       floatingActionButton: FloatingActionButton(
