@@ -19,7 +19,7 @@ class DirectoryService extends ApiService {
     throw Exception('Request failed: ${res.statusCode}');
   }
 
-  Future<List<Message>> fetchMessages(int userId) async {
+  Future<List<Message>> fetchMessages(String userId) async {
     return get('/directory/$userId/messages', (json) {
       final list = json['data'] as List<dynamic>;
       return list
@@ -28,7 +28,7 @@ class DirectoryService extends ApiService {
     });
   }
 
-  Future<Message> sendMessage(int userId, String content) async {
+  Future<Message> sendMessage(String userId, String content) async {
     return post('/directory/$userId/messages', {'content': content}, (json) {
       return Message.fromJson(json['data'] as Map<String, dynamic>);
     });
