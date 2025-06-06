@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:geolocator/geolocator.dart';
 
 import '../models/map_pin.dart';
 import '../services/map_service.dart';
@@ -62,16 +63,45 @@ class _MapPageState extends State<MapPage> {
   }
 
   Future<void> _onPinTap(MapPin pin) async {
-    setState(() {
-      if (_selectedPins.contains(pin)) {
-        _selectedPins.remove(pin);
-      } else {
-        _selectedPins.add(pin);
-        if (_selectedPins.length > 2) {
-          _selectedPins.removeAt(0);
+    final result = await showModalBottomSheet<String>(
+      context: context,
+      builder:
+          (ctx) => SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.add_location),
+                  title: const Text('Add to route'),
+                  onTap: () => Navigator.pop(ctx, 'add'),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.my_location),
+                  title: const Text('Route from my location'),
+                  onTap: () => Navigator.pop(ctx, 'from'),
+                ),
+              ],
+            ),
+          ),
+    );
+
+    if (result == 'add') {
+      setState(() {
+        if (_selectedPins.contains(pin)) {
+          _selectedPins.remove(pin);
+        } else {
+          _selectedPins.add(pin);
+          if (_selectedPins.length > 2) {
+            _selectedPins.removeAt(0);
+          }
         }
-      }
-    });
+      });
+    } else if (result == 'from') {
+      setState(() {
+        _selectedPins = [pin];
+      });
+    }
+
     await _updateRoute();
   }
 
@@ -81,6 +111,25 @@ class _MapPageState extends State<MapPage> {
       final end = LatLng(_selectedPins[1].lat, _selectedPins[1].lon);
       final r = await _service.fetchRoute(start, end);
       setState(() => _route = r);
+    } else if (_selectedPins.length == 1) {
+      try {
+        var perm = await Geolocator.checkPermission();
+        if (perm == LocationPermission.denied) {
+          perm = await Geolocator.requestPermission();
+        }
+        if (perm == LocationPermission.denied ||
+            perm == LocationPermission.deniedForever) {
+          setState(() => _route = null);
+          return;
+        }
+        final pos = await Geolocator.getCurrentPosition();
+        final start = LatLng(pos.latitude, pos.longitude);
+        final end = LatLng(_selectedPins[0].lat, _selectedPins[0].lon);
+        final r = await _service.fetchRoute(start, end);
+        setState(() => _route = r);
+      } catch (_) {
+        setState(() => _route = null);
+      }
     } else {
       setState(() => _route = null);
     }
@@ -196,6 +245,12 @@ class _MapPageState extends State<MapPage> {
                         );
                       },
                     ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Tap a pin and choose "Route from my location" to start a route, or tap two pins to route between them.',
+                    style: TextStyle(fontSize: 12),
+                    textAlign: TextAlign.center,
                   ),
                 ],
               ),
