@@ -27,6 +27,9 @@ OlyApp is a mobile app built by and for residents of the Olympiadorf (Olydorf) i
 ### ✅ Map
 - Interactive map of Olydorf with filterable pins and route planning.
 
+### ✅ Transit
+- Check upcoming departures and pin your favorite stops.
+
 ### ✅ Booking
 - Reserve shared spaces and manage your bookings.
 
