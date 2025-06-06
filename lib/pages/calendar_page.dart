@@ -3,6 +3,10 @@ import 'package:table_calendar/table_calendar.dart';
 import '../models/models.dart';
 import '../services/event_service.dart';
 import '../services/map_service.dart';
+import '../utils/ics_generator.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 import 'map_page.dart';
 import '../models/map_pin.dart';
 import 'package:latlong2/latlong.dart';
@@ -233,6 +237,20 @@ class _CalendarPageState extends State<CalendarPage> {
                       ),
                     ),
                     actions: [
+                      TextButton(
+                        onPressed: () async {
+                          final ics = calendarEventToIcs(event);
+                          final dir = await getTemporaryDirectory();
+                          final file = File(
+                            '${dir.path}/event_${event.id ?? event.title}.ics',
+                          );
+                          await file.writeAsString(ics);
+                          await Share.shareXFiles([
+                            XFile(file.path),
+                          ], text: event.title);
+                        },
+                        child: const Text('Share'),
+                      ),
                       TextButton(
                         onPressed: () => Navigator.pop(ctx),
                         child: const Text('Close'),

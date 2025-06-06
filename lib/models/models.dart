@@ -223,6 +223,27 @@ enum ItemCategory {
   clothing,
 }
 
+class ItemRating {
+  final int rating;
+  final String? review;
+
+  ItemRating({required this.rating, this.review});
+
+  factory ItemRating.fromMap(Map<String, dynamic> map) => ItemRating(
+        rating: (map['rating'] as num).toInt(),
+        review: map['review'] as String?,
+      );
+
+  Map<String, dynamic> toMap() => {
+        'rating': rating,
+        if (review != null) 'review': review,
+      };
+
+  factory ItemRating.fromJson(Map<String, dynamic> json) =>
+      ItemRating.fromMap(json);
+  Map<String, dynamic> toJson() => toMap();
+}
+
 @HiveType(typeId: 5)
 class Item {
   @HiveField(0)
@@ -243,6 +264,8 @@ class Item {
   final ItemCategory category;
   @HiveField(8)
   final DateTime createdAt;
+  final bool completed;
+  final List<ItemRating> ratings;
 
   Item({
     this.id,
@@ -254,6 +277,8 @@ class Item {
     this.isFree = false,
     this.category = ItemCategory.other,
     DateTime? createdAt,
+    this.completed = false,
+    this.ratings = const [],
   }) : createdAt = createdAt ?? DateTime.now();
 
   factory Item.fromMap(Map<String, dynamic> map) => Item(
@@ -272,6 +297,10 @@ class Item {
             (e) => e.name == map['category'] as String,
           ),
     createdAt: _parseDate(map['createdAt']),
+    completed: map['completed'] as bool? ?? false,
+    ratings: (map['ratings'] as List<dynamic>? ?? const [])
+        .map((e) => ItemRating.fromMap(Map<String, dynamic>.from(e)))
+        .toList(),
   );
 
   Map<String, dynamic> toMap() => {
@@ -284,6 +313,8 @@ class Item {
     'isFree': isFree,
     'category': category.name,
     'createdAt': createdAt.toIso8601String(),
+    'completed': completed,
+    'ratings': ratings.map((e) => e.toMap()).toList(),
   };
 
   factory Item.fromJson(Map<String, dynamic> json) => Item.fromMap(json);
@@ -291,6 +322,12 @@ class Item {
   String toJsonString() => jsonEncode(toJson());
   factory Item.fromJsonString(String source) =>
       Item.fromMap(jsonDecode(source));
+
+  double get averageRating {
+    if (ratings.isEmpty) return 0;
+    final total = ratings.fold<int>(0, (sum, r) => sum + r.rating);
+    return total / ratings.length;
+  }
 }
 
 class ServiceListing {
@@ -510,4 +547,74 @@ class TransitDeparture {
     'destination': destination,
     'time': time.toIso8601String(),
   };
+}
+
+class Poll {
+  final String? id;
+  final String question;
+  final List<String> options;
+  final List<int> counts;
+
+  Poll({
+    this.id,
+    required this.question,
+    required List<String> options,
+    List<int>? counts,
+  })  : options = List.unmodifiable(options),
+        counts = counts != null
+            ? List<int>.from(counts)
+            : List<int>.filled(options.length, 0);
+
+  factory Poll.fromMap(Map<String, dynamic> map) => Poll(
+        id: map['_id']?.toString() ?? map['id']?.toString(),
+        question: map['question'] as String,
+        options:
+            (map['options'] as List<dynamic>).map((e) => e.toString()).toList(),
+        counts: (map['counts'] as List<dynamic>? ?? const [])
+            .map((e) => (e as num).toInt())
+            .toList(),
+      );
+
+  Map<String, dynamic> toMap() => {
+        if (id != null) 'id': id,
+        'question': question,
+        'options': options,
+        'counts': counts,
+      };
+
+  factory Poll.fromJson(Map<String, dynamic> json) => Poll.fromMap(json);
+  Map<String, dynamic> toJson() => toMap();
+}
+
+class PollVote {
+  final String? id;
+  final String pollId;
+  final String userId;
+  final int option;
+
+  PollVote({
+    this.id,
+    required this.pollId,
+    required this.userId,
+    required this.option,
+  });
+
+  factory PollVote.fromMap(Map<String, dynamic> map) => PollVote(
+        id: map['_id']?.toString() ?? map['id']?.toString(),
+        pollId: map['pollId'].toString(),
+        userId: map['userId'].toString(),
+        option: map['option'] is int
+            ? map['option'] as int
+            : int.parse(map['option'].toString()),
+      );
+
+  Map<String, dynamic> toMap() => {
+        if (id != null) 'id': id,
+        'pollId': pollId,
+        'userId': userId,
+        'option': option,
+      };
+
+  factory PollVote.fromJson(Map<String, dynamic> json) => PollVote.fromMap(json);
+  Map<String, dynamic> toJson() => toMap();
 }
