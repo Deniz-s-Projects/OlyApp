@@ -1,5 +1,3 @@
-library models;
-
 import 'dart:convert';
 import 'package:hive/hive.dart';
 

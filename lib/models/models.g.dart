@@ -1,6 +1,7 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
 part of 'models.dart';
+// ignore_for_file: unnecessary_breaks
 
 // **************************************************************************
 // TypeAdapterGenerator

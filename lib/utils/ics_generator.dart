@@ -8,7 +8,7 @@ String _formatDate(DateTime date) {
   final h = utc.hour.toString().padLeft(2, '0');
   final min = utc.minute.toString().padLeft(2, '0');
   final s = utc.second.toString().padLeft(2, '0');
-  return '${y}${m}${d}T$h$min${s}Z';
+  return '$y$m${d}T$h$min${s}Z';
 }
 
 /// Returns an ICS formatted string representing [event].
