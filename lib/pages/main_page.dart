@@ -8,8 +8,9 @@ import 'map_page.dart';
 import 'profile_page.dart';
 import 'post_item_page.dart';
 import 'bulletin_board_page.dart';
-import 'notifications_page.dart';
-import 'transit_page.dart';
+import 'notifications_page.dart'; 
+import 'transit_page.dart'; 
+import 'directory_page.dart'; 
 import '../models/models.dart';
 import '../services/event_service.dart';
 
@@ -43,8 +44,9 @@ class _MainPageState extends State<MainPage> {
     'Calendar',
     'Booking',
     'Item Exchange',
-    'Maintenance',
-    'Transit',
+    'Maintenance', 
+    'Transit', 
+    'Directory',
   ];
 
   late final List<Widget> _pages;
@@ -60,6 +62,7 @@ class _MainPageState extends State<MainPage> {
       widget.itemExchangePage ?? const ItemExchangePage(),
       widget.maintenancePage ?? const MaintenancePage(),
       const TransitPage(),
+      const DirectoryPage(),
     ];
   }
 
@@ -119,6 +122,7 @@ class _MainPageState extends State<MainPage> {
           ),
           NavigationDestination(icon: Icon(Icons.build), label: 'Maintenance'),
           NavigationDestination(icon: Icon(Icons.directions_bus), label: 'Transit'),
+          NavigationDestination(icon: Icon(Icons.people), label: 'Directory'),
         ],
       ),
     );

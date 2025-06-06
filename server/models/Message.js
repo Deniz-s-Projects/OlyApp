@@ -1,17 +1,19 @@
 const mongoose = require('mongoose');
 
 const MessageSchema = new mongoose.Schema({
+  conversationId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Conversation'
+  },
   requestType: {
     type: String,
-    required: true,
     enum: ['Item', 'MaintenanceRequest']
   },
   requestId: {
     type: mongoose.Schema.Types.ObjectId,
-    refPath: 'requestType',
-    required: true
+    refPath: 'requestType'
   },
-  senderId: { type: Number, required: true },
+  senderId: { type: String, required: true },
   content: { type: String, required: true },
   timestamp: { type: Date, default: Date.now }
 });

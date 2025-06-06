@@ -21,7 +21,7 @@ void main() {
             'data': [
               {
                 'id': 1,
-                'ownerId': 1,
+                'ownerId': '1',
                 'title': 'Chair',
                 'description': null,
                 'imageUrl': null,
@@ -44,7 +44,7 @@ void main() {
     });
 
     test('createItem sends POST and parses item', () async {
-      final itemInput = Item(ownerId: 1, title: 'Table');
+      final itemInput = Item(ownerId: '1', title: 'Table');
       final mockClient = MockClient((request) async {
         expect(request.method, equals('POST'));
         expect(request.url.origin, Uri.parse(apiUrl).origin);
@@ -78,7 +78,7 @@ void main() {
             {
               'id': 1,
               'requestId': 1,
-              'senderId': 2,
+              'senderId': '2',
               'content': 'Hi',
               'timestamp': 0,
             },
@@ -94,7 +94,7 @@ void main() {
     });
 
     test('sendMessage posts message', () async {
-      final input = Message(requestId: 1, senderId: 1, content: 'Hello');
+      final input = Message(requestId: 1, senderId: '1', content: 'Hello');
       final mockClient = MockClient((request) async {
         expect(request.method, equals('POST'));
         expect(request.url.origin, Uri.parse(apiUrl).origin);
@@ -110,7 +110,7 @@ void main() {
     });
 
     test('updateItem posts update and parses item', () async {
-      final updated = Item(id: 5, ownerId: 1, title: 'New');
+      final updated = Item(id: 5, ownerId: '1', title: 'New');
       final mockClient = MockClient((request) async {
         expect(request.method, equals('POST'));
         expect(request.url.origin, Uri.parse(apiUrl).origin);

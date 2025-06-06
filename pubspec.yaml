@@ -50,6 +50,7 @@ dependencies:
   sign_in_with_apple: ^7.0.1
   image_picker: ^1.1.2
   geolocator: ^11.0.0
+  mobile_scanner: ^3.5.0
 dev_dependencies:
   test: any
   flutter_test:

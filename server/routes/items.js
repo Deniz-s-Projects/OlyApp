@@ -32,7 +32,7 @@ router.get('/', async (req, res) => {
 // POST /items - create item
 router.post('/', upload.single('image'), async (req, res) => {
   try {
-    const data = { ...req.body, ownerId: Number(req.userId) };
+    const data = { ...req.body, ownerId: req.userId };
     if (req.file) {
       data.imageUrl = `/uploads/${req.file.filename}`;
     }
@@ -61,7 +61,7 @@ router.post('/:id/messages', async (req, res) => {
   try {
     const messageData = {
       ...req.body,
-      senderId: Number(req.userId),
+      senderId: req.userId,
       requestId: req.params.id,
       requestType: 'Item'
     };

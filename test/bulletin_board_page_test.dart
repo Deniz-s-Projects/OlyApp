@@ -64,9 +64,9 @@ class FakeBulletinService extends BulletinService {
 void main() {
   testWidgets('Existing posts are shown', (tester) async {
     final service = FakeBulletinService(
-      [BulletinPost(id: 1, userId: 1, content: 'Hello', date: DateTime.now())],
+      [BulletinPost(id: 1, userId: '1', content: 'Hello', date: DateTime.now())],
       {
-        1: [BulletinComment(postId: 1, userId: 2, content: 'Nice', date: DateTime.now())],
+        1: [BulletinComment(postId: 1, userId: '2', content: 'Nice', date: DateTime.now())],
       },
     );
     await tester.pumpWidget(
@@ -93,7 +93,7 @@ void main() {
 
   testWidgets('Submitting comment displays it', (tester) async {
     final service = FakeBulletinService(
-      [BulletinPost(id: 1, userId: 1, content: 'Post', date: DateTime.now())],
+      [BulletinPost(id: 1, userId: '1', content: 'Post', date: DateTime.now())],
       {1: []},
     );
     await tester.pumpWidget(
@@ -110,7 +110,7 @@ void main() {
 
   testWidgets('Edit icon updates post', (tester) async {
     final service = FakeBulletinService(
-      [BulletinPost(id: 1, userId: 1, content: 'Old', date: DateTime.now())],
+      [BulletinPost(id: 1, userId: '1', content: 'Old', date: DateTime.now())],
       {1: []},
     );
     await tester.pumpWidget(
@@ -129,7 +129,7 @@ void main() {
 
   testWidgets('Delete icon removes post', (tester) async {
     final service = FakeBulletinService(
-      [BulletinPost(id: 1, userId: 1, content: 'Bye', date: DateTime.now())],
+      [BulletinPost(id: 1, userId: '1', content: 'Bye', date: DateTime.now())],
       {1: []},
     );
     await tester.pumpWidget(

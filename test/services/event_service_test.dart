@@ -97,13 +97,12 @@ void main() {
         expect(request.method, equals('POST'));
         expect(request.url.origin, Uri.parse(apiUrl).origin);
         expect(request.url.path, '/api/events/1/rsvp');
-        final body = jsonDecode(request.body) as Map<String, dynamic>;
-        expect(body['userId'], 2);
+        expect(request.body, '{}');
         return http.Response('{}', 200);
       });
 
       final service = EventService(client: mockClient);
-      await service.rsvpEvent(1, 2);
+      await service.rsvpEvent('1');
     });
 
     test('fetchAttendees parses list', () async {
@@ -120,8 +119,8 @@ void main() {
       });
 
       final service = EventService(client: mockClient);
-      final attendees = await service.fetchAttendees(1);
-      expect(attendees, [1, 2]);
+      final attendees = await service.fetchAttendees('1');
+      expect(attendees, ['1', '2']);
     });
 
     test('fetchEvents throws on error', () async {

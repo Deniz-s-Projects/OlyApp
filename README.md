@@ -11,6 +11,7 @@ OlyApp is a mobile app built by and for residents of the Olympiadorf (Olydorf) i
 ### ✅ Calendar
 - View events, parties, meetings, and administrative deadlines.
 - Events are synced from the server and admins can create new ones.
+- Attendees can check in via QR code generated for each event.
 
 ### ✅ Item Exchange
 - Browse items your neighbors are giving away or selling.
@@ -19,6 +20,9 @@ OlyApp is a mobile app built by and for residents of the Olympiadorf (Olydorf) i
 ### ✅ Maintenance Requests
 - Submit issues in your room or building directly from the app.
 - Attach photos, chat with admins and track ticket status.
+
+### ✅ Directory
+- Browse residents who opted in to be listed and start private chats.
 
 ### ✅ Map
 - Interactive map of Olydorf with filterable pins and route planning.

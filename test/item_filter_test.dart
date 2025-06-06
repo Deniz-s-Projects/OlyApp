@@ -4,11 +4,11 @@ import 'package:oly_app/utils/item_filter.dart';
 
 void main() {
   final items = [
-    Item(ownerId: 1, title: 'Wooden Chair', category: ItemCategory.furniture),
-    Item(ownerId: 1, title: 'Dart Book', category: ItemCategory.books),
-    Item(ownerId: 1, title: 'Laptop', category: ItemCategory.electronics),
-    Item(ownerId: 1, title: 'Toaster', category: ItemCategory.appliances),
-    Item(ownerId: 1, title: 'Jacket', category: ItemCategory.clothing),
+    Item(ownerId: '1', title: 'Wooden Chair', category: ItemCategory.furniture),
+    Item(ownerId: '1', title: 'Dart Book', category: ItemCategory.books),
+    Item(ownerId: '1', title: 'Laptop', category: ItemCategory.electronics),
+    Item(ownerId: '1', title: 'Toaster', category: ItemCategory.appliances),
+    Item(ownerId: '1', title: 'Jacket', category: ItemCategory.clothing),
   ];
 
   test('search query filters items', () {

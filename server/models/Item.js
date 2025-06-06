@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const ItemSchema = new mongoose.Schema({
-  ownerId: { type: Number, required: true },
+  ownerId: { type: String, required: true },
   title: { type: String, required: true },
   description: String,
   imageUrl: String,

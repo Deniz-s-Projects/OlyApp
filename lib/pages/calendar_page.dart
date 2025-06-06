@@ -6,6 +6,9 @@ import '../services/map_service.dart';
 import 'map_page.dart';
 import '../models/map_pin.dart';
 import 'package:latlong2/latlong.dart';
+import 'dart:typed_data';
+import '../services/qr_service.dart';
+import 'qr_scanner_page.dart';
 
 class CalendarPage extends StatefulWidget {
   final EventService? service;
@@ -104,8 +107,8 @@ class _CalendarPageState extends State<CalendarPage> {
   Future<void> _rsvp(CalendarEvent event) async {
     if (event.id == null) return;
     try {
-      await _service.rsvpEvent(event.id!, 1);
-      final attendees = await _service.fetchAttendees(event.id!);
+      await _service.rsvpEvent(event.id!.toString());
+      final attendees = await _service.fetchAttendees(event.id!.toString());
       if (!mounted) return;
       setState(() {
         final updated = CalendarEvent(
@@ -139,12 +142,18 @@ class _CalendarPageState extends State<CalendarPage> {
   Future<void> _showEventDetails(CalendarEvent event) async {
     if (event.id == null) return;
     try {
-      final attendees = await _service.fetchAttendees(event.id!);
+      final attendees = await _service.fetchAttendees(event.id!.toString());
       List<EventComment> comments = [];
       try {
         comments = await _service.fetchComments(event.id!);
       } catch (_) {
         // Ignore comment loading errors
+      }
+      Uint8List? qrImage;
+      if (widget.isAdmin) {
+        try {
+          qrImage = await QrService().fetchQrCode(event.id!);
+        } catch (_) {}
       }
       MapPin? pin;
       if (event.location != null) {
@@ -160,73 +169,109 @@ class _CalendarPageState extends State<CalendarPage> {
       final commentCtrl = TextEditingController();
       await showDialog(
         context: context,
-        builder: (ctx) => StatefulBuilder(
-          builder: (ctx, setState) => AlertDialog(
-            title: Text(event.title),
-            content: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Attendees'),
-                  Text(attendees.isEmpty ? 'None' : attendees.join(', ')),
-                  if (event.location != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: Text('Location: ${pin?.title ?? event.location}'),
-                    ),
-                  const SizedBox(height: 8),
-                  const Text('Comments:'),
-                  for (final c in comments)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 2),
-                      child: Text(c.content),
-                    ),
-                  TextField(
-                    controller: commentCtrl,
-                    decoration:
-                        const InputDecoration(hintText: 'Add comment...'),
-                  ),
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('Close'),
-              ),
-              TextButton(
-                onPressed: () async {
-                  final text = commentCtrl.text.trim();
-                  if (text.isEmpty) return;
-                  final comment = await _service
-                      .addComment(EventComment(eventId: event.id!, content: text));
-                  setState(() {
-                    comments.add(comment);
-                    commentCtrl.clear();
-                  });
-                },
-                child: const Text('Post'),
-              ),
-              if (pin != null)
-                TextButton(
-                  onPressed: () {
-                    final p = pin!;
-                    Navigator.pop(ctx);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => MapPage(
-                          center: LatLng(p.lat, p.lon),
-                          service: MapService(),
-                        ),
+        builder:
+            (ctx) => StatefulBuilder(
+              builder:
+                  (ctx, setState) => AlertDialog(
+                    title: Text(event.title),
+                    content: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Attendees'),
+                          Text(
+                            attendees.isEmpty ? 'None' : attendees.join(', '),
+                          ),
+                          if (event.location != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: Text(
+                                'Location: ${pin?.title ?? event.location}',
+                              ),
+                            ),
+                          const SizedBox(height: 8),
+                          const Text('Comments:'),
+                          for (final c in comments)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 2),
+                              child: Text(c.content),
+                            ),
+                          if (qrImage != null)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: Image.memory(
+                                qrImage!,
+                                width: 150,
+                                height: 150,
+                              ),
+                            ),
+                          if (!widget.isAdmin)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder:
+                                          (_) => QrScannerPage(
+                                            service: QrService(),
+                                          ),
+                                    ),
+                                  );
+                                },
+                                child: const Text('Check in'),
+                              ),
+                            ),
+                          TextField(
+                            controller: commentCtrl,
+                            decoration: const InputDecoration(
+                              hintText: 'Add comment...',
+                            ),
+                          ),
+                        ],
                       ),
-                    );
-                  },
-                  child: const Text('View on Map'),
-                ),
-            ],
-          ),
-        ),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        child: const Text('Close'),
+                      ),
+                      TextButton(
+                        onPressed: () async {
+                          final text = commentCtrl.text.trim();
+                          if (text.isEmpty) return;
+                          final comment = await _service.addComment(
+                            EventComment(eventId: event.id!, content: text),
+                          );
+                          setState(() {
+                            comments.add(comment);
+                            commentCtrl.clear();
+                          });
+                        },
+                        child: const Text('Post'),
+                      ),
+                      if (pin != null)
+                        TextButton(
+                          onPressed: () {
+                            final p = pin!;
+                            Navigator.pop(ctx);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (_) => MapPage(
+                                      center: LatLng(p.lat, p.lon),
+                                      service: MapService(),
+                                    ),
+                              ),
+                            );
+                          },
+                          child: const Text('View on Map'),
+                        ),
+                    ],
+                  ),
+            ),
       );
       setState(() {
         final updated = CalendarEvent(
@@ -334,14 +379,15 @@ class _CalendarPageState extends State<CalendarPage> {
           ),
         ],
       ),
-      floatingActionButton: widget.isAdmin
-          ? FloatingActionButton(
-              backgroundColor: cs.secondary,
-              foregroundColor: cs.onSecondary,
-              onPressed: _addEvent,
-              child: const Icon(Icons.add),
-            )
-          : null,
+      floatingActionButton:
+          widget.isAdmin
+              ? FloatingActionButton(
+                backgroundColor: cs.secondary,
+                foregroundColor: cs.onSecondary,
+                onPressed: _addEvent,
+                child: const Icon(Icons.add),
+              )
+              : null,
     );
   }
 }
@@ -355,53 +401,54 @@ Future<void> showAddEventDialog(
   DateTime selectedDate = DateTime.now();
   await showDialog(
     context: context,
-    builder: (ctx) => AlertDialog(
-      title: const Text('Add Event'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextField(
-            controller: textCtrl,
-            decoration: const InputDecoration(labelText: 'Title'),
+    builder:
+        (ctx) => AlertDialog(
+          title: const Text('Add Event'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: textCtrl,
+                decoration: const InputDecoration(labelText: 'Title'),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: locCtrl,
+                decoration: const InputDecoration(labelText: 'Location'),
+              ),
+              const SizedBox(height: 8),
+              TextButton.icon(
+                icon: const Icon(Icons.calendar_today),
+                label: Text(
+                  '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
+                ),
+                onPressed: () async {
+                  final picked = await showDatePicker(
+                    context: ctx,
+                    initialDate: selectedDate,
+                    firstDate: DateTime.utc(2020),
+                    lastDate: DateTime.utc(2030),
+                  );
+                  if (picked != null) selectedDate = picked;
+                },
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: locCtrl,
-            decoration: const InputDecoration(labelText: 'Location'),
-          ),
-          const SizedBox(height: 8),
-          TextButton.icon(
-            icon: const Icon(Icons.calendar_today),
-            label: Text(
-              '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
             ),
-            onPressed: () async {
-              final picked = await showDatePicker(
-                context: ctx,
-                initialDate: selectedDate,
-                firstDate: DateTime.utc(2020),
-                lastDate: DateTime.utc(2030),
-              );
-              if (picked != null) selectedDate = picked;
-            },
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(ctx),
-          child: const Text('Cancel'),
+            ElevatedButton(
+              onPressed: () {
+                if (textCtrl.text.isNotEmpty) {
+                  onConfirm(textCtrl.text, selectedDate, locCtrl.text);
+                  Navigator.pop(ctx);
+                }
+              },
+              child: const Text('Add'),
+            ),
+          ],
         ),
-        ElevatedButton(
-          onPressed: () {
-            if (textCtrl.text.isNotEmpty) {
-              onConfirm(textCtrl.text, selectedDate, locCtrl.text);
-              Navigator.pop(ctx);
-            }
-          },
-          child: const Text('Add'),
-        ),
-      ],
-    ),
   );
 }

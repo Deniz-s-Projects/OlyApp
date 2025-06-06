@@ -17,7 +17,7 @@ class UserAdapter extends TypeAdapter<User> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return User(
-      id: fields[0] as int?,
+      id: fields[0] as String?,
       name: fields[1] as String,
       email: fields[2] as String,
       avatarUrl: fields[3] as String?,
@@ -64,7 +64,7 @@ class MaintenanceRequestAdapter extends TypeAdapter<MaintenanceRequest> {
     };
     return MaintenanceRequest(
       id: fields[0] as int?,
-      userId: fields[1] as int,
+      userId: fields[1] as String,
       subject: fields[2] as String,
       description: fields[3] as String,
       createdAt: fields[4] as DateTime?,
@@ -117,7 +117,7 @@ class MessageAdapter extends TypeAdapter<Message> {
     return Message(
       id: fields[0] as int?,
       requestId: fields[1] as int,
-      senderId: fields[2] as int,
+      senderId: fields[2] as String,
       content: fields[3] as String,
       timestamp: fields[4] as DateTime?,
     );
@@ -165,7 +165,7 @@ class CalendarEventAdapter extends TypeAdapter<CalendarEvent> {
       title: fields[1] as String,
       date: fields[2] as DateTime,
       description: fields[3] as String?,
-      attendees: (fields[4] as List).cast<int>(),
+      attendees: (fields[4] as List).cast<String>(),
       location: fields[5] as String?,
     );
   }
@@ -211,7 +211,7 @@ class ItemAdapter extends TypeAdapter<Item> {
     };
     return Item(
       id: fields[0] as int?,
-      ownerId: fields[1] as int,
+      ownerId: fields[1] as String,
       title: fields[2] as String,
       description: fields[3] as String?,
       imageUrl: fields[4] as String?,
@@ -295,7 +295,7 @@ class NotificationRecordAdapter extends TypeAdapter<NotificationRecord> {
       other is NotificationRecordAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
-}
+} 
 
 class TransitStopAdapter extends TypeAdapter<TransitStop> {
   @override
@@ -332,8 +332,7 @@ class TransitStopAdapter extends TypeAdapter<TransitStop> {
       other is TransitStopAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
-}
-
+} 
 class ItemCategoryAdapter extends TypeAdapter<ItemCategory> {
   @override
   final int typeId = 4;

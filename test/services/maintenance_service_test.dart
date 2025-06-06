@@ -23,7 +23,7 @@ void main() {
             'data': [
               {
                 'id': 1,
-                'userId': 1,
+                'userId': '1',
                 'subject': 'Leak',
                 'description': 'Water',
                 'createdAt': '1970-01-01T00:00:00.000Z',
@@ -43,7 +43,7 @@ void main() {
 
     test('createRequest uses POST', () async {
       final input = MaintenanceRequest(
-        userId: 1,
+        userId: '1',
         subject: 'Leak',
         description: 'Water',
         imageUrl: 'path.png',
@@ -79,7 +79,7 @@ void main() {
               {
                 'id': 1,
                 'requestId': 1,
-                'senderId': 2,
+                'senderId': '2',
                 'content': 'Hi',
                 'timestamp': '1970-01-01T00:00:00.000Z',
               },
@@ -96,7 +96,7 @@ void main() {
     });
 
     test('sendMessage posts message', () async {
-      final input = Message(requestId: 1, senderId: 2, content: 'Hi');
+      final input = Message(requestId: 1, senderId: '2', content: 'Hi');
       final mockClient = MockClient((request) async {
         expect(request.method, equals('POST'));
         expect(request.url.origin, Uri.parse(apiUrl).origin);
@@ -126,7 +126,7 @@ void main() {
         return http.Response(
           jsonEncode({
             'id': 1,
-            'userId': 1,
+            'userId': '1',
             'subject': 'a',
             'description': 'b',
             'createdAt': 0,

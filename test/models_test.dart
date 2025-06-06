@@ -5,7 +5,7 @@ import 'package:oly_app/models/models.dart';
 void main() {
   group('User', () {
     final user = User(
-      id: 1,
+      id: '1',
       name: 'John Doe',
       email: 'john@example.com',
       avatarUrl: 'https://example.com/avatar.png',
@@ -13,7 +13,7 @@ void main() {
     );
 
     final userMap = {
-      'id': 1,
+      'id': '1',
       'name': 'John Doe',
       'email': 'john@example.com',
       'avatarUrl': 'https://example.com/avatar.png',
@@ -38,7 +38,7 @@ void main() {
     final created = DateTime.utc(2024, 1, 1, 12, 0, 0);
     final request = MaintenanceRequest(
       id: 2,
-      userId: 3,
+      userId: '3',
       subject: 'Leaky faucet',
       description: 'Kitchen sink leaks',
       createdAt: created,
@@ -48,7 +48,7 @@ void main() {
 
     final requestMap = {
       'id': 2,
-      'userId': 3,
+      'userId': '3',
       'subject': 'Leaky faucet',
       'description': 'Kitchen sink leaks',
       'createdAt': created.toIso8601String(),
@@ -75,7 +75,7 @@ void main() {
     final message = Message(
       id: 3,
       requestId: 10,
-      senderId: 4,
+      senderId: '4',
       content: 'Hello world',
       timestamp: timestamp,
     );
@@ -83,7 +83,7 @@ void main() {
     final messageMap = {
       'id': 3,
       'requestId': 10,
-      'senderId': 4,
+      'senderId': '4',
       'content': 'Hello world',
       'timestamp': timestamp.toIso8601String(),
     };
@@ -109,7 +109,7 @@ void main() {
       title: 'Meeting',
       date: eventDate,
       description: 'Project discussion',
-      attendees: const [1, 2],
+      attendees: const ['1', '2'],
       location: 'locA',
     );
 
@@ -118,7 +118,7 @@ void main() {
       'title': 'Meeting',
       'date': eventDate.toIso8601String(),
       'description': 'Project discussion',
-      'attendees': const [1, 2],
+      'attendees': const ['1', '2'],
       'location': 'locA',
     };
 
@@ -140,7 +140,7 @@ void main() {
     final created = DateTime.utc(2023, 12, 31, 23, 59, 59);
     final item = Item(
       id: 5,
-      ownerId: 6,
+      ownerId: '6',
       title: 'Chair',
       description: 'Comfy chair',
       imageUrl: 'https://example.com/chair.png',
@@ -152,7 +152,7 @@ void main() {
 
     final itemMap = {
       'id': 5,
-      'ownerId': 6,
+      'ownerId': '6',
       'title': 'Chair',
       'description': 'Comfy chair',
       'imageUrl': 'https://example.com/chair.png',

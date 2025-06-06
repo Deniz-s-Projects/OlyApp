@@ -18,7 +18,7 @@ class _BulletinBoardPageState extends State<BulletinBoardPage> {
   final Map<int, List<BulletinComment>> _comments = {};
   final Map<int, TextEditingController> _commentCtrls = {};
 
-  String _authorName(int userId) {
+  String _authorName(String userId) {
     final me = currentUserId();
     return userId == me ? 'You' : 'User $userId';
   }
