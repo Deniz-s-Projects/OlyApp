@@ -58,8 +58,11 @@ router.post('/:id/rsvp', async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
     if (!event) return res.status(404).json({ error: 'Event not found' });
-    if (!event.attendees.includes(req.userId)) {
-      event.attendees.push(req.userId);
+    const numericId = Number(req.userId);
+    if (!Number.isNaN(numericId)) {
+      if (!event.attendees.includes(numericId)) {
+        event.attendees.push(numericId);
+      }
     }
     try {
       const user = await User.findById(req.userId);

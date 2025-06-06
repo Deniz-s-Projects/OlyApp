@@ -4,7 +4,8 @@ const EventSchema = new mongoose.Schema({
   title: { type: String, required: true },
   date: { type: Date, required: true },
   description: String,
-  attendees: { type: [String], default: [] },
+  // Keep attendee ids numeric to align with server tests
+  attendees: { type: [Number], default: [] },
   deviceTokens: { type: [String], default: [] },
   checkIns: { type: [Number], default: [] },
   reminderSent: { type: Boolean, default: false },
