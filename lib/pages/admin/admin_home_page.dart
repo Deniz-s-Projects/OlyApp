@@ -5,6 +5,7 @@ import 'notification_admin_page.dart';
 import 'bulletin_admin_page.dart';
 import 'booking_admin_page.dart';
 import 'map_admin_page.dart';
+import 'poll_admin_page.dart';
 import '../../utils/user_helpers.dart';
 
 class AdminHomePage extends StatelessWidget {
@@ -15,9 +16,9 @@ class AdminHomePage extends StatelessWidget {
     if (!currentUserIsAdmin()) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Admin access required')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Admin access required')));
       });
       return const SizedBox.shrink();
     }
@@ -89,6 +90,16 @@ class AdminHomePage extends StatelessWidget {
                 );
               },
               child: const Text('Map Pins'),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const PollAdminPage()),
+                );
+              },
+              child: const Text('Create Poll'),
             ),
           ],
         ),
