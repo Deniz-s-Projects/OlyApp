@@ -99,4 +99,20 @@ class ItemService extends ApiService {
   Future<void> deleteItem(int id) async {
     await post('/items/$id/delete', {}, (_) => null);
   }
+
+  /// Submits a rating for the item with [itemId].
+  Future<void> submitRating(int itemId, int rating, {String? review}) async {
+    await post('/items/$itemId/ratings',
+        {'rating': rating, 'review': review}, (_) => null);
+  }
+
+  /// Fetches ratings for the item with [itemId].
+  Future<List<ItemRating>> fetchRatings(int itemId) async {
+    return get('/items/$itemId/ratings', (json) {
+      final list = json['data'] as List<dynamic>;
+      return list
+          .map((e) => ItemRating.fromJson(e as Map<String, dynamic>))
+          .toList();
+    });
+  }
 }

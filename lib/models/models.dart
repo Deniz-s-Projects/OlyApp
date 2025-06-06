@@ -222,6 +222,27 @@ enum ItemCategory {
   clothing,
 }
 
+class ItemRating {
+  final int rating;
+  final String? review;
+
+  ItemRating({required this.rating, this.review});
+
+  factory ItemRating.fromMap(Map<String, dynamic> map) => ItemRating(
+        rating: (map['rating'] as num).toInt(),
+        review: map['review'] as String?,
+      );
+
+  Map<String, dynamic> toMap() => {
+        'rating': rating,
+        if (review != null) 'review': review,
+      };
+
+  factory ItemRating.fromJson(Map<String, dynamic> json) =>
+      ItemRating.fromMap(json);
+  Map<String, dynamic> toJson() => toMap();
+}
+
 @HiveType(typeId: 5)
 class Item {
   @HiveField(0)
@@ -242,6 +263,8 @@ class Item {
   final ItemCategory category;
   @HiveField(8)
   final DateTime createdAt;
+  final bool completed;
+  final List<ItemRating> ratings;
 
   Item({
     this.id,
@@ -253,6 +276,8 @@ class Item {
     this.isFree = false,
     this.category = ItemCategory.other,
     DateTime? createdAt,
+    this.completed = false,
+    this.ratings = const [],
   }) : createdAt = createdAt ?? DateTime.now();
 
   factory Item.fromMap(Map<String, dynamic> map) => Item(
@@ -273,6 +298,10 @@ class Item {
               (e) => e.name == map['category'] as String,
             ),
     createdAt: _parseDate(map['createdAt']),
+    completed: map['completed'] as bool? ?? false,
+    ratings: (map['ratings'] as List<dynamic>? ?? const [])
+        .map((e) => ItemRating.fromMap(Map<String, dynamic>.from(e)))
+        .toList(),
   );
 
   Map<String, dynamic> toMap() => {
@@ -285,6 +314,8 @@ class Item {
     'isFree': isFree,
     'category': category.name,
     'createdAt': createdAt.toIso8601String(),
+    'completed': completed,
+    'ratings': ratings.map((e) => e.toMap()).toList(),
   };
 
   factory Item.fromJson(Map<String, dynamic> json) => Item.fromMap(json);
@@ -292,6 +323,12 @@ class Item {
   String toJsonString() => jsonEncode(toJson());
   factory Item.fromJsonString(String source) =>
       Item.fromMap(jsonDecode(source));
+
+  double get averageRating {
+    if (ratings.isEmpty) return 0;
+    final total = ratings.fold<int>(0, (sum, r) => sum + r.rating);
+    return total / ratings.length;
+  }
 }
 
 class BulletinPost {

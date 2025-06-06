@@ -138,7 +138,7 @@ void main() {
 
   group('Item', () {
     final created = DateTime.utc(2023, 12, 31, 23, 59, 59);
-    final item = Item(
+  final item = Item(
       id: 5,
       ownerId: '6',
       title: 'Chair',
@@ -148,6 +148,8 @@ void main() {
       isFree: false,
       category: ItemCategory.furniture,
       createdAt: created,
+      completed: false,
+      ratings: const [],
     );
 
     final itemMap = {
@@ -160,6 +162,8 @@ void main() {
       'isFree': false,
       'category': ItemCategory.furniture.name,
       'createdAt': created.toIso8601String(),
+      'completed': false,
+      'ratings': const [],
     };
 
     test('toMap/fromMap round trip', () {
