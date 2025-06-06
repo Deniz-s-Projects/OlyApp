@@ -96,9 +96,9 @@ class OlyAppState extends State<OlyApp> {
         setState(() {
           _notifications.add({'title': data['title'], 'body': data['body']});
         });
-        Hive.box<NotificationRecord>('notificationsBox').add(
-          NotificationRecord(title: data['title'], body: data['body']),
-        );
+        Hive.box<NotificationRecord>(
+          'notificationsBox',
+        ).add(NotificationRecord(title: data['title'], body: data['body']));
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(data['title'] ?? 'Notification')),
         );
@@ -128,6 +128,8 @@ class OlyAppState extends State<OlyApp> {
     });
   }
 
+  Future<void> logout() => _logout();
+
   void updateThemeMode(ThemeMode mode) {
     setState(() => _themeMode = mode);
     Hive.box('settingsBox').put('themeMode', mode.name);
@@ -149,13 +151,9 @@ class OlyAppState extends State<OlyApp> {
         '/forgot': (_) => const ForgotPasswordPage(),
         '/reset': (_) => const ResetPasswordPage(),
       },
-      home:
-          _loggedIn
-              ? MainPage(
-                isAdmin: _isAdmin,
-                onLogout: _logout,
-              )
-              : LoginPage(onLoginSuccess: () => _handleLogin()),
+      home: _loggedIn
+          ? MainPage(isAdmin: _isAdmin, onLogout: _logout)
+          : LoginPage(onLoginSuccess: () => _handleLogin()),
     );
   }
 }
