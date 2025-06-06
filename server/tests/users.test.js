@@ -51,4 +51,22 @@ describe('Users API', () => {
     expect(updated.email).toBe('new@test.com');
     expect(updated.avatarUrl).toBe('pic');
   });
+
+  test('DELETE /users/me removes account', async () => {
+    const hash = await bcrypt.hash('pass', 1);
+    const user = await User.create({
+      name: 'Del',
+      email: 'del@test.com',
+      passwordHash: hash,
+    });
+    const token = jwt.sign({ userId: user._id.toString() }, SECRET);
+
+    const res = await request(app)
+      .delete('/api/users/me')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).toBe(200);
+    const remaining = await User.findById(user._id);
+    expect(remaining).toBeNull();
+  });
 });
