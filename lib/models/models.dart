@@ -12,7 +12,7 @@ DateTime _parseDate(dynamic value) {
 @HiveType(typeId: 0)
 class User {
   @HiveField(0)
-  final int? id;
+  final String? id;
   @HiveField(1)
   final String name;
   @HiveField(2)
@@ -32,7 +32,7 @@ class User {
   });
 
   factory User.fromMap(Map<String, dynamic> map) => User(
-    id: map['id'] as int?,
+    id: map['id']?.toString(),
     name: map['name'] as String,
     email: map['email'] as String,
     avatarUrl: map['avatarUrl'] as String?,
@@ -59,7 +59,7 @@ class MaintenanceRequest {
   @HiveField(0)
   final int? id;
   @HiveField(1)
-  final int userId;
+  final String userId;
   @HiveField(2)
   final String subject;
   @HiveField(3)
@@ -84,7 +84,7 @@ class MaintenanceRequest {
   factory MaintenanceRequest.fromMap(Map<String, dynamic> map) {
     return MaintenanceRequest(
       id: map['id'] as int?,
-      userId: map['userId'] as int,
+      userId: map['userId'] as String,
       subject: map['subject'] as String,
       description: map['description'] as String,
       createdAt: _parseDate(map['createdAt']),
@@ -118,7 +118,7 @@ class Message {
   @HiveField(1)
   final int requestId;
   @HiveField(2)
-  final int senderId;
+  final String senderId;
   @HiveField(3)
   final String content;
   @HiveField(4)
@@ -135,7 +135,7 @@ class Message {
   factory Message.fromMap(Map<String, dynamic> map) => Message(
     id: map['id'] as int?,
     requestId: map['requestId'] as int,
-    senderId: map['senderId'] as int,
+    senderId: map['senderId'] as String,
     content: map['content'] as String,
     timestamp: _parseDate(map['timestamp']),
   );
@@ -166,7 +166,7 @@ class CalendarEvent {
   @HiveField(3)
   final String? description;
   @HiveField(4)
-  final List<int> attendees;
+  final List<String> attendees;
   @HiveField(5)
   final String? location;
 
@@ -184,7 +184,8 @@ class CalendarEvent {
     title: map['title'] as String,
     date: _parseDate(map['date']),
     description: map['description'] as String?,
-    attendees: (map['attendees'] as List<dynamic>? ?? const []).cast<int>(),
+    attendees:
+        (map['attendees'] as List<dynamic>? ?? const []).map((e) => e.toString()).toList(),
     location: map['location'] as String?,
   );
 
@@ -226,7 +227,7 @@ class Item {
   @HiveField(0)
   final int? id;
   @HiveField(1)
-  final int ownerId;
+  final String ownerId;
   @HiveField(2)
   final String title;
   @HiveField(3)
@@ -256,7 +257,7 @@ class Item {
 
   factory Item.fromMap(Map<String, dynamic> map) => Item(
     id: map['id'] as int?,
-    ownerId: map['ownerId'] as int,
+    ownerId: map['ownerId'] as String,
     title: map['title'] as String,
     description: map['description'] as String?,
     imageUrl: map['imageUrl'] as String?,
@@ -295,7 +296,7 @@ class Item {
 
 class BulletinPost {
   final int? id;
-  final int userId;
+  final String userId;
   final String content;
   final DateTime date;
 
@@ -304,7 +305,7 @@ class BulletinPost {
 
   factory BulletinPost.fromMap(Map<String, dynamic> map) => BulletinPost(
     id: map['id'] as int?,
-    userId: map['userId'] as int,
+    userId: map['userId'] as String,
     content: map['content'] as String,
     date: _parseDate(map['date']),
   );
@@ -324,7 +325,7 @@ class BulletinPost {
 class BulletinComment {
   final int? id;
   final int postId;
-  final int userId;
+  final String userId;
   final String content;
   final DateTime date;
 
@@ -339,7 +340,7 @@ class BulletinComment {
   factory BulletinComment.fromMap(Map<String, dynamic> map) => BulletinComment(
     id: map['id'] as int?,
     postId: map['postId'] as int,
-    userId: map['userId'] as int,
+    userId: map['userId'] as String,
     content: map['content'] as String,
     date: _parseDate(map['date']),
   );

@@ -55,11 +55,10 @@ router.delete('/:id', requireAdmin, async (req, res) => {
 // POST /events/:id/rsvp - add attendee
 router.post('/:id/rsvp', async (req, res) => {
   try {
-    const numericId = Number(req.userId);
     const event = await Event.findById(req.params.id);
     if (!event) return res.status(404).json({ error: 'Event not found' });
-    if (!Number.isNaN(numericId) && !event.attendees.includes(numericId)) {
-      event.attendees.push(numericId);
+    if (!event.attendees.includes(req.userId)) {
+      event.attendees.push(req.userId);
     }
     try {
       const user = await User.findById(req.userId);

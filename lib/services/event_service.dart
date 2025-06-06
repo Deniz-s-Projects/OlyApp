@@ -42,14 +42,14 @@ class EventService extends ApiService {
     );
   }
 
-  Future<void> rsvpEvent(int eventId, int userId) async {
-    await post('/events/$eventId/rsvp', {'userId': userId}, (_) => null);
+  Future<void> rsvpEvent(String eventId) async {
+    await post('/events/$eventId/rsvp', const {}, (_) => null);
   }
 
-  Future<List<int>> fetchAttendees(int eventId) async {
+  Future<List<String>> fetchAttendees(String eventId) async {
     return get('/events/$eventId/attendees', (json) {
       final list = json['data'] as List<dynamic>;
-      return list.map((e) => e as int).toList();
+      return list.map((e) => e as String).toList();
     });
   }
 

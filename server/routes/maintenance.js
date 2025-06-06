@@ -33,7 +33,7 @@ router.get('/', async (req, res) => {
 // POST /maintenance - create maintenance request
 router.post('/', upload.single('image'), async (req, res) => {
   try {
-    const data = { ...req.body, userId: Number(req.userId) };
+    const data = { ...req.body, userId: req.userId };
     if (req.file) {
       data.imageUrl = `/uploads/${req.file.filename}`;
     }
@@ -62,7 +62,7 @@ router.post('/:id/messages', async (req, res) => {
   try {
     const messageData = {
       ...req.body,
-      senderId: Number(req.userId),
+      senderId: req.userId,
       requestId: req.params.id,
       requestType: 'MaintenanceRequest'
     };
