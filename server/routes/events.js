@@ -4,6 +4,7 @@ const EventComment = require('../models/EventComment');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
 const requireAdmin = require('../middleware/requireAdmin');
+const QRCode = require('qrcode');
 
 const router = express.Router();
 router.use(auth);
@@ -110,6 +111,36 @@ router.post('/:id/comments', async (req, res) => {
       date: req.body.date,
     });
     res.status(201).json({ data: comment });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// GET /events/:id/qr - return QR code image
+router.get('/:id/qr', async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+    if (!event) return res.status(404).json({ error: 'Event not found' });
+    const data = `event:${event._id}`;
+    const buffer = await QRCode.toBuffer(data, { type: 'png' });
+    res.set('Content-Type', 'image/png');
+    res.send(buffer);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /events/:id/checkin - record user check-in
+router.post('/:id/checkin', async (req, res) => {
+  try {
+    const numericId = Number(req.userId);
+    const event = await Event.findById(req.params.id);
+    if (!event) return res.status(404).json({ error: 'Event not found' });
+    if (!Number.isNaN(numericId) && !event.checkIns.includes(numericId)) {
+      event.checkIns.push(numericId);
+      await event.save();
+    }
+    res.json({ data: event.checkIns });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
