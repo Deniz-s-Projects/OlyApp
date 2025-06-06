@@ -19,7 +19,6 @@ class MainPage extends StatefulWidget {
   final ItemExchangePage? itemExchangePage;
   final bool isAdmin;
   final VoidCallback? onLogout;
-  final List<Map<String, String?>> notifications;
   const MainPage({
     super.key,
     this.calendarPage,
@@ -28,7 +27,6 @@ class MainPage extends StatefulWidget {
     this.itemExchangePage,
     this.isAdmin = false,
     this.onLogout,
-    this.notifications = const [],
   });
 
   @override
@@ -146,9 +144,7 @@ class _MainPageState extends State<MainPage> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => NotificationsPage(
-                notifications: widget.notifications,
-              ),
+              builder: (_) => const NotificationsPage(),
             ),
           );
         };
