@@ -51,8 +51,8 @@ void main() {
   testWidgets('Favorites filter shows only bookmarked items', (tester) async {
     await tester.runAsync(() async {
       final service = FakeItemService([
-        Item(id: 1, ownerId: 1, title: 'Fav', category: ItemCategory.books),
-        Item(id: 2, ownerId: 1, title: 'Other', category: ItemCategory.books),
+        Item(id: 1, ownerId: '1', title: 'Fav', category: ItemCategory.books),
+        Item(id: 2, ownerId: '1', title: 'Other', category: ItemCategory.books),
       ]);
 
       await tester.pumpWidget(
@@ -73,7 +73,7 @@ void main() {
 
   testWidgets('Detail page toggles favorite', (tester) async {
     await tester.runAsync(() async {
-      final item = Item(id: 5, ownerId: 2, title: 'Chair');
+      final item = Item(id: 5, ownerId: '2', title: 'Chair');
 
       await tester.pumpWidget(MaterialApp(home: ItemDetailPage(item: item)));
       await tester.pumpAndSettle();
@@ -87,8 +87,8 @@ void main() {
   });
   testWidgets('Search text or category filters items', (tester) async {
     final service = FakeItemService([
-      Item(ownerId: 1, title: 'Dart Book', category: ItemCategory.books),
-      Item(ownerId: 1, title: 'Laptop', category: ItemCategory.electronics),
+      Item(ownerId: '1', title: 'Dart Book', category: ItemCategory.books),
+      Item(ownerId: '1', title: 'Laptop', category: ItemCategory.electronics),
     ]);
 
     await tester.pumpWidget(
@@ -117,7 +117,7 @@ void main() {
 
   testWidgets('Tapping item opens detail page', (tester) async {
     final item = Item(
-      ownerId: 1,
+      ownerId: '1',
       title: 'Chair',
       category: ItemCategory.furniture,
     );
@@ -138,11 +138,11 @@ void main() {
     await tester.runAsync(() async {
       await Hive.box<User>(
         'userBox',
-      ).put('currentUser', User(id: 1, name: 'Owner', email: 'o@test.com'));
+      ).put('currentUser', User(id: '1', name: 'Owner', email: 'o@test.com'));
 
       final item = Item(
         id: 1,
-        ownerId: 1,
+        ownerId: '1',
         title: 'Old',
         category: ItemCategory.books,
       );
@@ -178,11 +178,11 @@ void main() {
     await tester.runAsync(() async {
       await Hive.box<User>(
         'userBox',
-      ).put('currentUser', User(id: 1, name: 'Owner', email: 'o@test.com'));
+      ).put('currentUser', User(id: '1', name: 'Owner', email: 'o@test.com'));
 
       final item = Item(
         id: 1,
-        ownerId: 1,
+        ownerId: '1',
         title: 'Del',
         category: ItemCategory.books,
       );

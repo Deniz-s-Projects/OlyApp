@@ -142,7 +142,7 @@ class _CalendarPageState extends State<CalendarPage> {
       final attendees = await _service.fetchAttendees(event.id!.toString());
       List<EventComment> comments = [];
       try {
-        comments = await _service.fetchComments(event.id!.toString());
+        comments = await _service.fetchComments(event.id!);
       } catch (_) {
         // Ignore comment loading errors
       }

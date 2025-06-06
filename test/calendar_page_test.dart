@@ -31,8 +31,8 @@ class FakeEventService extends EventService {
   }
 
   @override
-  Future<void> rsvpEvent(int eventId, int userId) async {
-    final index = events.indexWhere((e) => e.id == eventId);
+  Future<void> rsvpEvent(String eventId) async {
+    final index = events.indexWhere((e) => e.id.toString() == eventId);
     if (index != -1) {
       final e = events[index];
       events[index] = CalendarEvent(
@@ -40,15 +40,15 @@ class FakeEventService extends EventService {
         title: e.title,
         date: e.date,
         description: e.description,
-        attendees: [...e.attendees, userId],
+        attendees: [...e.attendees, 'u1'],
         location: e.location,
       );
     }
   }
 
   @override
-  Future<List<int>> fetchAttendees(int eventId) async {
-    final e = events.firstWhere((ev) => ev.id == eventId);
+  Future<List<String>> fetchAttendees(String eventId) async {
+    final e = events.firstWhere((ev) => ev.id.toString() == eventId);
     return e.attendees;
   }
 }
@@ -111,7 +111,7 @@ void main() {
         id: 1,
         title: 'Party',
         date: DateTime.now(),
-        attendees: const [1],
+        attendees: const ['1'],
         location: 'building1',
       ),
     );
