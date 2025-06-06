@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../services/poll_service.dart';
-import '../utils/user_helpers.dart';
 
 class PollsPage extends StatefulWidget {
   final PollService? service;
