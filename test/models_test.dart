@@ -175,4 +175,32 @@ void main() {
       expect(copy.toMap(), itemMap);
     });
   });
+
+  group('NotificationRecord', () {
+    final timestamp = DateTime.utc(2024, 1, 1, 12);
+    final record = NotificationRecord(
+      title: 'Hello',
+      body: 'World',
+      timestamp: timestamp,
+    );
+
+    final recordMap = {
+      'title': 'Hello',
+      'body': 'World',
+      'timestamp': timestamp.toIso8601String(),
+    };
+
+    test('toMap/fromMap round trip', () {
+      expect(record.toMap(), recordMap);
+      final copy = NotificationRecord.fromMap(record.toMap());
+      expect(copy.toMap(), recordMap);
+    });
+
+    test('toJsonString/fromJsonString', () {
+      final jsonStr = record.toJsonString();
+      expect(jsonDecode(jsonStr), recordMap);
+      final copy = NotificationRecord.fromJsonString(jsonStr);
+      expect(copy.toMap(), recordMap);
+    });
+  });
 }

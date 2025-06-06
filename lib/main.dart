@@ -24,6 +24,7 @@ void main() async {
   Hive.registerAdapter(ItemCategoryAdapter());
   Hive.registerAdapter(ItemAdapter());
   Hive.registerAdapter(UserAdapter());
+  Hive.registerAdapter(NotificationRecordAdapter());
 
   // Open boxes
   await Hive.openBox('maintenanceBox');
@@ -36,6 +37,7 @@ void main() async {
   await Hive.openBox('favoritesBox');
   await Hive.openBox('settingsBox');
   await Hive.openBox('pinsBox');
+  await Hive.openBox<NotificationRecord>('notificationsBox');
 
   // Initialize tile caching store when not running tests
   if (!Platform.environment.containsKey('FLUTTER_TEST')) {
@@ -83,11 +85,18 @@ class OlyAppState extends State<OlyApp> {
       _loggedIn = true;
       _isAdmin = user.isAdmin;
     }
+    final notifBox = Hive.box<NotificationRecord>('notificationsBox');
+    for (final n in notifBox.values.cast<NotificationRecord>()) {
+      _notifications.add({'title': n.title, 'body': n.body});
+    }
     NotificationService().foregroundMessages.listen((data) {
       if (mounted) {
         setState(() {
           _notifications.add({'title': data['title'], 'body': data['body']});
         });
+        Hive.box<NotificationRecord>('notificationsBox').add(
+          NotificationRecord(title: data['title'], body: data['body']),
+        );
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(data['title'] ?? 'Notification')),
         );
@@ -139,7 +148,6 @@ class OlyAppState extends State<OlyApp> {
               ? MainPage(
                 isAdmin: _isAdmin,
                 onLogout: _logout,
-                notifications: _notifications,
               )
               : LoginPage(onLoginSuccess: () => _handleLogin()),
     );
