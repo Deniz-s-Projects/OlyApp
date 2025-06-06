@@ -33,6 +33,18 @@ class AuthService extends ApiService {
       (json) => Map<String, dynamic>.from(json as Map),
     ); 
     await Hive.box('authBox').put('token', data['token']);
-    return data; 
+    return data;
+  }
+
+  Future<void> requestPasswordReset(String email) async {
+    await post('/auth/reset', {'email': email}, (_) => null);
+  }
+
+  Future<void> confirmPasswordReset(String token, String password) async {
+    await post(
+      '/auth/reset/confirm',
+      {'token': token, 'password': password},
+      (_) => null,
+    );
   }
 }

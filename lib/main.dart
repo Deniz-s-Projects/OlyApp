@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'pages/login_page.dart';
 import 'pages/main_page.dart';
 import 'pages/register_page.dart';
+import 'pages/forgot_password_page.dart';
+import 'pages/reset_password_page.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 import 'dart:io';
@@ -133,7 +135,11 @@ class OlyAppState extends State<OlyApp> {
       darkTheme: ThemeData.dark(useMaterial3: true),
       themeMode: _themeMode,
 
-      routes: {'/register': (_) => RegisterPage(onRegistered: _handleLogin)},
+      routes: {
+        '/register': (_) => RegisterPage(onRegistered: _handleLogin),
+        '/forgot': (_) => const ForgotPasswordPage(),
+        '/reset': (_) => const ResetPasswordPage(),
+      },
       home:
           _loggedIn
               ? MainPage(
