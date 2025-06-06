@@ -8,6 +8,10 @@ String itemCategory(Item item) {
       return 'Books';
     case ItemCategory.electronics:
       return 'Electronics';
+    case ItemCategory.appliances:
+      return 'Appliances';
+    case ItemCategory.clothing:
+      return 'Clothing';
     default:
       return 'Other';
   }

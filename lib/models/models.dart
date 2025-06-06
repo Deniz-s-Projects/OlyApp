@@ -215,6 +215,10 @@ enum ItemCategory {
   electronics,
   @HiveField(3)
   other,
+  @HiveField(4)
+  appliances,
+  @HiveField(5)
+  clothing,
 }
 
 @HiveType(typeId: 5)

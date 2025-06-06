@@ -9,7 +9,7 @@ const ItemSchema = new mongoose.Schema({
   isFree: { type: Boolean, default: false },
   category: {
     type: String,
-    enum: ['furniture', 'books', 'electronics', 'other'],
+    enum: ['furniture', 'books', 'electronics', 'other', 'appliances', 'clothing'],
     default: 'other'
   },
   createdAt: { type: Date, default: Date.now },

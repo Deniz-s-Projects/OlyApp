@@ -140,6 +140,10 @@ class _PostItemPageState extends State<PostItemPage> {
                           label = 'Books';
                         case ItemCategory.electronics:
                           label = 'Electronics';
+                        case ItemCategory.appliances:
+                          label = 'Appliances';
+                        case ItemCategory.clothing:
+                          label = 'Clothing';
                         default:
                           label = 'Other';
                       }
