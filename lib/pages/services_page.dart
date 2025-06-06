@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../models/models.dart';
 import '../services/service_list_service.dart';
+import '../utils/user_helpers.dart';
+import 'post_service_listing_page.dart';
 
 class ServicesPage extends StatefulWidget {
   final ServiceListService? service;
@@ -26,6 +29,17 @@ class _ServicesPageState extends State<ServicesPage> {
     final listings = await _service.fetchListings();
     if (!mounted) return;
     setState(() => _listings = listings);
+  }
+
+  Future<void> _openForm([ServiceListing? listing]) async {
+    final created = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) =>
+            PostServiceListingPage(listing: listing, service: _service),
+      ),
+    );
+    if (created == true) _load();
   }
 
   @override
@@ -55,14 +69,40 @@ class _ServicesPageState extends State<ServicesPage> {
                 itemBuilder: (context, index) {
                   final listing = _listings[index];
                   return ListTile(
+                    onTap: listing.userId == currentUserId()
+                        ? () => _openForm(listing)
+                        : null,
                     title: Text(listing.title),
                     subtitle: Text(listing.description),
                     trailing: listing.contact != null
-                        ? Text(listing.contact!)
+                        ? Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(listing.contact!),
+                              IconButton(
+                                icon: const Icon(Icons.copy),
+                                tooltip: 'Copy',
+                                onPressed: () {
+                                  Clipboard.setData(
+                                    ClipboardData(text: listing.contact!),
+                                  );
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Contact copied'),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          )
                         : null,
                   );
                 },
               ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _openForm(),
+        child: const Icon(Icons.add),
       ),
     );
   }
