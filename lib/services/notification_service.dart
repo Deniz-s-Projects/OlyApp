@@ -1,10 +1,17 @@
 import 'api_service.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:hive/hive.dart';
 
 class NotificationService extends ApiService {
   NotificationService({super.client});
 
   Future<void> registerToken(String token) async {
+    final settings = Hive.box('settingsBox');
+    final events =
+        settings.get('eventNotifications', defaultValue: true) as bool;
+    final announcements =
+        settings.get('announcementNotifications', defaultValue: true) as bool;
+    if (!events && !announcements) return;
     await post('/notifications/register', {'token': token}, (_) => null);
   }
 
