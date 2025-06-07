@@ -9,6 +9,8 @@ const UserSchema = new mongoose.Schema({
   isAdmin: { type: Boolean, default: false },
   // Whether the user opted into the public directory
   isListed: { type: Boolean, default: false },
+  bio: { type: String, default: '' },
+  room: { type: String, default: '' },
   deviceTokens: { type: [String], default: [] },
   passwordResetToken: String,
   passwordResetExpires: Date,
