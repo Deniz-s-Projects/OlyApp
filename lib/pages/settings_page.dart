@@ -4,6 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../models/models.dart';
 import '../main.dart';
 import '../services/user_service.dart';
+import 'emergency_contacts_page.dart';
 
 class SettingsPage extends StatefulWidget {
   final UserService? service;
@@ -71,6 +72,18 @@ class _SettingsPageState extends State<SettingsPage> {
             title: const Text('Appear in Directory'),
             value: _listed,
             onChanged: _updateListed,
+          ),
+          ListTile(
+            title: const Text('Emergency Contacts'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const EmergencyContactsPage(),
+                ),
+              );
+            },
           ),
         ],
       ),
