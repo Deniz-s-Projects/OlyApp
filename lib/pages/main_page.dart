@@ -6,6 +6,7 @@ import 'booking_page.dart';
 import 'admin/admin_home_page.dart';
 import 'map_page.dart';
 import 'profile_page.dart';
+import 'settings_page.dart';
 import 'post_item_page.dart';
 import 'bulletin_board_page.dart';
 import 'services_page.dart';
@@ -13,7 +14,7 @@ import 'notifications_page.dart';
 import 'transit_page.dart';
 import 'directory_page.dart';
 import 'polls_page.dart';
-import 'lost_found_page.dart'; 
+import 'lost_found_page.dart';
 import '../models/models.dart';
 import '../services/event_service.dart';
 
@@ -85,7 +86,12 @@ class _MainPageState extends State<MainPage> {
         actions: [
           PopupMenuButton<String>(
             onSelected: (val) async {
-              if (val == 'profile') {
+              if (val == 'settings') {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SettingsPage()),
+                );
+              } else if (val == 'profile') {
                 await Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const ProfilePage()),
@@ -95,6 +101,7 @@ class _MainPageState extends State<MainPage> {
               }
             },
             itemBuilder: (context) => [
+              const PopupMenuItem(value: 'settings', child: Text('Settings')),
               const PopupMenuItem(value: 'profile', child: Text('Profile')),
               if (widget.onLogout != null)
                 const PopupMenuItem(value: 'logout', child: Text('Logout')),

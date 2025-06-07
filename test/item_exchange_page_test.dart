@@ -136,9 +136,10 @@ void main() {
 
   testWidgets('Owner can edit an item', (tester) async {
     await tester.runAsync(() async {
-      await Hive.box<User>(
-        'userBox',
-      ).put('currentUser', User(id: '1', name: 'Owner', email: 'o@test.com'));
+      await Hive.box<User>('userBox').put(
+        'currentUser',
+        User(id: '1', name: 'Owner', email: 'o@test.com', isListed: false),
+      );
 
       final item = Item(
         id: 1,
@@ -149,7 +150,9 @@ void main() {
       final service = FakeItemService([item]);
 
       await tester.pumpWidget(
-        MaterialApp(home: ItemDetailPage(item: item, service: service)),
+        MaterialApp(
+          home: ItemDetailPage(item: item, service: service),
+        ),
       );
       await tester.pumpAndSettle();
 
@@ -176,9 +179,10 @@ void main() {
 
   testWidgets('Owner can delete an item', (tester) async {
     await tester.runAsync(() async {
-      await Hive.box<User>(
-        'userBox',
-      ).put('currentUser', User(id: '1', name: 'Owner', email: 'o@test.com'));
+      await Hive.box<User>('userBox').put(
+        'currentUser',
+        User(id: '1', name: 'Owner', email: 'o@test.com', isListed: false),
+      );
 
       final item = Item(
         id: 1,
@@ -189,7 +193,9 @@ void main() {
       final service = FakeItemService([item]);
 
       await tester.pumpWidget(
-        MaterialApp(home: ItemDetailPage(item: item, service: service)),
+        MaterialApp(
+          home: ItemDetailPage(item: item, service: service),
+        ),
       );
       await tester.pumpAndSettle();
 
