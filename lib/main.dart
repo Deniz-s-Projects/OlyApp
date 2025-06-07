@@ -68,7 +68,7 @@ class OlyApp extends StatefulWidget {
 class OlyAppState extends State<OlyApp> {
   bool _loggedIn = false;
   bool _isAdmin = false;
-  ThemeMode _themeMode = ThemeMode.light;
+  ThemeMode _themeMode = ThemeMode.system;
   bool _seenOnboarding = true;
   final List<Map<String, String?>> _notifications = [];
 
@@ -77,12 +77,12 @@ class OlyAppState extends State<OlyApp> {
     super.initState();
     final settingsBox = Hive.box('settingsBox');
     final stored =
-        settingsBox.get('themeMode', defaultValue: 'light') as String;
+        settingsBox.get('themeMode', defaultValue: 'system') as String;
     _seenOnboarding =
         settingsBox.get('seenOnboarding', defaultValue: false) as bool;
     _themeMode = ThemeMode.values.firstWhere(
       (m) => m.name == stored,
-      orElse: () => ThemeMode.light,
+      orElse: () => ThemeMode.system,
     );
     final authBox = Hive.box('authBox');
     final token = authBox.get('token');
