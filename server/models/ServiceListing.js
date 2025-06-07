@@ -5,6 +5,12 @@ const ServiceListingSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: String,
   contact: String,
+  ratings: [
+    {
+      rating: { type: Number, required: true },
+      review: String,
+    },
+  ],
   createdAt: { type: Date, default: Date.now }
 });
 

@@ -22,9 +22,9 @@ class _EventAdminPageState extends State<EventAdminPage> {
     if (!currentUserIsAdmin()) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Admin access required')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Admin access required')));
       });
     } else {
       _service = widget.service ?? EventService();
@@ -81,7 +81,7 @@ class _EventAdminPageState extends State<EventAdminPage> {
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           await showAddEventDialog(context,
-              (title, date, location, interval, until) async {
+              (title, date, location, interval, until, category) async {
             await _service.createEvent(
               CalendarEvent(
                 title: title,
@@ -89,6 +89,7 @@ class _EventAdminPageState extends State<EventAdminPage> {
                 location: location,
                 repeatInterval: interval,
                 repeatUntil: until,
+                category: category,
               ),
             );
             _load();

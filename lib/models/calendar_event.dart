@@ -1,4 +1,5 @@
 part of 'models.dart';
+
 @HiveType(typeId: 3)
 class CalendarEvent {
   @HiveField(0)
@@ -17,6 +18,8 @@ class CalendarEvent {
   final String? repeatInterval;
   @HiveField(7)
   final DateTime? repeatUntil;
+  @HiveField(8)
+  final String? category;
 
   CalendarEvent({
     this.id,
@@ -27,30 +30,35 @@ class CalendarEvent {
     this.location,
     this.repeatInterval,
     this.repeatUntil,
+    this.category,
   });
 
   factory CalendarEvent.fromMap(Map<String, dynamic> map) => CalendarEvent(
-    id: map['id'] as int?,
-    title: map['title'] as String,
-    date: _parseDate(map['date']),
-    description: map['description'] as String?,
-    attendees:
-        (map['attendees'] as List<dynamic>? ?? const []).map((e) => e.toString()).toList(),
-    location: map['location'] as String?,
-    repeatInterval: map['repeatInterval'] as String?,
-    repeatUntil: map['repeatUntil'] != null ? _parseDate(map['repeatUntil']) : null,
-  );
+        id: map['id'] as int?,
+        title: map['title'] as String,
+        date: _parseDate(map['date']),
+        description: map['description'] as String?,
+        attendees: (map['attendees'] as List<dynamic>? ?? const [])
+            .map((e) => e.toString())
+            .toList(),
+        location: map['location'] as String?,
+        repeatInterval: map['repeatInterval'] as String?,
+        repeatUntil:
+            map['repeatUntil'] != null ? _parseDate(map['repeatUntil']) : null,
+        category: map['category'] as String?,
+      );
 
   Map<String, dynamic> toMap() => {
-    if (id != null) 'id': id,
-    'title': title,
-    'date': date.toIso8601String(),
-    'description': description,
-    'attendees': attendees,
-    'location': location,
-    if (repeatInterval != null) 'repeatInterval': repeatInterval,
-    if (repeatUntil != null) 'repeatUntil': repeatUntil!.toIso8601String(),
-  };
+        if (id != null) 'id': id,
+        'title': title,
+        'date': date.toIso8601String(),
+        'description': description,
+        'attendees': attendees,
+        'location': location,
+        if (repeatInterval != null) 'repeatInterval': repeatInterval,
+        if (repeatUntil != null) 'repeatUntil': repeatUntil!.toIso8601String(),
+        'category': category,
+      };
 
   factory CalendarEvent.fromJson(Map<String, dynamic> json) =>
       CalendarEvent.fromMap(json);

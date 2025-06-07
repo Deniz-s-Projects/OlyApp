@@ -25,6 +25,7 @@ class FakeEventService extends EventService {
             description: event.description,
             attendees: event.attendees,
             location: event.location,
+            category: event.category,
           );
     events.add(newEvent);
     return newEvent;
@@ -42,6 +43,7 @@ class FakeEventService extends EventService {
         description: e.description,
         attendees: [...e.attendees, 'u1'],
         location: e.location,
+        category: e.category,
       );
     }
   }
@@ -73,6 +75,7 @@ void main() {
 
     await tester.enterText(find.byType(TextField).at(0), 'Meeting');
     await tester.enterText(find.byType(TextField).at(1), 'building1');
+    await tester.enterText(find.byType(TextField).at(2), 'social');
     await tester.tap(find.text('Add'));
     await tester.pumpAndSettle();
 

@@ -15,6 +15,7 @@ const EventSchema = new mongoose.Schema({
     enum: ['daily', 'weekly', 'monthly', 'yearly'],
   },
   repeatUntil: Date,
+  category: String,
 }, { timestamps: true });
 
 module.exports = mongoose.model('Event', EventSchema);

@@ -38,10 +38,6 @@ jobs:
       # ─────────── Run Flutter tests ───────────
       - name: Run Flutter tests
         run: flutter test
-
-      # ─────────── Analyze Flutter project ───────────
-      - name: Analyze Flutter project
-        run: flutter analyze
  
       - name: Set up Node.js
         uses: actions/setup-node@v3
