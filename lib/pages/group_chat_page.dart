@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../services/chat_service.dart';
 import '../utils/user_helpers.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
+import 'dart:convert';
 
 class GroupChatPage extends StatefulWidget {
   final ChatChannel channel;
@@ -16,11 +18,25 @@ class _GroupChatPageState extends State<GroupChatPage> {
   final ChatService _service = ChatService();
   final TextEditingController _messageCtrl = TextEditingController();
   List<Message> _messages = [];
+  WebSocketChannel? _channel;
 
   @override
   void initState() {
     super.initState();
     _loadMessages();
+    _connectSocket();
+  }
+
+  void _connectSocket() {
+    if (widget.channel.id == null) return;
+    _channel = _service.connect(widget.channel.id!);
+    _channel!.stream.listen((event) {
+      final data = jsonDecode(event as String) as Map<String, dynamic>;
+      final msg = Message.fromJson(data['data'] as Map<String, dynamic>);
+      if (mounted && !_messages.any((m) => m.id == msg.id)) {
+        setState(() => _messages.add(msg));
+      }
+    });
   }
 
   Future<void> _loadMessages() async {
@@ -33,15 +49,14 @@ class _GroupChatPageState extends State<GroupChatPage> {
   Future<void> _sendMessage() async {
     final text = _messageCtrl.text.trim();
     if (text.isEmpty || widget.channel.id == null) return;
-    final msg = await _service.sendMessage(widget.channel.id!, text);
-    if (!mounted) return;
-    setState(() => _messages.add(msg));
+    await _service.sendMessage(widget.channel.id!, text);
     _messageCtrl.clear();
   }
 
   @override
   void dispose() {
     _messageCtrl.dispose();
+    _channel?.sink.close();
     super.dispose();
   }
 
@@ -65,7 +80,9 @@ class _GroupChatPageState extends State<GroupChatPage> {
                 final msg = _messages[index];
                 final isMe = msg.senderId == currentUserId();
                 return Align(
-                  alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+                  alignment: isMe
+                      ? Alignment.centerRight
+                      : Alignment.centerLeft,
                   child: Container(
                     margin: const EdgeInsets.symmetric(vertical: 4),
                     padding: const EdgeInsets.all(8),
@@ -88,16 +105,18 @@ class _GroupChatPageState extends State<GroupChatPage> {
                 Expanded(
                   child: TextField(
                     controller: _messageCtrl,
-                    decoration: const InputDecoration(hintText: 'Type a message'),
+                    decoration: const InputDecoration(
+                      hintText: 'Type a message',
+                    ),
                   ),
                 ),
                 IconButton(
                   icon: const Icon(Icons.send),
                   onPressed: _sendMessage,
-                )
+                ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );

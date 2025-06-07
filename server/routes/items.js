@@ -16,6 +16,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+const socket = require('../socket');
 const router = express.Router();
 router.use(auth);
 
@@ -66,6 +67,7 @@ router.post('/:id/messages', async (req, res) => {
       requestType: 'Item'
     };
     const message = await Message.create(messageData);
+    socket.broadcast(req.params.id.toString(), message);
     res.status(201).json(message);
   } catch (err) {
     res.status(400).json({ error: err.message });

@@ -7,6 +7,8 @@ const path = require('path');
 const admin = require('firebase-admin');
 const cron = require('node-cron');
 const Event = require('./models/Event');
+const http = require('http');
+const websocket = require('./socket');
 
 const app = express();
 app.use(cors());
@@ -64,7 +66,9 @@ cron.schedule('* * * * *', async () => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+const server = http.createServer(app);
+websocket.init(server);
+server.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
 
