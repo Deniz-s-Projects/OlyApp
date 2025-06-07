@@ -130,6 +130,7 @@ flutter run --dart-define=API_URL=http://localhost:3000
 Run server tests with:
 ```bash
 cd server
+npm install  # install dev dependencies like jest
 npm test
 ```
 
