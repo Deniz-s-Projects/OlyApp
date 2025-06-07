@@ -10,6 +10,7 @@ void main() {
       email: 'john@example.com',
       avatarUrl: 'https://example.com/avatar.png',
       isAdmin: true,
+      isListed: false,
     );
 
     final userMap = {
@@ -18,6 +19,7 @@ void main() {
       'email': 'john@example.com',
       'avatarUrl': 'https://example.com/avatar.png',
       'isAdmin': true,
+      'isListed': false,
     };
 
     test('toMap/fromMap round trip', () {
@@ -138,7 +140,7 @@ void main() {
 
   group('Item', () {
     final created = DateTime.utc(2023, 12, 31, 23, 59, 59);
-  final item = Item(
+    final item = Item(
       id: 5,
       ownerId: '6',
       title: 'Chair',

@@ -39,15 +39,20 @@ void main() {
       await tester.runAsync(() async {
         // 1) Insert the “Old” user into Hive on the real event loop:
         final box = Hive.box<User>('userBox');
-        await box.put('currentUser', User(name: 'Old', email: 'old@test.com'));
+        await box.put(
+          'currentUser',
+          User(name: 'Old', email: 'old@test.com', isListed: false),
+        );
 
         final service = FakeUserService();
 
         // 2) Pump ProfilePage:
-        await tester.pumpWidget(MaterialApp(home: ProfilePage(service: service)));
+        await tester.pumpWidget(
+          MaterialApp(home: ProfilePage(service: service)),
+        );
         // Give 300ms for any images/animations to complete (instead of pumpAndSettle):
         await tester.pump(const Duration(milliseconds: 300));
- 
+
         final nameFieldTf = find.byType(TextFormField).at(0);
         final emailFieldTf = find.byType(TextFormField).at(1);
 
@@ -76,20 +81,24 @@ void main() {
         // 7) Verify that service was called and Hive wrote the updated user:
         expect(service.updated!.name, 'New Name');
         expect(service.updated!.email, 'new@example.com');
-        
+
         final saved = Hive.box<User>('userBox').get('currentUser')!;
         expect(saved.name, 'New Name');
         expect(saved.email, 'new@example.com');
 
         // 8) Re‐pump the ProfilePage and give it time to rebuild:
-        await tester.pumpWidget(MaterialApp(home: ProfilePage(service: service)));
+        await tester.pumpWidget(
+          MaterialApp(home: ProfilePage(service: service)),
+        );
         await tester.pump(const Duration(milliseconds: 300));
 
         // 9) Finally, confirm that the text fields now show “New Name” / “new@example.com”:
         final reloadedNameEditable = tester.widget<EditableText>(
-            nameEditableFinder);
+          nameEditableFinder,
+        );
         final reloadedEmailEditable = tester.widget<EditableText>(
-            emailEditableFinder);
+          emailEditableFinder,
+        );
         expect(reloadedNameEditable.controller.text, 'New Name');
         expect(reloadedEmailEditable.controller.text, 'new@example.com');
       });

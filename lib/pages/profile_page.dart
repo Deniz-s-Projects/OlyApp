@@ -18,7 +18,6 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   late final Box<User> _userBox;
   late User _user;
-  bool _darkMode = false;
   late final UserService _service;
 
   final _formKey = GlobalKey<FormState>();
@@ -37,8 +36,6 @@ class _ProfilePageState extends State<ProfilePage> {
     _emailCtrl = TextEditingController(text: _user.email);
     _avatarCtrl = TextEditingController(text: _user.avatarUrl ?? '');
     _avatarCtrl.addListener(() => setState(() {}));
-    final settingsBox = Hive.box('settingsBox');
-    _darkMode = settingsBox.get('themeMode', defaultValue: 'light') == 'dark';
   }
 
   @override
@@ -80,6 +77,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ? null
           : _avatarCtrl.text.trim(),
       isAdmin: _user.isAdmin,
+      isListed: _user.isListed,
     );
     try {
       final user = await _service.updateProfile(updated);
@@ -190,15 +188,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 const SizedBox(height: 12),
                 Image.file(File(_avatarFile!.path), height: 120),
               ],
-              SwitchListTile(
-                title: const Text('Dark Mode'),
-                value: _darkMode,
-                onChanged: (val) {
-                  setState(() => _darkMode = val);
-                  final mode = val ? ThemeMode.dark : ThemeMode.light;
-                  OlyApp.of(context)?.updateThemeMode(mode);
-                },
-              ),
               const SizedBox(height: 20),
               ElevatedButton(onPressed: _save, child: const Text('Save')),
               const SizedBox(height: 12),
