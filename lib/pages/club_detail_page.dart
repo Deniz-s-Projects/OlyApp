@@ -5,6 +5,7 @@ import '../services/club_service.dart';
 import '../services/chat_service.dart';
 import '../utils/user_helpers.dart';
 import 'group_chat_page.dart';
+import 'documents_page.dart';
 
 class ClubDetailPage extends StatefulWidget {
   final Club club;
@@ -73,6 +74,14 @@ class _ClubDetailPageState extends State<ClubDetailPage> {
                   ? null
                   : (isMember ? _openChat : _joinAndChat),
               child: Text(isMember ? 'Open Chat' : 'Join & Chat'),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const DocumentsPage()),
+              ),
+              child: const Text('Documents'),
             ),
           ],
         ),
