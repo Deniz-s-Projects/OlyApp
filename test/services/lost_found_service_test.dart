@@ -4,7 +4,6 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
 import 'package:oly_app/services/lost_found_service.dart';
-import 'package:oly_app/models/models.dart';
 
 const apiUrl = String.fromEnvironment('API_URL', defaultValue: 'http://localhost:3000');
 
