@@ -12,6 +12,11 @@ const BulletinComment = require('../models/BulletinComment');
 const EventComment = require('../models/EventComment');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const admin = require('firebase-admin');
+
+jest.spyOn(admin, 'messaging').mockReturnValue({
+  sendEachForMulticast: jest.fn().mockResolvedValue({ successCount: 1 }),
+});
 
 const SECRET = process.env.JWT_SECRET || 'secretkey'; 
 
@@ -412,6 +417,30 @@ describe('Bulletin API', () => {
     expect(res.status).toBe(200);
     const posts = await BulletinPost.find();
     expect(posts).toHaveLength(0);
+  });
+});
+
+describe('Notifications API', () => {
+  test('POST /notifications/broadcast requires admin', async () => {
+    const user = await User.create({ name: 'u', email: 'u@b.c', passwordHash: 'x' });
+    const token = jwt.sign({ userId: user._id }, SECRET);
+    const res = await request(app)
+      .post('/api/notifications/broadcast')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ title: 't', body: 'b' });
+    expect(res.status).toBe(403);
+  });
+
+  test('POST /notifications/broadcast sends messages', async () => {
+    const adminUser = await User.create({ name: 'a', email: 'a@b.c', passwordHash: 'x', isAdmin: true, deviceTokens: ['tok'] });
+    const token = jwt.sign({ userId: adminUser._id }, SECRET);
+
+    const res = await request(app)
+      .post('/api/notifications/broadcast')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ title: 't', body: 'b' });
+    expect(res.status).toBe(200);
+    expect(res.body.successCount).toBeDefined();
   });
 });
 
