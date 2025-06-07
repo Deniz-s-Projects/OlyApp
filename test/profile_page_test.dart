@@ -41,7 +41,13 @@ void main() {
         final box = Hive.box<User>('userBox');
         await box.put(
           'currentUser',
-          User(name: 'Old', email: 'old@test.com', isListed: false),
+          User(
+            name: 'Old',
+            email: 'old@test.com',
+            isListed: false,
+            bio: 'bio',
+            room: '1',
+          ),
         );
 
         final service = FakeUserService();
@@ -74,6 +80,12 @@ void main() {
         // 6) Enter new text into each field and tap “Save”:
         await tester.enterText(nameEditableFinder, 'New Name');
         await tester.enterText(emailEditableFinder, 'new@example.com');
+        // Scroll down to make sure the Save button is visible
+        await tester.scrollUntilVisible(
+          find.text('Save'),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
         await tester.tap(find.text('Save'));
         // Wait 300ms for any save‐animation or Hive write to complete:
         await tester.pump(const Duration(milliseconds: 300));
@@ -81,10 +93,14 @@ void main() {
         // 7) Verify that service was called and Hive wrote the updated user:
         expect(service.updated!.name, 'New Name');
         expect(service.updated!.email, 'new@example.com');
+        expect(service.updated!.bio, 'bio');
+        expect(service.updated!.room, '1');
 
         final saved = Hive.box<User>('userBox').get('currentUser')!;
         expect(saved.name, 'New Name');
         expect(saved.email, 'new@example.com');
+        expect(saved.bio, 'bio');
+        expect(saved.room, '1');
 
         // 8) Re‐pump the ProfilePage and give it time to rebuild:
         await tester.pumpWidget(

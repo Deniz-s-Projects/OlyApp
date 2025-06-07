@@ -21,8 +21,8 @@ router.use(auth);
 // PUT /users/me - update current user's profile
 router.put('/me', async (req, res) => {
   try {
-    const { name, email, avatarUrl } = req.body;
-    const updates = { name, email, avatarUrl };
+    const { name, email, avatarUrl, isListed, bio, room } = req.body;
+    const updates = { name, email, avatarUrl, isListed, bio, room };
     const user = await User.findByIdAndUpdate(req.userId, updates, {
       new: true,
     });
@@ -34,6 +34,9 @@ router.put('/me', async (req, res) => {
         email: user.email,
         avatarUrl: user.avatarUrl,
         isAdmin: user.isAdmin,
+        isListed: user.isListed,
+        bio: user.bio,
+        room: user.room,
       },
     });
   } catch (err) {

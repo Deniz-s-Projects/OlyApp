@@ -15,6 +15,10 @@ class User {
   final bool isAdmin;
   @HiveField(5)
   final bool isListed;
+  @HiveField(6)
+  final String? bio;
+  @HiveField(7)
+  final String? room;
 
   User({
     this.id,
@@ -23,6 +27,8 @@ class User {
     this.avatarUrl,
     this.isAdmin = false,
     this.isListed = false,
+    this.bio,
+    this.room,
   });
 
   factory User.fromMap(Map<String, dynamic> map) => User(
@@ -32,6 +38,8 @@ class User {
     avatarUrl: map['avatarUrl'] as String?,
     isAdmin: (map['isAdmin'] ?? false) as bool,
     isListed: (map['isListed'] ?? false) as bool,
+    bio: map['bio'] as String?,
+    room: map['room'] as String?,
   );
 
   Map<String, dynamic> toMap() => {
@@ -41,6 +49,8 @@ class User {
     'avatarUrl': avatarUrl,
     'isAdmin': isAdmin,
     'isListed': isListed,
+    'bio': bio,
+    'room': room,
   };
 
   factory User.fromJson(Map<String, dynamic> json) => User.fromMap(json);
