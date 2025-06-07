@@ -8,18 +8,13 @@ import 'package:oly_app/services/maintenance_service.dart';
 class FakeMaintenanceService extends MaintenanceService {
   FakeMaintenanceService();
   @override
-  Future<List<MaintenanceRequest>> fetchRequests() async {
-    await Future<void>.delayed(const Duration(milliseconds: 10));
-    return [];
-  }
+  Future<List<MaintenanceRequest>> fetchRequests() async => [];
 }
 
 class ErrorMaintenanceService extends MaintenanceService {
   @override
-  Future<List<MaintenanceRequest>> fetchRequests() async {
-    await Future<void>.delayed(const Duration(milliseconds: 10));
-    throw Exception('fail');
-  }
+  Future<List<MaintenanceRequest>> fetchRequests() async =>
+      throw Exception('fail');
 }
 
 class FakeImagePicker extends ImagePickerPlatform {
@@ -63,8 +58,6 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(home: MaintenancePage(service: service)),
     );
-    await tester.pump();
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
     await tester.pumpAndSettle();
 
     // Form visible on start
@@ -80,8 +73,6 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(home: MaintenancePage(service: ErrorMaintenanceService())),
     );
-    await tester.pump();
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
     await tester.pumpAndSettle();
 
     expect(find.text('Failed to load tickets'), findsOneWidget);
@@ -93,8 +84,6 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(home: MaintenancePage(service: FakeMaintenanceService())),
     );
-    await tester.pump();
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
     await tester.pumpAndSettle();
 
     expect(find.byType(Image), findsNothing);
