@@ -23,7 +23,7 @@ const suggestionsRouter = require("../routes/suggestions");
 
 router.get("/", (req, res) => {
   res.json({ message: "API is running" });
-});
+}); 
 
 router.use('/auth', authRouter);
 router.use('/events', eventsRouter);
@@ -44,5 +44,5 @@ router.use('/wiki', wikiRouter);
 router.use('/emergency_contacts', emergencyContactsRouter);
 router.use('/clubs', clubsRouter);
 router.use('/documents', documentsRouter);
-router.use("/suggestions", suggestionsRouter); 
+router.use("/suggestions", suggestionsRouter);  
 module.exports = router;
