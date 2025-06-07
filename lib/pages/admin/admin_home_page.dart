@@ -9,6 +9,7 @@ import 'map_admin_page.dart';
 import 'poll_admin_page.dart';
 import 'analytics_page.dart';
 import 'gallery_admin_page.dart';
+import 'user_admin_page.dart';
 import '../../utils/user_helpers.dart';
 
 class AdminHomePage extends StatelessWidget {
@@ -123,6 +124,16 @@ class AdminHomePage extends StatelessWidget {
                 );
               },
               child: const Text('Upload Gallery Image'),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const UserAdminPage()),
+                );
+              },
+              child: const Text('Manage Users'),
             ),
             const SizedBox(height: 12),
             ElevatedButton(
