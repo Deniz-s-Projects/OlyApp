@@ -16,6 +16,7 @@ const pollsRouter = require('../routes/polls');
 const statsRouter = require('../routes/stats');
 const channelsRouter = require('../routes/channels');
 const wikiRouter = require('../routes/wiki');
+const emergencyContactsRouter = require('../routes/emergency_contacts');
 const clubsRouter = require('../routes/clubs');
 
 router.get('/', (req, res) => {
@@ -38,5 +39,6 @@ router.use('/polls', pollsRouter);
 router.use('/stats', statsRouter);
 router.use('/channels', channelsRouter);
 router.use('/wiki', wikiRouter);
+router.use('/emergency_contacts', emergencyContactsRouter);
 router.use('/clubs', clubsRouter);
 module.exports = router;
