@@ -11,6 +11,8 @@ void main() {
       avatarUrl: 'https://example.com/avatar.png',
       isAdmin: true,
       isListed: false,
+      bio: 'Bio',
+      room: '101',
     );
 
     final userMap = {
@@ -20,6 +22,8 @@ void main() {
       'avatarUrl': 'https://example.com/avatar.png',
       'isAdmin': true,
       'isListed': false,
+      'bio': 'Bio',
+      'room': '101',
     };
 
     test('toMap/fromMap round trip', () {

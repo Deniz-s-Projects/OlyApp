@@ -73,6 +73,8 @@ class _LoginPageState extends State<LoginPage> {
         avatarUrl: userMap['avatarUrl'] as String?,
         isAdmin: (userMap['isAdmin'] ?? false) as bool,
         isListed: (userMap['isListed'] ?? false) as bool,
+        bio: userMap['bio'] as String?,
+        room: userMap['room'] as String?,
       );
       final userBox = Hive.box<User>('userBox');
       await userBox.put('currentUser', user);
@@ -122,8 +124,8 @@ class _LoginPageState extends State<LoginPage> {
 
     final fullName =
         credential.givenName != null && credential.familyName != null
-        ? '${credential.givenName} ${credential.familyName}'
-        : 'Apple User';
+            ? '${credential.givenName} ${credential.familyName}'
+            : 'Apple User';
     final email = credential.email ?? '${credential.userIdentifier}@apple.com';
 
     final user = User(
@@ -189,8 +191,10 @@ class _LoginPageState extends State<LoginPage> {
                             ? Icons.visibility
                             : Icons.visibility_off,
                       ),
-                      onPressed: () =>
-                          setState(() => _passwordVisible = !_passwordVisible),
+                      onPressed:
+                          () => setState(
+                            () => _passwordVisible = !_passwordVisible,
+                          ),
                     ),
                   ),
                   obscureText: !_passwordVisible,
@@ -201,13 +205,14 @@ class _LoginPageState extends State<LoginPage> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _handleLogin,
-                    child: _isLoading
-                        ? const SizedBox(
-                            height: 16,
-                            width: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text('Login'),
+                    child:
+                        _isLoading
+                            ? const SizedBox(
+                              height: 16,
+                              width: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                            : const Text('Login'),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -217,31 +222,34 @@ class _LoginPageState extends State<LoginPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     ElevatedButton.icon(
-                      onPressed: _isLoading
-                          ? null
-                          : () async {
-                              setState(() => _isLoading = true);
-                              try {
-                                final user = await _handleGoogleSignIn();
-                                if (!context.mounted) return;
-                                if (user != null) {
-                                  final userBox = Hive.box<User>('userBox');
-                                  await userBox.put('currentUser', user);
-                                  widget.onLoginSuccess();
+                      onPressed:
+                          _isLoading
+                              ? null
+                              : () async {
+                                setState(() => _isLoading = true);
+                                try {
+                                  final user = await _handleGoogleSignIn();
+                                  if (!context.mounted) return;
+                                  if (user != null) {
+                                    final userBox = Hive.box<User>('userBox');
+                                    await userBox.put('currentUser', user);
+                                    widget.onLoginSuccess();
+                                  }
+                                } catch (e) {
+                                  if (!context.mounted) return;
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Google sign-in failed: $e',
+                                      ),
+                                    ),
+                                  );
+                                } finally {
+                                  if (mounted) {
+                                    setState(() => _isLoading = false);
+                                  }
                                 }
-                              } catch (e) {
-                                if (!context.mounted) return;
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Google sign-in failed: $e'),
-                                  ),
-                                );
-                              } finally {
-                                if (mounted) {
-                                  setState(() => _isLoading = false);
-                                }
-                              }
-                            },
+                              },
                       icon: const Icon(Icons.login),
                       label: const Text('Google'),
                       style: ElevatedButton.styleFrom(
@@ -251,31 +259,32 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(width: 12),
                     ElevatedButton.icon(
-                      onPressed: _isLoading
-                          ? null
-                          : () async {
-                              setState(() => _isLoading = true);
-                              try {
-                                final user = await _handleAppleSignIn();
-                                if (!context.mounted) return;
-                                if (user != null) {
-                                  final userBox = Hive.box<User>('userBox');
-                                  await userBox.put('currentUser', user);
-                                  widget.onLoginSuccess();
+                      onPressed:
+                          _isLoading
+                              ? null
+                              : () async {
+                                setState(() => _isLoading = true);
+                                try {
+                                  final user = await _handleAppleSignIn();
+                                  if (!context.mounted) return;
+                                  if (user != null) {
+                                    final userBox = Hive.box<User>('userBox');
+                                    await userBox.put('currentUser', user);
+                                    widget.onLoginSuccess();
+                                  }
+                                } catch (e) {
+                                  if (!context.mounted) return;
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Apple sign-in failed: $e'),
+                                    ),
+                                  );
+                                } finally {
+                                  if (mounted) {
+                                    setState(() => _isLoading = false);
+                                  }
                                 }
-                              } catch (e) {
-                                if (!context.mounted) return;
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Apple sign-in failed: $e'),
-                                  ),
-                                );
-                              } finally {
-                                if (mounted) {
-                                  setState(() => _isLoading = false);
-                                }
-                              }
-                            },
+                              },
                       icon: const Icon(Icons.apple),
                       label: const Text('Apple'),
                       style: ElevatedButton.styleFrom(
@@ -287,15 +296,17 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 const SizedBox(height: 24),
                 TextButton(
-                  onPressed: _isLoading
-                      ? null
-                      : () => Navigator.pushNamed(context, '/register'),
+                  onPressed:
+                      _isLoading
+                          ? null
+                          : () => Navigator.pushNamed(context, '/register'),
                   child: const Text('Create an account'),
                 ),
                 TextButton(
-                  onPressed: _isLoading
-                      ? null
-                      : () => Navigator.pushNamed(context, '/forgot'),
+                  onPressed:
+                      _isLoading
+                          ? null
+                          : () => Navigator.pushNamed(context, '/forgot'),
                   child: const Text('Forgot password?'),
                 ),
               ],

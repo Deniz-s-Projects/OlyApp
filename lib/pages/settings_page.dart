@@ -40,6 +40,8 @@ class _SettingsPageState extends State<SettingsPage> {
       avatarUrl: _user.avatarUrl,
       isAdmin: _user.isAdmin,
       isListed: val,
+      bio: _user.bio,
+      room: _user.room,
     );
     try {
       final user = await _service.updateProfile(updated);

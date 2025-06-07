@@ -24,6 +24,8 @@ class _ProfilePageState extends State<ProfilePage> {
   late final TextEditingController _nameCtrl;
   late final TextEditingController _emailCtrl;
   late final TextEditingController _avatarCtrl;
+  late final TextEditingController _bioCtrl;
+  late final TextEditingController _roomCtrl;
   XFile? _avatarFile;
 
   @override
@@ -35,6 +37,8 @@ class _ProfilePageState extends State<ProfilePage> {
     _nameCtrl = TextEditingController(text: _user.name);
     _emailCtrl = TextEditingController(text: _user.email);
     _avatarCtrl = TextEditingController(text: _user.avatarUrl ?? '');
+    _bioCtrl = TextEditingController(text: _user.bio ?? '');
+    _roomCtrl = TextEditingController(text: _user.room ?? '');
     _avatarCtrl.addListener(() => setState(() {}));
   }
 
@@ -43,6 +47,8 @@ class _ProfilePageState extends State<ProfilePage> {
     _nameCtrl.dispose();
     _emailCtrl.dispose();
     _avatarCtrl.dispose();
+    _bioCtrl.dispose();
+    _roomCtrl.dispose();
     super.dispose();
   }
 
@@ -73,11 +79,12 @@ class _ProfilePageState extends State<ProfilePage> {
       id: _user.id,
       name: _nameCtrl.text.trim(),
       email: _emailCtrl.text.trim(),
-      avatarUrl: _avatarCtrl.text.trim().isEmpty
-          ? null
-          : _avatarCtrl.text.trim(),
+      avatarUrl:
+          _avatarCtrl.text.trim().isEmpty ? null : _avatarCtrl.text.trim(),
       isAdmin: _user.isAdmin,
       isListed: _user.isListed,
+      bio: _bioCtrl.text.trim().isEmpty ? null : _bioCtrl.text.trim(),
+      room: _roomCtrl.text.trim().isEmpty ? null : _roomCtrl.text.trim(),
     );
     try {
       final user = await _service.updateProfile(updated);
@@ -99,20 +106,21 @@ class _ProfilePageState extends State<ProfilePage> {
   Future<void> _deleteAccount() async {
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete Account'),
-        content: const Text('This action cannot be undone. Continue?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Delete Account'),
+            content: const Text('This action cannot be undone. Continue?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Delete'),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
     );
     if (confirm != true) return;
     try {
@@ -141,32 +149,43 @@ class _ProfilePageState extends State<ProfilePage> {
             children: [
               CircleAvatar(
                 radius: 40,
-                backgroundImage: avatarUrl.isNotEmpty
-                    ? NetworkImage(avatarUrl)
-                    : null,
-                child: avatarUrl.isEmpty
-                    ? const Icon(Icons.person, size: 40)
-                    : null,
+                backgroundImage:
+                    avatarUrl.isNotEmpty ? NetworkImage(avatarUrl) : null,
+                child:
+                    avatarUrl.isEmpty
+                        ? const Icon(Icons.person, size: 40)
+                        : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _nameCtrl,
                 decoration: const InputDecoration(labelText: 'Name'),
-                validator: (v) =>
-                    v == null || v.trim().isEmpty ? 'Required' : null,
+                validator:
+                    (v) => v == null || v.trim().isEmpty ? 'Required' : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _emailCtrl,
                 decoration: const InputDecoration(labelText: 'Email'),
                 keyboardType: TextInputType.emailAddress,
-                validator: (v) =>
-                    v == null || v.trim().isEmpty ? 'Required' : null,
+                validator:
+                    (v) => v == null || v.trim().isEmpty ? 'Required' : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _avatarCtrl,
                 decoration: const InputDecoration(labelText: 'Avatar URL'),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _bioCtrl,
+                decoration: const InputDecoration(labelText: 'Bio'),
+                maxLines: 3,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _roomCtrl,
+                decoration: const InputDecoration(labelText: 'Room'),
               ),
               const SizedBox(height: 12),
               Row(
