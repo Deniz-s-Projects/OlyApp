@@ -22,7 +22,18 @@ router.use(auth);
 // GET /lostfound - list lost & found posts
 router.get('/', async (req, res) => {
   try {
-    const items = await LostItem.find();
+    const query = {};
+    if (req.query.type) {
+      query.type = req.query.type;
+    }
+    if (typeof req.query.resolved !== 'undefined') {
+      query.resolved = req.query.resolved === 'true';
+    }
+    if (req.query.search) {
+      const regex = { $regex: req.query.search, $options: 'i' };
+      query.$or = [{ title: regex }, { description: regex }];
+    }
+    const items = await LostItem.find(query);
     res.json({ data: items });
   } catch (err) {
     res.status(500).json({ error: err.message });
