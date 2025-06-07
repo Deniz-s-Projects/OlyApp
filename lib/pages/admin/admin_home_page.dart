@@ -7,6 +7,7 @@ import 'booking_admin_page.dart';
 import 'map_admin_page.dart';
 import 'poll_admin_page.dart';
 import 'analytics_page.dart';
+import 'gallery_admin_page.dart';
 import '../../utils/user_helpers.dart';
 
 class AdminHomePage extends StatelessWidget {
@@ -101,6 +102,16 @@ class AdminHomePage extends StatelessWidget {
                 );
               },
               child: const Text('Create Poll'),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const GalleryAdminPage()),
+                );
+              },
+              child: const Text('Upload Gallery Image'),
             ),
             const SizedBox(height: 12),
             ElevatedButton(
