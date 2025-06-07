@@ -18,6 +18,7 @@ import 'lost_found_page.dart';
 import 'create_channel_page.dart';
 import 'group_chat_page.dart';
 import 'wiki_page.dart';
+import 'clubs_page.dart';
 import '../models/models.dart';
 import '../services/event_service.dart';
 
@@ -188,8 +189,14 @@ class _MainPageState extends State<MainPage> {
       case 2:
         if (!widget.isAdmin) return null;
         return () async {
-          await showAddEventDialog(context,
-              (title, date, location, interval, until, category) async {
+          await showAddEventDialog(context, (
+            title,
+            date,
+            location,
+            interval,
+            until,
+            category,
+          ) async {
             final service = EventService();
             await service.createEvent(
               CalendarEvent(
@@ -357,8 +364,17 @@ class DashboardPage extends StatelessWidget {
                       );
                     }
                   },
-                ), 
-                DashboardCard( 
+                ),
+                DashboardCard(
+                  icon: Icons.group,
+                  label: 'Clubs',
+                  colorScheme: colorScheme,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ClubsPage()),
+                  ),
+                ),
+                DashboardCard(
                   icon: Icons.menu_book,
                   label: 'Wiki',
                   colorScheme: colorScheme,
