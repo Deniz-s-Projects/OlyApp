@@ -17,10 +17,13 @@ class LostFoundPage extends StatefulWidget {
 
 class _LostFoundPageState extends State<LostFoundPage> {
   late final LostFoundService _service;
+  final TextEditingController _searchCtrl = TextEditingController();
   final _titleCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
   XFile? _imageFile;
   List<LostItem> _items = [];
+  String _typeFilter = 'all';
+  String _resolvedFilter = 'all';
 
   @override
   void initState() {
@@ -30,7 +33,13 @@ class _LostFoundPageState extends State<LostFoundPage> {
   }
 
   Future<void> _loadItems() async {
-    final items = await _service.fetchItems();
+    final items = await _service.fetchItems(
+      search: _searchCtrl.text,
+      type: _typeFilter == 'all' ? null : _typeFilter,
+      resolved: _resolvedFilter == 'all'
+          ? null
+          : _resolvedFilter == 'true',
+    );
     if (!mounted) return;
     setState(() => _items = items);
   }
@@ -63,6 +72,7 @@ class _LostFoundPageState extends State<LostFoundPage> {
 
   @override
   void dispose() {
+    _searchCtrl.dispose();
     _titleCtrl.dispose();
     _descCtrl.dispose();
     super.dispose();
@@ -79,6 +89,63 @@ class _LostFoundPageState extends State<LostFoundPage> {
       ),
       body: Column(
         children: [
+          Padding(
+            padding: const EdgeInsets.all(8),
+            child: Column(
+              children: [
+                TextField(
+                  controller: _searchCtrl,
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.search),
+                    hintText: 'Search…',
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.refresh),
+                      onPressed: _loadItems,
+                    ),
+                  ),
+                  onChanged: (_) => _loadItems(),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: DropdownButton<String>(
+                        value: _typeFilter,
+                        isExpanded: true,
+                        onChanged: (val) {
+                          if (val == null) return;
+                          setState(() => _typeFilter = val);
+                          _loadItems();
+                        },
+                        items: const [
+                          DropdownMenuItem(value: 'all', child: Text('All Types')),
+                          DropdownMenuItem(value: 'lost', child: Text('Lost')),
+                          DropdownMenuItem(value: 'found', child: Text('Found')),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: DropdownButton<String>(
+                        value: _resolvedFilter,
+                        isExpanded: true,
+                        onChanged: (val) {
+                          if (val == null) return;
+                          setState(() => _resolvedFilter = val);
+                          _loadItems();
+                        },
+                        items: const [
+                          DropdownMenuItem(value: 'all', child: Text('Any Status')),
+                          DropdownMenuItem(value: 'false', child: Text('Unresolved')),
+                          DropdownMenuItem(value: 'true', child: Text('Resolved')),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
           Expanded(
             child: _items.isEmpty
                 ? const Center(child: Text('No posts yet.'))

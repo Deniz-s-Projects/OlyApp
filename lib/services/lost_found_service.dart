@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:hive_flutter/hive_flutter.dart';
 
 import '../models/models.dart';
 import 'api_service.dart';
@@ -10,14 +11,27 @@ import 'api_service.dart';
 class LostFoundService extends ApiService {
   LostFoundService({super.client});
 
-  /// Fetches all lost and found posts.
-  Future<List<LostItem>> fetchItems() async {
-    return get('/lostfound', (json) {
-      final list = json['data'] as List<dynamic>;
+  /// Fetches lost and found posts with optional filters.
+  Future<List<LostItem>> fetchItems({
+    String? search,
+    String? type,
+    bool? resolved,
+  }) async {
+    final query = <String, dynamic>{};
+    if (search != null && search.isNotEmpty) query['search'] = search;
+    if (type != null && type.isNotEmpty) query['type'] = type;
+    if (resolved != null) query['resolved'] = '$resolved';
+
+    final uri = buildUri('/lostfound', query.isEmpty ? null : query);
+    final res = await client.get(uri, headers: _authHeaders());
+    if (res.statusCode == 200) {
+      final data = jsonDecode(res.body) as Map<String, dynamic>;
+      final list = data['data'] as List<dynamic>;
       return list
           .map((e) => LostItem.fromJson(e as Map<String, dynamic>))
           .toList();
-    });
+    }
+    throw Exception('Request failed: ${res.statusCode}');
   }
 
   /// Creates a new lost or found post.
@@ -80,5 +94,14 @@ class LostFoundService extends ApiService {
   /// Deletes the lost/found post with [id].
   Future<void> deleteItem(String id) async {
     await post('/lostfound/$id/delete', {}, (_) => null);
+  }
+
+  Map<String, String> _authHeaders([Map<String, String>? headers]) {
+    final box = Hive.isBoxOpen('authBox') ? Hive.box('authBox') : null;
+    final token = box?.get('token') as String?;
+    return {
+      if (token != null) 'Authorization': 'Bearer $token',
+      if (headers != null) ...headers,
+    };
   }
 }
