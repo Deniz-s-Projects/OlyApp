@@ -14,7 +14,8 @@ part 'event_comment.dart';
 part 'notification_record.dart';
 part 'transit.dart';
 part 'poll.dart';
-part 'lost_item.dart'; 
+part 'lost_item.dart';
+part 'chat_channel.dart';
 
 DateTime _parseDate(dynamic value) {
   if (value is int) return DateTime.fromMillisecondsSinceEpoch(value);
