@@ -15,6 +15,7 @@ import 'transit_page.dart';
 import 'directory_page.dart';
 import 'polls_page.dart';
 import 'lost_found_page.dart';
+import 'wiki_page.dart';
 import '../models/models.dart';
 import '../services/event_service.dart';
 
@@ -53,6 +54,7 @@ class _MainPageState extends State<MainPage> {
     'Transit',
     'Directory',
     'Polls',
+    'Wiki',
   ];
 
   late final List<Widget> _pages;
@@ -71,6 +73,7 @@ class _MainPageState extends State<MainPage> {
       const TransitPage(),
       const DirectoryPage(),
       const PollsPage(),
+      const WikiPage(),
     ];
   }
 
@@ -142,6 +145,7 @@ class _MainPageState extends State<MainPage> {
           ),
           NavigationDestination(icon: Icon(Icons.people), label: 'Directory'),
           NavigationDestination(icon: Icon(Icons.poll), label: 'Polls'),
+          NavigationDestination(icon: Icon(Icons.menu_book), label: 'Wiki'),
         ],
       ),
     );
@@ -331,13 +335,10 @@ class DashboardPage extends StatelessWidget {
                   ),
                 ),
                 DashboardCard(
-                  icon: Icons.miscellaneous_services,
-                  label: 'Services',
+                  icon: Icons.menu_book,
+                  label: 'Wiki',
                   colorScheme: colorScheme,
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const ServicesPage()),
-                  ),
+                  onTap: () => _navigate(10),
                 ),
                 if (isAdmin)
                   DashboardCard(
