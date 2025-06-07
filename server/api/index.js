@@ -14,6 +14,7 @@ const lostFoundRouter = require('../routes/lostfound');
 const servicesRouter = require('../routes/services');
 const pollsRouter = require('../routes/polls');
 const channelsRouter = require('../routes/channels');
+const wikiRouter = require('../routes/wiki');
 
 router.get('/', (req, res) => {
   res.json({ message: 'API is running' });
@@ -33,4 +34,5 @@ router.use('/lostfound', lostFoundRouter);
 router.use('/services', servicesRouter);
 router.use('/polls', pollsRouter);
 router.use('/channels', channelsRouter);
+router.use('/wiki', wikiRouter);
 module.exports = router;
