@@ -31,7 +31,7 @@ class _BookingAdminPageState extends State<BookingAdminPage> {
   }
 
   Future<void> _load() async {
-    final slots = await _service.fetchSlotsForAdmin();
+    final slots = await _service.fetchAllBookings();
     setState(() => _slots = slots);
   }
 
@@ -105,6 +105,7 @@ class _BookingAdminPageState extends State<BookingAdminPage> {
               '${time.month}/${time.day} ${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
           return ListTile(
             title: Text(label),
+            subtitle: Text(slot['name'] != null ? 'Reserved by ${slot['name']}' : 'Available'),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [

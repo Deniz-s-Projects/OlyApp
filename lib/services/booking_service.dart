@@ -21,6 +21,18 @@ class BookingService extends ApiService {
     });
   }
 
+  /// Fetch all booking slots including reserved ones (admin only).
+  Future<List<Map<String, dynamic>>> fetchAllBookings() async {
+    return get('/bookings', (json) {
+      final list = json['data'] as List<dynamic>;
+      return list.map<Map<String, dynamic>>((e) {
+        final map = Map<String, dynamic>.from(e as Map);
+        map['time'] = DateTime.parse(map['time'] as String);
+        return map;
+      }).toList();
+    });
+  }
+
   Future<void> createSlot(DateTime time) async {
     await post('/bookings/slots', {
       'time': time.toIso8601String(),

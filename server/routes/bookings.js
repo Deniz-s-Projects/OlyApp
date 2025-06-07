@@ -26,6 +26,16 @@ router.get('/slots/manage', requireAdmin, async (req, res) => {
   }
 });
 
+// GET /bookings - list all booking slots including reservations (admin only)
+router.get('/', requireAdmin, async (req, res) => {
+  try {
+    const slots = await BookingSlot.find().sort('time');
+    res.json({ data: slots });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // POST /bookings/slots - create a new booking slot (admin only)
 router.post('/slots', requireAdmin, async (req, res) => {
   const { time } = req.body;
