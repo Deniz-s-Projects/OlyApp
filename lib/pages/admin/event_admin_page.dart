@@ -80,17 +80,16 @@ class _EventAdminPageState extends State<EventAdminPage> {
       appBar: AppBar(title: const Text('Manage Events')),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          await showAddEventDialog(context, (
-            title,
-            date,
-            location,
-            category,
-          ) async {
+          await showAddEventDialog(context,
+              (title, date, location, interval, until, category) async {
+          await showAddEventDialog(context, (title, date, location, category) async {
             await _service.createEvent(
               CalendarEvent(
                 title: title,
                 date: date,
                 location: location,
+                repeatInterval: interval,
+                repeatUntil: until, 
                 category: category,
               ),
             );

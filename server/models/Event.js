@@ -10,6 +10,11 @@ const EventSchema = new mongoose.Schema({
   checkIns: { type: [Number], default: [] },
   reminderSent: { type: Boolean, default: false },
   location: String,
+  repeatInterval: {
+    type: String,
+    enum: ['daily', 'weekly', 'monthly', 'yearly'],
+  },
+  repeatUntil: Date, 
   category: String,
 }, { timestamps: true });
 

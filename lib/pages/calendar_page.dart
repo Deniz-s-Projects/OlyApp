@@ -100,12 +100,16 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 
   void _addEvent() async {
+    await showAddEventDialog(context,
+        (title, date, location, interval, until, category) async {
     await showAddEventDialog(context, (title, date, location, category) async {
       final event = await _service.createEvent(
         CalendarEvent(
           title: title,
           date: date,
           location: location.isNotEmpty ? location : null,
+          repeatInterval: interval,
+          repeatUntil: until, 
           category: category.isNotEmpty ? category : null,
         ),
       );
@@ -433,15 +437,25 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 }
 
+
 Future<void> showAddEventDialog(
   BuildContext context,
-  void Function(String title, DateTime date, String location, String category)
-  onConfirm,
+  void Function(
+    String title,
+    DateTime date,
+    String location,
+    String? repeatInterval,
+    DateTime? repeatUntil,
+    String category,
+  ) onConfirm,
+ 
 ) async {
   final textCtrl = TextEditingController();
   final locCtrl = TextEditingController();
   final catCtrl = TextEditingController();
   DateTime selectedDate = DateTime.now();
+  String interval = 'none';
+  DateTime? until;
   await showDialog(
     context: context,
     builder: (ctx) => AlertDialog(
@@ -463,11 +477,11 @@ Future<void> showAddEventDialog(
             controller: catCtrl,
             decoration: const InputDecoration(labelText: 'Category'),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 8), 
           TextButton.icon(
             icon: const Icon(Icons.calendar_today),
             label: Text(
-              '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
+              '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}', 
             ),
             onPressed: () async {
               final picked = await showDatePicker(
@@ -479,6 +493,36 @@ Future<void> showAddEventDialog(
               if (picked != null) selectedDate = picked;
             },
           ),
+          const SizedBox(height: 8),
+          DropdownButton<String>(
+            value: interval,
+            items: const [
+              DropdownMenuItem(value: 'none', child: Text('No Repeat')),
+              DropdownMenuItem(value: 'daily', child: Text('Daily')),
+              DropdownMenuItem(value: 'weekly', child: Text('Weekly')),
+              DropdownMenuItem(value: 'monthly', child: Text('Monthly')),
+              DropdownMenuItem(value: 'yearly', child: Text('Yearly')),
+            ],
+            onChanged: (val) => interval = val ?? 'none',
+          ),
+          if (interval != 'none')
+            TextButton.icon(
+              icon: const Icon(Icons.repeat),
+              label: Text(
+                until == null
+                    ? 'Repeat Until'
+                    : '${until!.day}/${until!.month}/${until!.year}',
+              ),
+              onPressed: () async {
+                final picked = await showDatePicker(
+                  context: ctx,
+                  initialDate: selectedDate,
+                  firstDate: selectedDate,
+                  lastDate: DateTime.utc(2035),
+                );
+                if (picked != null) until = picked;
+              },
+            ), 
         ],
       ),
       actions: [
@@ -492,7 +536,9 @@ Future<void> showAddEventDialog(
               onConfirm(
                 textCtrl.text,
                 selectedDate,
-                locCtrl.text,
+                locCtrl.text, 
+                interval == 'none' ? null : interval,
+                until, 
                 catCtrl.text,
               );
               Navigator.pop(ctx);

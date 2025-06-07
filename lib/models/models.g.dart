@@ -171,14 +171,16 @@ class CalendarEventAdapter extends TypeAdapter<CalendarEvent> {
       description: fields[3] as String?,
       attendees: (fields[4] as List).cast<String>(),
       location: fields[5] as String?,
-      category: fields[6] as String?,
+      repeatInterval: fields[6] as String?,
+      repeatUntil: fields[7] as DateTime?,
+      category: fields[8] as String?, 
     );
   }
 
   @override
   void write(BinaryWriter writer, CalendarEvent obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(9) 
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -191,7 +193,11 @@ class CalendarEventAdapter extends TypeAdapter<CalendarEvent> {
       ..write(obj.attendees)
       ..writeByte(5)
       ..write(obj.location)
-      ..writeByte(6)
+      ..writeByte(6) 
+      ..write(obj.repeatInterval)
+      ..writeByte(7)
+      ..write(obj.repeatUntil)
+      ..writeByte(8) 
       ..write(obj.category);
   }
 

@@ -13,7 +13,40 @@ router.use(auth);
 router.get('/', async (req, res) => {
   try {
     const events = await Event.find();
-    res.json({ data: events });
+    const result = [];
+    const addInterval = (date, interval) => {
+      const d = new Date(date);
+      switch (interval) {
+        case 'daily':
+          d.setDate(d.getDate() + 1);
+          break;
+        case 'weekly':
+          d.setDate(d.getDate() + 7);
+          break;
+        case 'monthly':
+          d.setMonth(d.getMonth() + 1);
+          break;
+        case 'yearly':
+          d.setFullYear(d.getFullYear() + 1);
+          break;
+        default:
+          return null;
+      }
+      return d;
+    };
+
+    for (const e of events) {
+      result.push(e);
+      if (e.repeatInterval && e.repeatUntil) {
+        let next = addInterval(e.date, e.repeatInterval);
+        while (next && next <= e.repeatUntil) {
+          const obj = { ...e.toObject(), date: next };
+          result.push(obj);
+          next = addInterval(next, e.repeatInterval);
+        }
+      }
+    }
+    res.json({ data: result });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -31,7 +64,9 @@ router.post('/', requireAdmin, async (req, res) => {
       checkIns: req.body.checkIns,
       reminderSent: req.body.reminderSent,
       location: req.body.location,
-      category: req.body.category,
+      category: req.body.category, 
+      repeatInterval: req.body.repeatInterval,
+      repeatUntil: req.body.repeatUntil, 
     };
     const event = await Event.create(data);
     res.json({ data: event });
@@ -52,7 +87,9 @@ router.put('/:id', requireAdmin, async (req, res) => {
       checkIns: req.body.checkIns,
       reminderSent: req.body.reminderSent,
       location: req.body.location,
-      category: req.body.category,
+      category: req.body.category, 
+      repeatInterval: req.body.repeatInterval,
+      repeatUntil: req.body.repeatUntil, 
     };
     const event = await Event.findByIdAndUpdate(req.params.id, data, {
       new: true
