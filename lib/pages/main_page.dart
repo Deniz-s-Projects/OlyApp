@@ -20,6 +20,7 @@ import 'group_chat_page.dart';
 import 'wiki_page.dart';
 import 'clubs_page.dart';
 import 'documents_page.dart';
+import 'gallery_page.dart';
 import 'weather_page.dart';
 import '../models/models.dart';
 import '../services/event_service.dart';
@@ -383,6 +384,15 @@ class DashboardPage extends StatelessWidget {
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const DocumentsPage()),
+                  ),
+                ),
+                DashboardCard(
+                  icon: Icons.photo,
+                  label: 'Gallery',
+                  colorScheme: colorScheme,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const GalleryPage()),
                   ),
                 ),
                 DashboardCard(
