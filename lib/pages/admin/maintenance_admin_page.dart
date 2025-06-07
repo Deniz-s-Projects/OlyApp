@@ -16,6 +16,8 @@ class _MaintenanceAdminPageState extends State<MaintenanceAdminPage> {
   List<MaintenanceRequest> _allRequests = [];
   List<MaintenanceRequest> _requests = [];
   String _statusFilter = 'open';
+  String _searchTerm = '';
+  String _sortOrder = 'newest';
 
   @override
   void initState() {
@@ -42,11 +44,22 @@ class _MaintenanceAdminPageState extends State<MaintenanceAdminPage> {
   }
 
   void _applyFilter() {
-    if (_statusFilter == 'all') {
-      _requests = List.from(_allRequests);
-    } else {
-      _requests = _allRequests.where((r) => r.status == _statusFilter).toList();
-    }
+    final searchLower = _searchTerm.toLowerCase();
+    var filtered = _allRequests.where((r) {
+      final matchesStatus =
+          _statusFilter == 'all' || r.status == _statusFilter;
+      final matchesSearch = searchLower.isEmpty ||
+          r.subject.toLowerCase().contains(searchLower) ||
+          r.userId.toLowerCase().contains(searchLower);
+      return matchesStatus && matchesSearch;
+    }).toList();
+
+    filtered.sort((a, b) {
+      final cmp = a.createdAt.compareTo(b.createdAt);
+      return _sortOrder == 'newest' ? -cmp : cmp;
+    });
+
+    _requests = filtered;
   }
 
   Future<void> _close(MaintenanceRequest req) async {
@@ -121,6 +134,42 @@ class _MaintenanceAdminPageState extends State<MaintenanceAdminPage> {
       appBar: AppBar(title: const Text('Maintenance Tickets')),
       body: Column(
         children: [
+          Padding(
+            padding: const EdgeInsets.all(8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    key: const ValueKey('searchField'),
+                    decoration:
+                        const InputDecoration(labelText: 'Search by subject or user'),
+                    onChanged: (val) {
+                      setState(() {
+                        _searchTerm = val;
+                        _applyFilter();
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(width: 8),
+                DropdownButton<String>(
+                  key: const ValueKey('sortDropdown'),
+                  value: _sortOrder,
+                  onChanged: (val) {
+                    if (val == null) return;
+                    setState(() {
+                      _sortOrder = val;
+                      _applyFilter();
+                    });
+                  },
+                  items: const [
+                    DropdownMenuItem(value: 'newest', child: Text('Newest')),
+                    DropdownMenuItem(value: 'oldest', child: Text('Oldest')),
+                  ],
+                ),
+              ],
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.all(8),
             child: DropdownButton<String>(
