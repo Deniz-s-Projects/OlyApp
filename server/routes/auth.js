@@ -16,7 +16,7 @@ const router = express.Router();
 // POST /auth/register - create user
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password, avatarUrl, isAdmin } = req.body;
+    const { name, email, password, avatarUrl, isAdmin, bio, room } = req.body;
     if (!name || !email || !password) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
@@ -31,6 +31,8 @@ router.post('/register', async (req, res) => {
       passwordHash,
       avatarUrl,
       isAdmin: !!isAdmin,
+      bio: bio || '',
+      room: room || '',
     });
     const token = jwt.sign({ userId: user._id.toString() }, SECRET);
     res.status(201).json({
@@ -41,6 +43,8 @@ router.post('/register', async (req, res) => {
         email: user.email,
         avatarUrl: user.avatarUrl,
         isAdmin: user.isAdmin,
+        bio: user.bio,
+        room: user.room,
       },
     });
   } catch (err) {
@@ -65,6 +69,8 @@ router.post('/login', async (req, res) => {
         email: user.email,
         avatarUrl: user.avatarUrl,
         isAdmin: user.isAdmin,
+        bio: user.bio,
+        room: user.room,
       },
     });
   } catch (err) {

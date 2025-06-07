@@ -42,7 +42,14 @@ describe('Users API', () => {
     const res = await request(app)
       .put('/api/users/me')
       .set('Authorization', `Bearer ${token}`)
-      .send({ name: 'New', email: 'new@test.com', avatarUrl: 'pic' });
+      .send({
+        name: 'New',
+        email: 'new@test.com',
+        avatarUrl: 'pic',
+        bio: 'hello',
+        room: 'A1',
+        isListed: true,
+      });
 
     expect(res.status).toBe(200);
     expect(res.body.data.name).toBe('New');
@@ -50,6 +57,9 @@ describe('Users API', () => {
     expect(updated.name).toBe('New');
     expect(updated.email).toBe('new@test.com');
     expect(updated.avatarUrl).toBe('pic');
+    expect(updated.bio).toBe('hello');
+    expect(updated.room).toBe('A1');
+    expect(updated.isListed).toBe(true);
   });
 
   test('DELETE /users/me removes account', async () => {
