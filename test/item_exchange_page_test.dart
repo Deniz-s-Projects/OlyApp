@@ -170,9 +170,7 @@ void main() {
       final service = FakeItemService([item]);
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: ItemDetailPage(item: item, service: service),
-        ),
+        MaterialApp(home: ItemDetailPage(item: item, service: service)),
       );
       await tester.pumpAndSettle();
 
@@ -213,13 +211,16 @@ void main() {
       final service = FakeItemService([item]);
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: ItemDetailPage(item: item, service: service),
-        ),
+        MaterialApp(home: ItemDetailPage(item: item, service: service)),
       );
       await tester.pumpAndSettle();
 
       await tester.tap(find.byKey(const Key('deleteItem')));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(AlertDialog), findsOneWidget);
+
+      await tester.tap(find.text('Delete'));
       await tester.pump();
 
       expect(service.deletedId, 1);
