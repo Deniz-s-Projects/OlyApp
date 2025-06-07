@@ -87,7 +87,8 @@ class _ItemDetailPageState extends State<ItemDetailPage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => PostItemPage(item: _item, service: _service),
+                    builder:
+                        (_) => PostItemPage(item: _item, service: _service),
                   ),
                 );
               },
@@ -97,6 +98,27 @@ class _ItemDetailPageState extends State<ItemDetailPage> {
               icon: const Icon(Icons.delete),
               onPressed: () async {
                 if (_item.id == null) return;
+                final confirm = await showDialog<bool>(
+                  context: context,
+                  builder:
+                      (ctx) => AlertDialog(
+                        title: const Text('Delete Item'),
+                        content: const Text(
+                          'Are you sure you want to delete this item?',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, false),
+                            child: const Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, true),
+                            child: const Text('Delete'),
+                          ),
+                        ],
+                      ),
+                );
+                if (confirm != true) return;
                 final svc = _service;
                 await svc.deleteItem(_item.id!);
                 if (context.mounted) Navigator.pop(context, true);
@@ -201,47 +223,50 @@ class _ItemDetailPageState extends State<ItemDetailPage> {
                             backgroundColor: colorScheme.primary,
                             foregroundColor: colorScheme.onPrimary,
                           ),
-                  onPressed: () {
-                    _requestItem(context);
-                  },
-                ),
+                          onPressed: () {
+                            _requestItem(context);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (_item.completed && !isOwner) ...[
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: _ratingCtrl,
+                      decoration: const InputDecoration(
+                        labelText: 'Rating (1-5)',
+                      ),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: false,
+                      ),
+                    ),
+                    TextField(
+                      controller: _reviewCtrl,
+                      decoration: const InputDecoration(labelText: 'Review'),
+                    ),
+                    const SizedBox(height: 8),
+                    ElevatedButton(
+                      onPressed: () async {
+                        if (_item.id == null) return;
+                        final rating = int.tryParse(_ratingCtrl.text) ?? 0;
+                        await _service.submitRating(
+                          _item.id!,
+                          rating,
+                          review: _reviewCtrl.text,
+                        );
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Rating submitted')),
+                          );
+                        }
+                      },
+                      child: const Text('Submit Rating'),
+                    ),
+                  ],
+                ],
               ),
-            ],
-          ),
-          if (_item.completed && !isOwner) ...[
-            const SizedBox(height: 16),
-            TextField(
-              controller: _ratingCtrl,
-              decoration: const InputDecoration(labelText: 'Rating (1-5)'),
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: false),
             ),
-            TextField(
-              controller: _reviewCtrl,
-              decoration: const InputDecoration(labelText: 'Review'),
-            ),
-            const SizedBox(height: 8),
-            ElevatedButton(
-              onPressed: () async {
-                if (_item.id == null) return;
-                final rating = int.tryParse(_ratingCtrl.text) ?? 0;
-                await _service.submitRating(
-                  _item.id!,
-                  rating,
-                  review: _reviewCtrl.text,
-                );
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Rating submitted')),
-                  );
-                }
-              },
-              child: const Text('Submit Rating'),
-            ),
-          ],
-        ],
-      ),
-    ),
           ],
         ),
       ),
