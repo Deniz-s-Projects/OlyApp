@@ -4,6 +4,7 @@ import 'pages/main_page.dart';
 import 'pages/register_page.dart';
 import 'pages/forgot_password_page.dart';
 import 'pages/reset_password_page.dart';
+import 'pages/onboarding_page.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 import 'dart:io';
@@ -67,6 +68,7 @@ class OlyAppState extends State<OlyApp> {
   bool _loggedIn = false;
   bool _isAdmin = false;
   ThemeMode _themeMode = ThemeMode.light;
+  bool _seenOnboarding = true;
   final List<Map<String, String?>> _notifications = [];
 
   @override
@@ -75,6 +77,8 @@ class OlyAppState extends State<OlyApp> {
     final settingsBox = Hive.box('settingsBox');
     final stored =
         settingsBox.get('themeMode', defaultValue: 'light') as String;
+    _seenOnboarding =
+        settingsBox.get('seenOnboarding', defaultValue: false) as bool;
     _themeMode = ThemeMode.values.firstWhere(
       (m) => m.name == stored,
       orElse: () => ThemeMode.light,
@@ -128,6 +132,12 @@ class OlyAppState extends State<OlyApp> {
     });
   }
 
+  Future<void> _finishOnboarding() async {
+    final box = Hive.box('settingsBox');
+    await box.put('seenOnboarding', true);
+    setState(() => _seenOnboarding = true);
+  }
+
   Future<void> logout() => _logout();
 
   void updateThemeMode(ThemeMode mode) {
@@ -151,9 +161,12 @@ class OlyAppState extends State<OlyApp> {
         '/forgot': (_) => const ForgotPasswordPage(),
         '/reset': (_) => const ResetPasswordPage(),
       },
-      home: _loggedIn
-          ? MainPage(isAdmin: _isAdmin, onLogout: _logout)
-          : LoginPage(onLoginSuccess: () => _handleLogin()),
+      home:
+          !_seenOnboarding
+              ? OnboardingPage(onFinish: _finishOnboarding)
+              : _loggedIn
+              ? MainPage(isAdmin: _isAdmin, onLogout: _logout)
+              : LoginPage(onLoginSuccess: () => _handleLogin()),
     );
   }
 }
