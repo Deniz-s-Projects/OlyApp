@@ -15,6 +15,8 @@ import 'transit_page.dart';
 import 'directory_page.dart';
 import 'polls_page.dart';
 import 'lost_found_page.dart';
+import 'create_channel_page.dart';
+import 'group_chat_page.dart';
 import 'wiki_page.dart';
 import '../models/models.dart';
 import '../services/event_service.dart';
@@ -335,6 +337,28 @@ class DashboardPage extends StatelessWidget {
                   ),
                 ),
                 DashboardCard(
+                  icon: Icons.forum,
+                  label: 'Channels',
+                  colorScheme: colorScheme,
+                  onTap: () async {
+                    final channel = await Navigator.push<ChatChannel>(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const CreateChannelPage(),
+                      ),
+                    );
+                    if (channel != null) {
+                      // ignore: use_build_context_synchronously
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => GroupChatPage(channel: channel),
+                        ),
+                      );
+                    }
+                  },
+                ), 
+                DashboardCard( 
                   icon: Icons.menu_book,
                   label: 'Wiki',
                   colorScheme: colorScheme,

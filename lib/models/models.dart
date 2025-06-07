@@ -15,6 +15,7 @@ part 'notification_record.dart';
 part 'transit.dart';
 part 'poll.dart';
 part 'lost_item.dart';
+part 'chat_channel.dart';
 part 'wiki_article.dart';
 
 DateTime _parseDate(dynamic value) {
