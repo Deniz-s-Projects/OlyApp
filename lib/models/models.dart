@@ -16,6 +16,7 @@ part 'transit.dart';
 part 'poll.dart';
 part 'lost_item.dart';
 part 'chat_channel.dart';
+part 'club.dart';
 part 'wiki_article.dart';
 part 'emergency_contact.dart';
 
