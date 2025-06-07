@@ -12,6 +12,7 @@ import 'models/models.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'services/notification_service.dart';
+import 'theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -149,11 +150,8 @@ class OlyAppState extends State<OlyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'OlyApp',
-      theme: ThemeData.from(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.white38),
-        useMaterial3: true,
-      ),
-      darkTheme: ThemeData.dark(useMaterial3: true),
+      theme: OlyTheme.light(),
+      darkTheme: OlyTheme.dark(),
       themeMode: _themeMode,
 
       routes: {
