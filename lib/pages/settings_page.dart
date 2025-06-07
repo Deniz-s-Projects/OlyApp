@@ -18,7 +18,7 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  bool _darkMode = false;
+  ThemeMode _themeMode = ThemeMode.system;
   bool _listed = false;
   bool _eventNotif = true;
   bool _announcementNotif = true;
@@ -30,7 +30,11 @@ class _SettingsPageState extends State<SettingsPage> {
     super.initState();
     _service = widget.service ?? UserService();
     final settingsBox = Hive.box('settingsBox');
-    _darkMode = settingsBox.get('themeMode', defaultValue: 'light') == 'dark';
+    final stored = settingsBox.get('themeMode', defaultValue: 'system') as String;
+    _themeMode = ThemeMode.values.firstWhere(
+      (m) => m.name == stored,
+      orElse: () => ThemeMode.system,
+    );
     _eventNotif =
         settingsBox.get('eventNotifications', defaultValue: true) as bool;
     _announcementNotif =
@@ -78,14 +82,30 @@ class _SettingsPageState extends State<SettingsPage> {
       appBar: AppBar(title: const Text('Settings')),
       body: ListView(
         children: [
-          SwitchListTile(
-            title: const Text('Dark Mode'),
-            value: _darkMode,
-            onChanged: (val) {
-              setState(() => _darkMode = val);
-              final mode = val ? ThemeMode.dark : ThemeMode.light;
-              OlyApp.of(context)?.updateThemeMode(mode);
-            },
+          ListTile(
+            title: const Text('Theme'),
+            trailing: DropdownButton<ThemeMode>(
+              value: _themeMode,
+              onChanged: (mode) {
+                if (mode == null) return;
+                setState(() => _themeMode = mode);
+                OlyApp.of(context)?.updateThemeMode(mode);
+              },
+              items: const [
+                DropdownMenuItem(
+                  value: ThemeMode.system,
+                  child: Text('System'),
+                ),
+                DropdownMenuItem(
+                  value: ThemeMode.light,
+                  child: Text('Light'),
+                ),
+                DropdownMenuItem(
+                  value: ThemeMode.dark,
+                  child: Text('Dark'),
+                ),
+              ],
+            ),
           ),
           SwitchListTile(
             title: const Text('Appear in Directory'),
