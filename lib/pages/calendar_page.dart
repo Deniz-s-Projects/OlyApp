@@ -100,9 +100,9 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 
   void _addEvent() async {
-    await showAddEventDialog(context,
-        (title, date, location, interval, until, category) async {
-    await showAddEventDialog(context, (title, date, location, category) async {
+    await showAddEventDialog(
+      context,
+      (title, date, location, interval, until, category) async {
       final event = await _service.createEvent(
         CalendarEvent(
           title: title,
