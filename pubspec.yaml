@@ -54,6 +54,7 @@ dependencies:
   share_plus: ^7.2.1
   url_launcher: ^6.2.6
   path_provider: ^2.1.5
+  file_picker: ^6.1.1
   fl_chart: ^1.0.0
 dev_dependencies:
   test: any

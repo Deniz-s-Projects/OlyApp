@@ -1,29 +1,30 @@
 const express = require("express");
 const router = express.Router();
-const authRouter = require("../routes/auth");
-const eventsRouter = require("../routes/events");
-const itemsRouter = require("../routes/items");
-const maintenanceRouter = require("../routes/maintenance");
-const bookingsRouter = require("../routes/bookings");
-const bulletinRouter = require("../routes/bulletin");
-const pinsRouter = require("../routes/pins");
-const notificationsRouter = require("../routes/notifications");
-const usersRouter = require("../routes/users");
-const directoryRouter = require("../routes/directory");
-const lostFoundRouter = require("../routes/lostfound");
-const servicesRouter = require("../routes/services");
-const pollsRouter = require("../routes/polls");
-const statsRouter = require("../routes/stats");
-const channelsRouter = require("../routes/channels");
-const wikiRouter = require("../routes/wiki");
-const emergencyContactsRouter = require("../routes/emergency_contacts");
-const clubsRouter = require("../routes/clubs");
-const suggestionsRouter = require("../routes/suggestions");
+const authRouter = require('../routes/auth');
+const eventsRouter = require('../routes/events');
+const itemsRouter = require('../routes/items');
+const maintenanceRouter = require('../routes/maintenance');
+const bookingsRouter = require('../routes/bookings'); 
+const bulletinRouter = require('../routes/bulletin');
+const pinsRouter = require('../routes/pins');
+const notificationsRouter = require('../routes/notifications');
+const usersRouter = require('../routes/users');
+const directoryRouter = require('../routes/directory');
+const lostFoundRouter = require('../routes/lostfound');
+const servicesRouter = require('../routes/services');
+const pollsRouter = require('../routes/polls');
+const statsRouter = require('../routes/stats');
+const channelsRouter = require('../routes/channels');
+const wikiRouter = require('../routes/wiki');
+const emergencyContactsRouter = require('../routes/emergency_contacts');
+const clubsRouter = require('../routes/clubs');
+const documentsRouter = require('../routes/documents');
+const suggestionsRouter = require("../routes/suggestions"); 
 
 router.get("/", (req, res) => {
   res.json({ message: "API is running" });
 });
-
+ 
 router.use("/auth", authRouter);
 router.use("/events", eventsRouter);
 router.use("/items", itemsRouter);
@@ -42,5 +43,6 @@ router.use("/channels", channelsRouter);
 router.use("/wiki", wikiRouter);
 router.use("/emergency_contacts", emergencyContactsRouter);
 router.use("/clubs", clubsRouter);
-router.use("/suggestions", suggestionsRouter);
+router.use("/suggestions", suggestionsRouter););
+router.use('/documents', documentsRouter);
 module.exports = router;

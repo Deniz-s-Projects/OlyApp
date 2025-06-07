@@ -19,6 +19,7 @@ import 'create_channel_page.dart';
 import 'group_chat_page.dart';
 import 'wiki_page.dart';
 import 'clubs_page.dart';
+import 'documents_page.dart';
 import '../models/models.dart';
 import '../services/event_service.dart';
 
@@ -372,6 +373,15 @@ class DashboardPage extends StatelessWidget {
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const ClubsPage()),
+                  ),
+                ),
+                DashboardCard(
+                  icon: Icons.description,
+                  label: 'Documents',
+                  colorScheme: colorScheme,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const DocumentsPage()),
                   ),
                 ),
                 DashboardCard(

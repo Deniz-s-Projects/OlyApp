@@ -19,6 +19,7 @@ part 'chat_channel.dart';
 part 'club.dart';
 part 'wiki_article.dart';
 part 'emergency_contact.dart';
+part 'document.dart';
 part 'suggestion.dart';
 
 DateTime _parseDate(dynamic value) {
