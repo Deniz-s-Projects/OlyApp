@@ -16,6 +16,7 @@ class _DirectoryPageState extends State<DirectoryPage> {
   late final DirectoryService _service;
   final TextEditingController _searchCtrl = TextEditingController();
   List<User> _users = [];
+  bool _loading = false;
 
   @override
   void initState() {
@@ -25,9 +26,21 @@ class _DirectoryPageState extends State<DirectoryPage> {
   }
 
   Future<void> _loadUsers() async {
-    final users = await _service.fetchUsers(search: _searchCtrl.text);
-    if (!mounted) return;
-    setState(() => _users = users);
+    setState(() => _loading = true);
+    try {
+      final users = await _service.fetchUsers(search: _searchCtrl.text);
+      if (!mounted) return;
+      setState(() {
+        _users = users;
+        _loading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _loading = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Failed to load users')));
+    }
   }
 
   @override
@@ -51,30 +64,35 @@ class _DirectoryPageState extends State<DirectoryPage> {
             ),
             const SizedBox(height: 12),
             Expanded(
-              child: ListView.builder(
-                itemCount: _users.length,
-                itemBuilder: (context, index) {
-                  final user = _users[index];
-                  return ListTile(
-                    leading: user.avatarUrl != null
-                        ? CircleAvatar(
-                            backgroundImage: NetworkImage(user.avatarUrl!),
-                          )
-                        : const CircleAvatar(child: Icon(Icons.person)),
-                    title: Text(user.name),
-                    subtitle: Text(user.email),
-                    onTap: () {
-                      if (user.id == null) return;
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => UserChatPage(user: user),
+              child: _loading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _users.isEmpty
+                      ? const Center(child: Text('No residents found.'))
+                      : ListView.builder(
+                          itemCount: _users.length,
+                          itemBuilder: (context, index) {
+                            final user = _users[index];
+                            return ListTile(
+                              leading: user.avatarUrl != null
+                                  ? CircleAvatar(
+                                      backgroundImage:
+                                          NetworkImage(user.avatarUrl!),
+                                    )
+                                  : const CircleAvatar(child: Icon(Icons.person)),
+                              title: Text(user.name),
+                              subtitle: Text(user.email),
+                              onTap: () {
+                                if (user.id == null) return;
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => UserChatPage(user: user),
+                                  ),
+                                );
+                              },
+                            );
+                          },
                         ),
-                      );
-                    },
-                  );
-                },
-              ),
             ),
           ],
         ),
