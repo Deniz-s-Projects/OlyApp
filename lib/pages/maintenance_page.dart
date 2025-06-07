@@ -23,6 +23,7 @@ class _MaintenancePageState extends State<MaintenancePage> {
   XFile? _imageFile;
 
   List<MaintenanceRequest> _tickets = [];
+  bool _loading = false;
 
   @override
   void initState() {
@@ -32,12 +33,17 @@ class _MaintenancePageState extends State<MaintenancePage> {
   }
 
   Future<void> _loadTickets() async {
+    setState(() => _loading = true);
     try {
       final tickets = await _service.fetchRequests();
       if (!mounted) return;
-      setState(() => _tickets = tickets);
+      setState(() {
+        _tickets = tickets;
+        _loading = false;
+      });
     } catch (_) {
       if (!mounted) return;
+      setState(() => _loading = false);
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Failed to load tickets')));
@@ -157,6 +163,9 @@ class _MaintenancePageState extends State<MaintenancePage> {
   }
 
   Widget _buildConversations() {
+    if (_loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
     if (_tickets.isEmpty) {
       return const Center(child: Text('No conversations yet.'));
     }
