@@ -247,18 +247,20 @@ class _ItemExchangePageState extends State<ItemExchangePage> {
             Expanded(
               child: RefreshIndicator(
                 onRefresh: _loadItems,
-                child: _loading && _filteredItems.isEmpty
+                child: _loading
                     ? const Center(child: CircularProgressIndicator())
-                    : GridView.builder(
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              mainAxisSpacing: 12,
-                              crossAxisSpacing: 12,
-                              childAspectRatio: 0.8,
-                            ),
-                        itemCount: _filteredItems.length,
-                        itemBuilder: (ctx, idx) {
+                    : _filteredItems.isEmpty
+                        ? const Center(child: Text('No items found.'))
+                        : GridView.builder(
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 2,
+                                  mainAxisSpacing: 12,
+                                  crossAxisSpacing: 12,
+                                  childAspectRatio: 0.8,
+                                ),
+                            itemCount: _filteredItems.length,
+                            itemBuilder: (ctx, idx) {
                           final item = _filteredItems[idx];
                           final favs = _favoriteIds();
                           final isFav =
