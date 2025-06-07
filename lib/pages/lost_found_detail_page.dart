@@ -22,6 +22,7 @@ class _LostFoundDetailPageState extends State<LostFoundDetailPage> {
   List<Message> _messages = [];
   final ChatService _chat = ChatService();
   WebSocketChannel? _channel;
+  bool _online = false;
 
   @override
   void initState() {
@@ -37,9 +38,16 @@ class _LostFoundDetailPageState extends State<LostFoundDetailPage> {
     _channel = _chat.connect(_item.id!.toString());
     _channel!.stream.listen((event) {
       final data = jsonDecode(event as String) as Map<String, dynamic>;
-      final msg = Message.fromJson(data['data'] as Map<String, dynamic>);
-      if (mounted && !_messages.any((m) => m.id == msg.id)) {
-        setState(() => _messages.add(msg));
+      if (data['type'] == 'message') {
+        final msg = Message.fromJson(data['data'] as Map<String, dynamic>);
+        if (mounted && !_messages.any((m) => m.id == msg.id)) {
+          setState(() => _messages.add(msg));
+        }
+      } else if (data['type'] == 'online' || data['type'] == 'offline') {
+        final uid = data['userId'] as String?;
+        if (uid != null && uid != currentUserId()) {
+          setState(() => _online = data['type'] == 'online');
+        }
       }
     });
   }
@@ -144,7 +152,17 @@ class _LostFoundDetailPageState extends State<LostFoundDetailPage> {
     final isOwner = _item.ownerId == currentUserId();
     return Scaffold(
       appBar: AppBar(
-        title: Text(_item.title),
+        title: Row(
+          children: [
+            Text(_item.title),
+            const SizedBox(width: 8),
+            Icon(
+              Icons.circle,
+              size: 10,
+              color: _online ? Colors.green : Colors.grey,
+            ),
+          ],
+        ),
         backgroundColor: cs.primaryContainer,
         foregroundColor: cs.onPrimaryContainer,
         actions: [

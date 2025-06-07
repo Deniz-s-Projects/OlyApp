@@ -19,6 +19,7 @@ class _GroupChatPageState extends State<GroupChatPage> {
   final TextEditingController _messageCtrl = TextEditingController();
   List<Message> _messages = [];
   WebSocketChannel? _channel;
+  final Set<String> _onlineUsers = {};
 
   @override
   void initState() {
@@ -32,9 +33,22 @@ class _GroupChatPageState extends State<GroupChatPage> {
     _channel = _service.connect(widget.channel.id!);
     _channel!.stream.listen((event) {
       final data = jsonDecode(event as String) as Map<String, dynamic>;
-      final msg = Message.fromJson(data['data'] as Map<String, dynamic>);
-      if (mounted && !_messages.any((m) => m.id == msg.id)) {
-        setState(() => _messages.add(msg));
+      if (data['type'] == 'message') {
+        final msg = Message.fromJson(data['data'] as Map<String, dynamic>);
+        if (mounted && !_messages.any((m) => m.id == msg.id)) {
+          setState(() => _messages.add(msg));
+        }
+      } else if (data['type'] == 'online' || data['type'] == 'offline') {
+        final uid = data['userId'] as String?;
+        if (uid != null && uid != currentUserId()) {
+          setState(() {
+            if (data['type'] == 'online') {
+              _onlineUsers.add(uid);
+            } else {
+              _onlineUsers.remove(uid);
+            }
+          });
+        }
       }
     });
   }
@@ -65,7 +79,16 @@ class _GroupChatPageState extends State<GroupChatPage> {
     final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.channel.name),
+        title: Row(
+          children: [
+            Text(widget.channel.name),
+            const SizedBox(width: 8),
+            Text(
+              '(${_onlineUsers.length} online)',
+              style: Theme.of(context).textTheme.labelSmall,
+            ),
+          ],
+        ),
         backgroundColor: colorScheme.primaryContainer,
         foregroundColor: colorScheme.onPrimaryContainer,
         elevation: 1,

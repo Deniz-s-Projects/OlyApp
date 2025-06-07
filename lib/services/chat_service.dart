@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import '../utils/user_helpers.dart';
 
 import '../models/models.dart';
 import 'api_service.dart';
@@ -10,7 +11,9 @@ class ChatService extends ApiService {
   WebSocketChannel connect(String roomId) {
     final wsUrl = ApiService.baseUrl.replaceFirst('http', 'ws');
     final channel = WebSocketChannel.connect(Uri.parse(wsUrl));
-    channel.sink.add(jsonEncode({'type': 'join', 'room': roomId}));
+    channel.sink.add(
+      jsonEncode({'type': 'join', 'room': roomId, 'userId': currentUserId()}),
+    );
     return channel;
   }
 
