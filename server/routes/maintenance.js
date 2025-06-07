@@ -5,6 +5,7 @@ const auth = require('../middleware/auth');
 const requireAdmin = require('../middleware/requireAdmin');
 const multer = require('multer');
 const path = require('path');
+const socket = require('../socket');
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -67,6 +68,7 @@ router.post('/:id/messages', async (req, res) => {
       requestType: 'MaintenanceRequest'
     };
     const message = await Message.create(messageData);
+    socket.broadcast(req.params.id.toString(), message);
     res.status(201).json({ data: message });
   } catch (err) {
     res.status(400).json({ error: err.message });

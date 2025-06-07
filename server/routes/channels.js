@@ -2,6 +2,7 @@ const express = require('express');
 const Conversation = require('../models/Conversation');
 const Message = require('../models/Message');
 const auth = require('../middleware/auth');
+const socket = require('../socket');
 
 const router = express.Router();
 router.use(auth);
@@ -73,6 +74,7 @@ router.post('/:id/messages', async (req, res) => {
       senderId: req.userId,
       content: req.body.content,
     });
+    socket.broadcast(req.params.id.toString(), message);
     res.status(201).json({ data: message });
   } catch (err) {
     res.status(400).json({ error: err.message });

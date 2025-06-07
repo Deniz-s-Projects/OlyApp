@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../services/lost_found_service.dart';
 import '../utils/user_helpers.dart';
+import '../services/chat_service.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
+import 'dart:convert';
 
 class LostFoundDetailPage extends StatefulWidget {
   final LostItem item;
@@ -17,6 +20,8 @@ class _LostFoundDetailPageState extends State<LostFoundDetailPage> {
   late final LostFoundService _service;
   final _messageCtrl = TextEditingController();
   List<Message> _messages = [];
+  final ChatService _chat = ChatService();
+  WebSocketChannel? _channel;
 
   @override
   void initState() {
@@ -24,6 +29,19 @@ class _LostFoundDetailPageState extends State<LostFoundDetailPage> {
     _item = widget.item;
     _service = widget.service ?? LostFoundService();
     _loadMessages();
+    _connectSocket();
+  }
+
+  void _connectSocket() {
+    if (_item.id == null) return;
+    _channel = _chat.connect(_item.id!.toString());
+    _channel!.stream.listen((event) {
+      final data = jsonDecode(event as String) as Map<String, dynamic>;
+      final msg = Message.fromJson(data['data'] as Map<String, dynamic>);
+      if (mounted && !_messages.any((m) => m.id == msg.id)) {
+        setState(() => _messages.add(msg));
+      }
+    });
   }
 
   Future<void> _loadMessages() async {
@@ -43,9 +61,8 @@ class _LostFoundDetailPageState extends State<LostFoundDetailPage> {
       content: text,
     );
     try {
-      final saved = await _service.sendMessage(_item.id!, msg);
+      await _service.sendMessage(_item.id!, msg);
       if (mounted) {
-        setState(() => _messages.add(saved));
         _messageCtrl.clear();
       }
     } catch (_) {}
@@ -117,6 +134,7 @@ class _LostFoundDetailPageState extends State<LostFoundDetailPage> {
   @override
   void dispose() {
     _messageCtrl.dispose();
+    _channel?.sink.close();
     super.dispose();
   }
 
