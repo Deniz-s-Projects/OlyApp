@@ -154,6 +154,37 @@ void main() {
     expect(find.byType(ItemDetailPage), findsOneWidget);
   });
 
+  testWidgets('Sort dropdown orders items', (tester) async {
+    final service = FakeItemService([
+      Item(ownerId: '1', title: 'Old', price: 10, createdAt: DateTime(2022)),
+      Item(ownerId: '1', title: 'New', price: 1, createdAt: DateTime(2023)),
+    ]);
+
+    await tester.pumpWidget(
+      MaterialApp(home: ItemExchangePage(service: service)),
+    );
+    await tester.pumpAndSettle();
+
+    var firstCard = tester.widget<ItemCard>(find.byType(ItemCard).at(0));
+    expect(firstCard.title, 'New');
+
+    await tester.tap(find.byKey(const ValueKey('sortDropdown')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Price: Low to High').last);
+    await tester.pumpAndSettle();
+
+    firstCard = tester.widget<ItemCard>(find.byType(ItemCard).at(0));
+    expect(firstCard.title, 'New');
+
+    await tester.tap(find.byKey(const ValueKey('sortDropdown')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Price: High to Low').last);
+    await tester.pumpAndSettle();
+
+    firstCard = tester.widget<ItemCard>(find.byType(ItemCard).at(0));
+    expect(firstCard.title, 'Old');
+  });
+
   testWidgets('Owner can edit an item', (tester) async {
     await tester.runAsync(() async {
       await Hive.box<User>('userBox').put(

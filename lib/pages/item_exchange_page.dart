@@ -22,6 +22,7 @@ class _ItemExchangePageState extends State<ItemExchangePage> {
   final _maxPriceCtrl = TextEditingController();
   String _selectedCategory = 'All';
   bool _onlyFavorites = false;
+  String _sortOrder = 'newest';
   bool _loading = false;
 
   final _categories = [
@@ -87,6 +88,24 @@ class _ItemExchangePageState extends State<ItemExchangePage> {
         results = results
             .where((item) => item.id != null && favs.contains(item.id))
             .toList();
+      }
+      switch (_sortOrder) {
+        case 'priceAsc':
+          results.sort(
+            (a, b) => (a.price ?? double.infinity).compareTo(
+              b.price ?? double.infinity,
+            ),
+          );
+          break;
+        case 'priceDesc':
+          results.sort(
+            (a, b) => (b.price ?? -double.infinity).compareTo(
+              a.price ?? -double.infinity,
+            ),
+          );
+          break;
+        default:
+          results.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       }
       _filteredItems = results;
     });
@@ -192,6 +211,32 @@ class _ItemExchangePageState extends State<ItemExchangePage> {
                     ),
                     onChanged: (_) => _filter(),
                   ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 12),
+
+            DropdownButton<String>(
+              key: const ValueKey('sortDropdown'),
+              value: _sortOrder,
+              isExpanded: true,
+              onChanged: (val) {
+                if (val == null) return;
+                setState(() {
+                  _sortOrder = val;
+                  _filter();
+                });
+              },
+              items: const [
+                DropdownMenuItem(value: 'newest', child: Text('Newest')),
+                DropdownMenuItem(
+                  value: 'priceAsc',
+                  child: Text('Price: Low to High'),
+                ),
+                DropdownMenuItem(
+                  value: 'priceDesc',
+                  child: Text('Price: High to Low'),
                 ),
               ],
             ),
