@@ -17,17 +17,29 @@ class _NotificationAdminPageState extends State<NotificationAdminPage> {
 
   bool _sending = false;
   String? _result;
+  bool _broadcast = false;
 
   Future<void> _send() async {
-    final token = await FirebaseMessaging.instance.getToken();
-    if (token == null) return;
     setState(() => _sending = true);
     try {
-      final count = await NotificationService().sendNotification(
-        tokens: [token],
-        title: _titleCtrl.text.trim(),
-        body: _bodyCtrl.text.trim(),
-      );
+      int count;
+      if (_broadcast) {
+        count = await NotificationService().broadcastNotification(
+          title: _titleCtrl.text.trim(),
+          body: _bodyCtrl.text.trim(),
+        );
+      } else {
+        final token = await FirebaseMessaging.instance.getToken();
+        if (token == null) {
+          setState(() => _result = 'No device token available');
+          return;
+        }
+        count = await NotificationService().sendNotification(
+          tokens: [token],
+          title: _titleCtrl.text.trim(),
+          body: _bodyCtrl.text.trim(),
+        );
+      }
       setState(() => _result = 'Sent to $count device(s)');
     } catch (e) {
       setState(() => _result = 'Error: $e');
@@ -60,6 +72,14 @@ class _NotificationAdminPageState extends State<NotificationAdminPage> {
             TextField(
               controller: _bodyCtrl,
               decoration: const InputDecoration(labelText: 'Body'),
+            ),
+            const SizedBox(height: 12),
+            SwitchListTile(
+              title: const Text('Broadcast to all devices'),
+              value: _broadcast,
+              onChanged: _sending
+                  ? null
+                  : (val) => setState(() => _broadcast = val),
             ),
             const SizedBox(height: 16),
             ElevatedButton(

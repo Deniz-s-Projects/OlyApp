@@ -24,7 +24,7 @@ class _EmergencyAlertPageState extends State<EmergencyAlertPage> {
         title: _titleCtrl.text.trim(),
         body: _bodyCtrl.text.trim(),
       );
-      setState(() => _result = 'Sent to \$count device(s)');
+      setState(() => _result = 'Sent to $count device(s)');
     } catch (e) {
       setState(() => _result = 'Error: \$e');
     } finally {
