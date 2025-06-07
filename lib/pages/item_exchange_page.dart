@@ -22,6 +22,7 @@ class _ItemExchangePageState extends State<ItemExchangePage> {
   final _maxPriceCtrl = TextEditingController();
   String _selectedCategory = 'All';
   bool _onlyFavorites = false;
+  bool _loading = false;
 
   final _categories = [
     'All',
@@ -29,7 +30,7 @@ class _ItemExchangePageState extends State<ItemExchangePage> {
     'Books',
     'Electronics',
     'Appliances',
-    'Clothing'
+    'Clothing',
   ];
 
   List<Item> _allItems = [];
@@ -50,12 +51,19 @@ class _ItemExchangePageState extends State<ItemExchangePage> {
   }
 
   Future<void> _loadItems() async {
-    final items = await _service.fetchItems();
-    setState(() {
-      _allItems = items;
-      _filteredItems = List.from(_allItems);
-    });
-    _filter();
+    setState(() => _loading = true);
+    try {
+      final items = await _service.fetchItems();
+      if (!mounted) return;
+      setState(() {
+        _allItems = items;
+        _filteredItems = List.from(_allItems);
+        _loading = false;
+      });
+      _filter();
+    } finally {
+      if (mounted && _loading) setState(() => _loading = false);
+    }
   }
 
   void _filter() {
@@ -76,10 +84,9 @@ class _ItemExchangePageState extends State<ItemExchangePage> {
       }
       if (_onlyFavorites) {
         final favs = _favoriteIds();
-        results =
-            results
-                .where((item) => item.id != null && favs.contains(item.id))
-                .toList();
+        results = results
+            .where((item) => item.id != null && favs.contains(item.id))
+            .toList();
       }
       _filteredItems = results;
     });
@@ -92,32 +99,33 @@ class _ItemExchangePageState extends State<ItemExchangePage> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-          // Search field with refresh
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _searchCtrl,
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.search),
-                    hintText: 'Search items…',
-                    filled: true,
-                    fillColor:
-                        Theme.of(context).colorScheme.surfaceContainerHighest,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide.none,
+            // Search field with refresh
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _searchCtrl,
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.search),
+                      hintText: 'Search items…',
+                      filled: true,
+                      fillColor: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide.none,
+                      ),
                     ),
+                    onChanged: (_) => _filter(),
                   ),
-                  onChanged: (_) => _filter(),
                 ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.refresh),
-                onPressed: _loadItems,
-              ),
-            ],
-          ),
+                IconButton(
+                  icon: const Icon(Icons.refresh),
+                  onPressed: _loadItems,
+                ),
+              ],
+            ),
             const SizedBox(height: 12),
 
             // Category chips
@@ -167,10 +175,10 @@ class _ItemExchangePageState extends State<ItemExchangePage> {
                 Expanded(
                   child: TextField(
                     controller: _minPriceCtrl,
-                    decoration:
-                        const InputDecoration(labelText: 'Min Price'),
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
+                    decoration: const InputDecoration(labelText: 'Min Price'),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     onChanged: (_) => _filter(),
                   ),
                 ),
@@ -178,10 +186,10 @@ class _ItemExchangePageState extends State<ItemExchangePage> {
                 Expanded(
                   child: TextField(
                     controller: _maxPriceCtrl,
-                    decoration:
-                        const InputDecoration(labelText: 'Max Price'),
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
+                    decoration: const InputDecoration(labelText: 'Max Price'),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     onChanged: (_) => _filter(),
                   ),
                 ),
@@ -192,62 +200,71 @@ class _ItemExchangePageState extends State<ItemExchangePage> {
 
             // Grid of items
             Expanded(
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  childAspectRatio: 0.8,
-                ),
-                itemCount: _filteredItems.length,
-                itemBuilder: (ctx, idx) {
-                  final item = _filteredItems[idx];
-                  final favs = _favoriteIds();
-                  final isFav = item.id != null && favs.contains(item.id);
-                  return Stack(
-                    children: [
-                      InkWell(
-                        borderRadius: BorderRadius.circular(12),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => ItemDetailPage(item: item),
+              child: RefreshIndicator(
+                onRefresh: _loadItems,
+                child: _loading && _filteredItems.isEmpty
+                    ? const Center(child: CircularProgressIndicator())
+                    : GridView.builder(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              mainAxisSpacing: 12,
+                              crossAxisSpacing: 12,
+                              childAspectRatio: 0.8,
                             ),
+                        itemCount: _filteredItems.length,
+                        itemBuilder: (ctx, idx) {
+                          final item = _filteredItems[idx];
+                          final favs = _favoriteIds();
+                          final isFav =
+                              item.id != null && favs.contains(item.id);
+                          return Stack(
+                            children: [
+                              InkWell(
+                                borderRadius: BorderRadius.circular(12),
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          ItemDetailPage(item: item),
+                                    ),
+                                  );
+                                },
+                                child: ItemCard(
+                                  title: item.title,
+                                  averageRating: item.ratings.isNotEmpty
+                                      ? item.averageRating
+                                      : null,
+                                ),
+                              ),
+                              if (item.id != null)
+                                Positioned(
+                                  top: 0,
+                                  right: 0,
+                                  child: IconButton(
+                                    key: Key('toggleFavorite_${item.id}'),
+                                    icon: Icon(
+                                      isFav ? Icons.star : Icons.star_border,
+                                      color: Colors.amber,
+                                    ),
+                                    onPressed: () {
+                                      final box = Hive.box('favoritesBox');
+                                      final set = favs.toSet();
+                                      if (isFav) {
+                                        set.remove(item.id);
+                                      } else {
+                                        set.add(item.id as int);
+                                      }
+                                      box.put('ids', set.toList());
+                                      _filter();
+                                    },
+                                  ),
+                                ),
+                            ],
                           );
                         },
-                        child: ItemCard(
-                          title: item.title,
-                          averageRating:
-                              item.ratings.isNotEmpty ? item.averageRating : null,
-                        ),
                       ),
-                      if (item.id != null)
-                        Positioned(
-                          top: 0,
-                          right: 0,
-                          child: IconButton(
-                            key: Key('toggleFavorite_${item.id}'),
-                            icon: Icon(
-                              isFav ? Icons.star : Icons.star_border,
-                              color: Colors.amber,
-                            ),
-                            onPressed: () {
-                              final box = Hive.box('favoritesBox');
-                              final set = favs.toSet();
-                              if (isFav) {
-                                set.remove(item.id);
-                              } else {
-                                set.add(item.id as int);
-                              }
-                              box.put('ids', set.toList());
-                              _filter();
-                            },
-                          ),
-                        ),
-                    ],
-                  );
-                },
               ),
             ),
           ],
