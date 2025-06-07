@@ -28,6 +28,15 @@ class FakeItemService extends ItemService {
   }
 }
 
+class DelayedItemService extends FakeItemService {
+  DelayedItemService(super.items);
+  @override
+  Future<List<Item>> fetchItems() async {
+    await Future.delayed(const Duration(milliseconds: 50));
+    return super.fetchItems();
+  }
+}
+
 void main() {
   late Directory dir;
 
@@ -46,6 +55,17 @@ void main() {
   tearDown(() async {
     await Hive.close();
     await dir.delete(recursive: true);
+  });
+
+  testWidgets('Shows progress indicator while loading', (tester) async {
+    final service = DelayedItemService([]);
+    await tester.pumpWidget(
+      MaterialApp(home: ItemExchangePage(service: service)),
+    );
+    await tester.pump();
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 60));
+    expect(find.byType(CircularProgressIndicator), findsNothing);
   });
 
   testWidgets('Favorites filter shows only bookmarked items', (tester) async {
