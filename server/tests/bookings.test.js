@@ -5,6 +5,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const apiRouter = require('../api');
 const BookingSlot = require('../models/BookingSlot');
+const User = require('../models/User');
 
 const SECRET = process.env.JWT_SECRET || 'secretkey';
 
@@ -104,5 +105,29 @@ describe('Bookings API', () => {
     const updated = await BookingSlot.findById(slot._id);
     expect(updated.name).toBeUndefined();
     expect(updated.userId).toBeUndefined();
+  });
+
+  test('GET /bookings returns all slots for admin', async () => {
+    const t1 = new Date('2023-01-05T10:00:00Z');
+    const t2 = new Date('2023-01-05T11:00:00Z');
+    await BookingSlot.create([
+      { time: t1, name: 'Alice', userId: 1 },
+      { time: t2 }
+    ]);
+
+    const admin = await User.create({
+      name: 'Admin',
+      email: 'admin@test.com',
+      passwordHash: 'x',
+      isAdmin: true
+    });
+    const token = jwt.sign({ userId: admin._id }, SECRET);
+
+    const res = await request(app)
+      .get('/api/bookings')
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    expect(res.body.data).toHaveLength(2);
+    expect(res.body.data[0].name).toBe('Alice');
   });
 });
