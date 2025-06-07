@@ -38,5 +38,20 @@ void main() {
       final count = await service.sendNotification(tokens: ['t1'], title: 'hi', body: 'b');
       expect(count, 1);
     });
+
+    test('broadcastNotification posts alert to broadcast route', () async {
+      final mockClient = MockClient((request) async {
+        expect(request.method, equals('POST'));
+        expect(request.url.origin, Uri.parse(apiUrl).origin);
+        expect(request.url.path, '/api/notifications/broadcast');
+        final body = jsonDecode(request.body) as Map<String, dynamic>;
+        expect(body['title'], 'urgent');
+        return http.Response(jsonEncode({'successCount': 5}), 200);
+      });
+
+      final service = NotificationService(client: mockClient);
+      final count = await service.broadcastNotification(title: 'urgent', body: 'now');
+      expect(count, 5);
+    });
   });
 }

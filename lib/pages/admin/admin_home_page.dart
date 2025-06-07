@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'event_admin_page.dart';
 import 'maintenance_admin_page.dart';
 import 'notification_admin_page.dart';
+import 'emergency_alert_page.dart';
 import 'bulletin_admin_page.dart';
 import 'booking_admin_page.dart';
 import 'map_admin_page.dart';
@@ -72,6 +73,16 @@ class AdminHomePage extends StatelessWidget {
                 );
               },
               child: const Text('Send Notification'),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const EmergencyAlertPage()),
+                );
+              },
+              child: const Text('Emergency Alert'),
             ),
             const SizedBox(height: 12),
             ElevatedButton(
