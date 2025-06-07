@@ -20,7 +20,9 @@ void main() {
     TestWidgetsFlutterBinding.ensureInitialized();
     dir = await Directory.systemTemp.createTemp();
     Hive.init(dir.path);
-    Hive.registerAdapter(UserAdapter());
+    if (!Hive.isAdapterRegistered(0)) {
+      Hive.registerAdapter(UserAdapter());
+    }
     await Hive.openBox<User>('userBox');
     await Hive.box<User>('userBox').put(
       'currentUser',
@@ -61,7 +63,7 @@ void main() {
     expect(find.text('OpenTicket'), findsOneWidget);
     expect(find.text('ClosedTicket'), findsNothing);
 
-    await tester.tap(find.byType(DropdownButton<String>));
+    await tester.tap(find.byKey(const ValueKey('statusDropdown')));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Closed').last);
     await tester.pumpAndSettle();

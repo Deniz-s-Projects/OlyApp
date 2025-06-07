@@ -173,6 +173,7 @@ class _MaintenanceAdminPageState extends State<MaintenanceAdminPage> {
           Padding(
             padding: const EdgeInsets.all(8),
             child: DropdownButton<String>(
+              key: const ValueKey('statusDropdown'),
               value: _statusFilter,
               onChanged: (val) {
                 if (val == null) return;
