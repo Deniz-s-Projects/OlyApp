@@ -5,6 +5,7 @@ import '../models/models.dart';
 import '../main.dart';
 import '../services/user_service.dart';
 import 'emergency_contacts_page.dart';
+import 'suggestion_box_page.dart';
 
 class SettingsPage extends StatefulWidget {
   final UserService? service;
@@ -82,6 +83,16 @@ class _SettingsPageState extends State<SettingsPage> {
                 MaterialPageRoute(
                   builder: (_) => const EmergencyContactsPage(),
                 ),
+              );
+            },
+          ),
+          ListTile(
+            title: const Text('Suggestion Box'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SuggestionBoxPage()),
               );
             },
           ),
