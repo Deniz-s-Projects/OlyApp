@@ -32,6 +32,7 @@ class _CalendarPageState extends State<CalendarPage> {
   DateTime _selectedDay = DateTime.now();
   List<String> _categories = ['All'];
   String _selectedCategory = 'All';
+  bool _loading = false;
 
   @override
   void initState() {
@@ -48,6 +49,7 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 
   Future<void> _loadEvents() async {
+    setState(() => _loading = true);
     try {
       final events = await _service.fetchEvents();
       if (!mounted) return;
@@ -65,9 +67,11 @@ class _CalendarPageState extends State<CalendarPage> {
           _selectedCategory = 'All';
         }
         _selectedEvents.value = _getEventsForDay(_selectedDay);
+        _loading = false;
       });
     } catch (_) {
       if (!mounted) return;
+      setState(() => _loading = false);
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Failed to load events')));
@@ -398,30 +402,34 @@ class _CalendarPageState extends State<CalendarPage> {
             ),
           ),
           Expanded(
-            child: ValueListenableBuilder<List<CalendarEvent>>(
-              valueListenable: _selectedEvents,
-              builder: (context, events, _) {
-                if (events.isEmpty) {
-                  return const Center(child: Text('No events for this day.'));
-                }
-                return ListView.builder(
-                  itemCount: events.length,
-                  itemBuilder: (ctx, idx) {
-                    final event = events[idx];
-                    return ListTile(
-                      leading: const Icon(Icons.event_note),
-                      title: Text(event.title),
-                      subtitle: Text('Attendees: ${event.attendees.length}'),
-                      trailing: TextButton(
-                        onPressed: () => _rsvp(event),
-                        child: const Text('RSVP'),
-                      ),
-                      onTap: () => _showEventDetails(event),
-                    );
-                  },
-                );
-              },
-            ),
+            child: _loading
+                ? const Center(child: CircularProgressIndicator())
+                : ValueListenableBuilder<List<CalendarEvent>>(
+                    valueListenable: _selectedEvents,
+                    builder: (context, events, _) {
+                      if (events.isEmpty) {
+                        return const Center(
+                            child: Text('No events for this day.'));
+                      }
+                      return ListView.builder(
+                        itemCount: events.length,
+                        itemBuilder: (ctx, idx) {
+                          final event = events[idx];
+                          return ListTile(
+                            leading: const Icon(Icons.event_note),
+                            title: Text(event.title),
+                            subtitle:
+                                Text('Attendees: ${event.attendees.length}'),
+                            trailing: TextButton(
+                              onPressed: () => _rsvp(event),
+                              child: const Text('RSVP'),
+                            ),
+                            onTap: () => _showEventDetails(event),
+                          );
+                        },
+                      );
+                    },
+                  ),
           ),
         ],
       ),

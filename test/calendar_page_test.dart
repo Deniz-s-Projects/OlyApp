@@ -13,7 +13,10 @@ class FakeEventService extends EventService {
   final List<CalendarEvent> events = [];
   FakeEventService();
   @override
-  Future<List<CalendarEvent>> fetchEvents() async => events;
+  Future<List<CalendarEvent>> fetchEvents() async {
+    await Future<void>.delayed(const Duration(milliseconds: 10));
+    return events;
+  }
   @override
   Future<CalendarEvent> createEvent(CalendarEvent event) async {
     final newEvent = event.id != null
@@ -57,7 +60,10 @@ class FakeEventService extends EventService {
 
 class ErrorEventService extends EventService {
   @override
-  Future<List<CalendarEvent>> fetchEvents() async => throw Exception('fail');
+  Future<List<CalendarEvent>> fetchEvents() async {
+    await Future<void>.delayed(const Duration(milliseconds: 10));
+    throw Exception('fail');
+  }
 }
 
 void main() {
@@ -66,6 +72,8 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(home: CalendarPage(service: service, isAdmin: true)),
     );
+    await tester.pump();
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
     await tester.pumpAndSettle();
 
     expect(find.text('No events for this day.'), findsOneWidget);
@@ -86,6 +94,8 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(home: CalendarPage(service: ErrorEventService())),
     );
+    await tester.pump();
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
     await tester.pumpAndSettle();
 
     expect(find.text('Failed to load events'), findsOneWidget);
@@ -97,6 +107,8 @@ void main() {
       CalendarEvent(id: 1, title: 'Party', date: DateTime.now()),
     );
     await tester.pumpWidget(MaterialApp(home: CalendarPage(service: service)));
+    await tester.pump();
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
     await tester.pumpAndSettle();
 
     expect(find.text('Attendees: 0'), findsOneWidget);
@@ -138,6 +150,8 @@ void main() {
     });
 
     await tester.pumpWidget(MaterialApp(home: CalendarPage(service: service)));
+    await tester.pump();
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
     await tester.pumpAndSettle();
 
     await tester.tap(find.byType(ListTile));
