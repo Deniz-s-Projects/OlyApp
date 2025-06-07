@@ -19,6 +19,7 @@ import 'create_channel_page.dart';
 import 'group_chat_page.dart';
 import 'wiki_page.dart';
 import 'clubs_page.dart';
+import 'study_groups_page.dart';
 import 'documents_page.dart';
 import 'gallery_page.dart';
 import 'weather_page.dart';
@@ -375,6 +376,17 @@ class DashboardPage extends StatelessWidget {
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const ClubsPage()),
+                  ),
+                ),
+                DashboardCard(
+                  icon: Icons.school,
+                  label: 'Study Groups',
+                  colorScheme: colorScheme,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const StudyGroupsPage(),
+                    ),
                   ),
                 ),
                 DashboardCard(
