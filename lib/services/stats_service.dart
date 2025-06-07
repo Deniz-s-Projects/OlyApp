@@ -9,4 +9,11 @@ class StatsService extends ApiService {
       return map;
     });
   }
+
+  Future<Map<String, List<int>>> fetchMonthlyStats() async {
+    return get('/stats/monthly', (json) {
+      final map = Map<String, dynamic>.from(json['data'] as Map);
+      return map.map((k, v) => MapEntry(k, List<int>.from(v as List)));
+    });
+  }
 }
