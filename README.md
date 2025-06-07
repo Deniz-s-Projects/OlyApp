@@ -120,6 +120,11 @@ Start the server:
 npm start
 ```
 
+During development you can automatically restart on changes with:
+```bash
+npm run dev
+```
+
 When running the Flutter app, point it at this backend with:
 ```bash
 flutter run --dart-define=API_URL=http://localhost:3000
