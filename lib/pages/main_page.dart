@@ -13,7 +13,7 @@ import 'notifications_page.dart';
 import 'transit_page.dart';
 import 'directory_page.dart';
 import 'polls_page.dart';
-import 'lost_found_page.dart'; 
+import 'lost_found_page.dart';
 import '../models/models.dart';
 import '../services/event_service.dart';
 
@@ -175,10 +175,20 @@ class _MainPageState extends State<MainPage> {
       case 2:
         if (!widget.isAdmin) return null;
         return () async {
-          await showAddEventDialog(context, (title, date, location) async {
+          await showAddEventDialog(context, (
+            title,
+            date,
+            location,
+            category,
+          ) async {
             final service = EventService();
             await service.createEvent(
-              CalendarEvent(title: title, date: date, location: location),
+              CalendarEvent(
+                title: title,
+                date: date,
+                location: location,
+                category: category,
+              ),
             );
           });
         };

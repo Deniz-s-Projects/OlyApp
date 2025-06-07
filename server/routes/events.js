@@ -22,7 +22,18 @@ router.get('/', async (req, res) => {
 // POST /events - create event
 router.post('/', requireAdmin, async (req, res) => {
   try {
-    const event = await Event.create(req.body);
+    const data = {
+      title: req.body.title,
+      date: req.body.date,
+      description: req.body.description,
+      attendees: req.body.attendees,
+      deviceTokens: req.body.deviceTokens,
+      checkIns: req.body.checkIns,
+      reminderSent: req.body.reminderSent,
+      location: req.body.location,
+      category: req.body.category,
+    };
+    const event = await Event.create(data);
     res.json({ data: event });
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -32,7 +43,18 @@ router.post('/', requireAdmin, async (req, res) => {
 // PUT /events/:id - update event
 router.put('/:id', requireAdmin, async (req, res) => {
   try {
-    const event = await Event.findByIdAndUpdate(req.params.id, req.body, {
+    const data = {
+      title: req.body.title,
+      date: req.body.date,
+      description: req.body.description,
+      attendees: req.body.attendees,
+      deviceTokens: req.body.deviceTokens,
+      checkIns: req.body.checkIns,
+      reminderSent: req.body.reminderSent,
+      location: req.body.location,
+      category: req.body.category,
+    };
+    const event = await Event.findByIdAndUpdate(req.params.id, data, {
       new: true
     });
     if (!event) return res.status(404).json({ error: 'Event not found' });

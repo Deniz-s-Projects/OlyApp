@@ -10,6 +10,7 @@ const EventSchema = new mongoose.Schema({
   checkIns: { type: [Number], default: [] },
   reminderSent: { type: Boolean, default: false },
   location: String,
+  category: String,
 }, { timestamps: true });
 
 module.exports = mongoose.model('Event', EventSchema);
