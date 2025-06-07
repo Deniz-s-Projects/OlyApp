@@ -38,31 +38,119 @@ class _EventAdminPageState extends State<EventAdminPage> {
   }
 
   Future<void> _editEvent(CalendarEvent event) async {
-    final controller = TextEditingController(text: event.title);
-    final result = await showDialog<String>(
+    final titleCtrl = TextEditingController(text: event.title);
+    final locCtrl = TextEditingController(text: event.location ?? '');
+    final catCtrl = TextEditingController(text: event.category ?? '');
+    DateTime selectedDate = event.date;
+    String interval = event.repeatInterval ?? 'none';
+    DateTime? until = event.repeatUntil;
+    final updated = await showDialog<CalendarEvent>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Edit Event'),
-        content: TextField(controller: controller),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setState) => AlertDialog(
+          title: const Text('Edit Event'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: titleCtrl,
+                  decoration: const InputDecoration(labelText: 'Title'),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: locCtrl,
+                  decoration: const InputDecoration(labelText: 'Location'),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: catCtrl,
+                  decoration: const InputDecoration(labelText: 'Category'),
+                ),
+                const SizedBox(height: 8),
+                TextButton.icon(
+                  icon: const Icon(Icons.calendar_today),
+                  label: Text(
+                    '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
+                  ),
+                  onPressed: () async {
+                    final picked = await showDatePicker(
+                      context: ctx,
+                      initialDate: selectedDate,
+                      firstDate: DateTime.utc(2020),
+                      lastDate: DateTime.utc(2030),
+                    );
+                    if (picked != null) {
+                      setState(() => selectedDate = picked);
+                    }
+                  },
+                ),
+                const SizedBox(height: 8),
+                DropdownButton<String>(
+                  value: interval,
+                  items: const [
+                    DropdownMenuItem(value: 'none', child: Text('No Repeat')),
+                    DropdownMenuItem(value: 'daily', child: Text('Daily')),
+                    DropdownMenuItem(value: 'weekly', child: Text('Weekly')),
+                    DropdownMenuItem(value: 'monthly', child: Text('Monthly')),
+                    DropdownMenuItem(value: 'yearly', child: Text('Yearly')),
+                  ],
+                  onChanged: (val) => setState(() => interval = val ?? 'none'),
+                ),
+                if (interval != 'none')
+                  TextButton.icon(
+                    icon: const Icon(Icons.repeat),
+                    label: Text(
+                      until == null
+                          ? 'Repeat Until'
+                          : '${until!.day}/${until!.month}/${until!.year}',
+                    ),
+                    onPressed: () async {
+                      final picked = await showDatePicker(
+                        context: ctx,
+                        initialDate: until ?? selectedDate,
+                        firstDate: selectedDate,
+                        lastDate: DateTime.utc(2035),
+                      );
+                      if (picked != null) setState(() => until = picked);
+                    },
+                  ),
+              ],
+            ),
           ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, controller.text),
-            child: const Text('Save'),
-          ),
-        ],
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (titleCtrl.text.isNotEmpty) {
+                  Navigator.pop(
+                    ctx,
+                    CalendarEvent(
+                      id: event.id,
+                      title: titleCtrl.text,
+                      date: selectedDate,
+                      description: event.description,
+                      attendees: event.attendees,
+                      location:
+                          locCtrl.text.isNotEmpty ? locCtrl.text : null,
+                      repeatInterval:
+                          interval == 'none' ? null : interval,
+                      repeatUntil: until,
+                      category: catCtrl.text.isNotEmpty ? catCtrl.text : null,
+                    ),
+                  );
+                }
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        ),
       ),
     );
-    if (result != null && result.isNotEmpty) {
-      final updated = CalendarEvent(
-        id: event.id,
-        title: result,
-        date: event.date,
-        description: event.description,
-      );
+    if (updated != null) {
       await _service.updateEvent(updated);
       _load();
     }
