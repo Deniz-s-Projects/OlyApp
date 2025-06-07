@@ -52,4 +52,31 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+// POST /services/:id/ratings - submit rating
+router.post('/:id/ratings', async (req, res) => {
+  try {
+    const { rating, review } = req.body;
+    const listing = await ServiceListing.findByIdAndUpdate(
+      req.params.id,
+      { $push: { ratings: { rating, review } } },
+      { new: true }
+    );
+    if (!listing) return res.status(404).json({ error: 'Listing not found' });
+    res.status(201).json({ data: listing });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// GET /services/:id/ratings - list ratings
+router.get('/:id/ratings', async (req, res) => {
+  try {
+    const listing = await ServiceListing.findById(req.params.id);
+    if (!listing) return res.status(404).json({ error: 'Listing not found' });
+    res.json({ data: listing.ratings });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 module.exports = router;
