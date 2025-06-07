@@ -18,6 +18,7 @@ const channelsRouter = require('../routes/channels');
 const wikiRouter = require('../routes/wiki');
 const emergencyContactsRouter = require('../routes/emergency_contacts');
 const clubsRouter = require('../routes/clubs');
+const documentsRouter = require('../routes/documents');
 
 router.get('/', (req, res) => {
   res.json({ message: 'API is running' });
@@ -41,4 +42,5 @@ router.use('/channels', channelsRouter);
 router.use('/wiki', wikiRouter);
 router.use('/emergency_contacts', emergencyContactsRouter);
 router.use('/clubs', clubsRouter);
+router.use('/documents', documentsRouter);
 module.exports = router;
