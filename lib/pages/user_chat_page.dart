@@ -22,6 +22,7 @@ class _UserChatPageState extends State<UserChatPage> {
   List<Message> _messages = [];
   final ChatService _chat = ChatService();
   WebSocketChannel? _channel;
+  bool _online = false;
 
   @override
   void initState() {
@@ -36,9 +37,16 @@ class _UserChatPageState extends State<UserChatPage> {
     _channel = _chat.connect(widget.user.id!);
     _channel!.stream.listen((event) {
       final data = jsonDecode(event as String) as Map<String, dynamic>;
-      final msg = Message.fromJson(data['data'] as Map<String, dynamic>);
-      if (mounted && !_messages.any((m) => m.id == msg.id)) {
-        setState(() => _messages.add(msg));
+      if (data['type'] == 'message') {
+        final msg = Message.fromJson(data['data'] as Map<String, dynamic>);
+        if (mounted && !_messages.any((m) => m.id == msg.id)) {
+          setState(() => _messages.add(msg));
+        }
+      } else if (data['type'] == 'online' || data['type'] == 'offline') {
+        final uid = data['userId'] as String?;
+        if (uid == widget.user.id) {
+          setState(() => _online = data['type'] == 'online');
+        }
       }
     });
   }
@@ -69,7 +77,17 @@ class _UserChatPageState extends State<UserChatPage> {
     final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.user.name),
+        title: Row(
+          children: [
+            Text(widget.user.name),
+            const SizedBox(width: 8),
+            Icon(
+              Icons.circle,
+              size: 10,
+              color: _online ? Colors.green : Colors.grey,
+            ),
+          ],
+        ),
         backgroundColor: colorScheme.primaryContainer,
         foregroundColor: colorScheme.onPrimaryContainer,
         elevation: 1,
