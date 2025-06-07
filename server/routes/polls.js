@@ -68,4 +68,16 @@ router.post('/:id/vote', async (req, res) => {
   }
 });
 
+// DELETE /polls/:id - remove poll and votes
+router.delete('/:id', requireAdmin, async (req, res) => {
+  try {
+    const poll = await Poll.findByIdAndDelete(req.params.id);
+    if (!poll) return res.status(404).json({ error: 'Poll not found' });
+    await PollVote.deleteMany({ pollId: poll._id });
+    res.json({ data: poll });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 module.exports = router;

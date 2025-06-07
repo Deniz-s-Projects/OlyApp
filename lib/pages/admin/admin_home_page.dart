@@ -7,6 +7,7 @@ import 'bulletin_admin_page.dart';
 import 'booking_admin_page.dart';
 import 'map_admin_page.dart';
 import 'poll_admin_page.dart';
+import 'poll_list_admin_page.dart';
 import 'analytics_page.dart';
 import 'monthly_stats_page.dart';
 import 'gallery_admin_page.dart';
@@ -115,6 +116,16 @@ class AdminHomePage extends StatelessWidget {
                 );
               },
               child: const Text('Create Poll'),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const PollListAdminPage()),
+                );
+              },
+              child: const Text('Manage Polls'),
             ),
             const SizedBox(height: 12),
             ElevatedButton(

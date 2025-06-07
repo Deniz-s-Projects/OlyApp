@@ -20,4 +20,8 @@ class PollService extends ApiService {
   Future<void> vote(String pollId, int option) async {
     await post('/polls/$pollId/vote', {'option': option}, (_) => null);
   }
+
+  Future<void> deletePoll(String id) async {
+    await delete('/polls/$id', (_) => null);
+  }
 }
