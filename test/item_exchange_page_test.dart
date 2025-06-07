@@ -135,6 +135,22 @@ void main() {
     expect(find.text('Laptop'), findsNothing);
   });
 
+  testWidgets('Empty filter shows message', (tester) async {
+    final service = FakeItemService([
+      Item(ownerId: '1', title: 'Chair', category: ItemCategory.furniture),
+    ]);
+
+    await tester.pumpWidget(
+      MaterialApp(home: ItemExchangePage(service: service)),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField).first, 'nomatch');
+    await tester.pumpAndSettle();
+
+    expect(find.text('No items found.'), findsOneWidget);
+  });
+
   testWidgets('Tapping item opens detail page', (tester) async {
     final item = Item(
       ownerId: '1',
