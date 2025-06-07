@@ -1,4 +1,4 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 const authRouter = require('../routes/auth');
 const eventsRouter = require('../routes/events');
@@ -19,28 +19,30 @@ const wikiRouter = require('../routes/wiki');
 const emergencyContactsRouter = require('../routes/emergency_contacts');
 const clubsRouter = require('../routes/clubs');
 const documentsRouter = require('../routes/documents');
+const suggestionsRouter = require("../routes/suggestions"); 
 
-router.get('/', (req, res) => {
-  res.json({ message: 'API is running' });
+router.get("/", (req, res) => {
+  res.json({ message: "API is running" });
 });
-
-router.use('/auth', authRouter);
-router.use('/events', eventsRouter);
-router.use('/items', itemsRouter);
-router.use('/maintenance', maintenanceRouter);
-router.use('/bookings', bookingsRouter); 
-router.use('/bulletin', bulletinRouter);
-router.use('/pins', pinsRouter);
-router.use('/notifications', notificationsRouter);
-router.use('/users', usersRouter);
-router.use('/directory', directoryRouter);
-router.use('/lostfound', lostFoundRouter);
-router.use('/services', servicesRouter);
-router.use('/polls', pollsRouter);
-router.use('/stats', statsRouter);
-router.use('/channels', channelsRouter);
-router.use('/wiki', wikiRouter);
-router.use('/emergency_contacts', emergencyContactsRouter);
-router.use('/clubs', clubsRouter);
+ 
+router.use("/auth", authRouter);
+router.use("/events", eventsRouter);
+router.use("/items", itemsRouter);
+router.use("/maintenance", maintenanceRouter);
+router.use("/bookings", bookingsRouter);
+router.use("/bulletin", bulletinRouter);
+router.use("/pins", pinsRouter);
+router.use("/notifications", notificationsRouter);
+router.use("/users", usersRouter);
+router.use("/directory", directoryRouter);
+router.use("/lostfound", lostFoundRouter);
+router.use("/services", servicesRouter);
+router.use("/polls", pollsRouter);
+router.use("/stats", statsRouter);
+router.use("/channels", channelsRouter);
+router.use("/wiki", wikiRouter);
+router.use("/emergency_contacts", emergencyContactsRouter);
+router.use("/clubs", clubsRouter);
+router.use("/suggestions", suggestionsRouter););
 router.use('/documents', documentsRouter);
 module.exports = router;
