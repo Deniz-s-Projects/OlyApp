@@ -113,6 +113,7 @@ void main() {
       description: 'Project discussion',
       attendees: const ['1', '2'],
       location: 'locA',
+      category: 'work',
     );
 
     final eventMap = {
@@ -122,6 +123,7 @@ void main() {
       'description': 'Project discussion',
       'attendees': const ['1', '2'],
       'location': 'locA',
+      'category': 'work',
     };
 
     test('toMap/fromMap round trip', () {

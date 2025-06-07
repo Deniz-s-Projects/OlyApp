@@ -1,4 +1,5 @@
 part of 'models.dart';
+
 @HiveType(typeId: 3)
 class CalendarEvent {
   @HiveField(0)
@@ -13,6 +14,8 @@ class CalendarEvent {
   final List<String> attendees;
   @HiveField(5)
   final String? location;
+  @HiveField(6)
+  final String? category;
 
   CalendarEvent({
     this.id,
@@ -21,6 +24,7 @@ class CalendarEvent {
     this.description,
     this.attendees = const [],
     this.location,
+    this.category,
   });
 
   factory CalendarEvent.fromMap(Map<String, dynamic> map) => CalendarEvent(
@@ -28,9 +32,11 @@ class CalendarEvent {
     title: map['title'] as String,
     date: _parseDate(map['date']),
     description: map['description'] as String?,
-    attendees:
-        (map['attendees'] as List<dynamic>? ?? const []).map((e) => e.toString()).toList(),
+    attendees: (map['attendees'] as List<dynamic>? ?? const [])
+        .map((e) => e.toString())
+        .toList(),
     location: map['location'] as String?,
+    category: map['category'] as String?,
   );
 
   Map<String, dynamic> toMap() => {
@@ -40,6 +46,7 @@ class CalendarEvent {
     'description': description,
     'attendees': attendees,
     'location': location,
+    'category': category,
   };
 
   factory CalendarEvent.fromJson(Map<String, dynamic> json) =>

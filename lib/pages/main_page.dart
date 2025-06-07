@@ -182,10 +182,20 @@ class _MainPageState extends State<MainPage> {
       case 2:
         if (!widget.isAdmin) return null;
         return () async {
-          await showAddEventDialog(context, (title, date, location) async {
+          await showAddEventDialog(context, (
+            title,
+            date,
+            location,
+            category,
+          ) async {
             final service = EventService();
             await service.createEvent(
-              CalendarEvent(title: title, date: date, location: location),
+              CalendarEvent(
+                title: title,
+                date: date,
+                location: location,
+                category: category,
+              ),
             );
           });
         };
