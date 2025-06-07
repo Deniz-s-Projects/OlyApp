@@ -64,9 +64,9 @@ router.post('/', requireAdmin, async (req, res) => {
       checkIns: req.body.checkIns,
       reminderSent: req.body.reminderSent,
       location: req.body.location,
-      category: req.body.category,
+      category: req.body.category, 
       repeatInterval: req.body.repeatInterval,
-      repeatUntil: req.body.repeatUntil,
+      repeatUntil: req.body.repeatUntil, 
     };
     const event = await Event.create(data);
     res.json({ data: event });
@@ -87,9 +87,9 @@ router.put('/:id', requireAdmin, async (req, res) => {
       checkIns: req.body.checkIns,
       reminderSent: req.body.reminderSent,
       location: req.body.location,
-      category: req.body.category,
+      category: req.body.category, 
       repeatInterval: req.body.repeatInterval,
-      repeatUntil: req.body.repeatUntil,
+      repeatUntil: req.body.repeatUntil, 
     };
     const event = await Event.findByIdAndUpdate(req.params.id, data, {
       new: true

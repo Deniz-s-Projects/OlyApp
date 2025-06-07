@@ -58,7 +58,7 @@ class CalendarEvent {
         if (repeatInterval != null) 'repeatInterval': repeatInterval,
         if (repeatUntil != null) 'repeatUntil': repeatUntil!.toIso8601String(),
         'category': category,
-      };
+      }; 
 
   factory CalendarEvent.fromJson(Map<String, dynamic> json) =>
       CalendarEvent.fromMap(json);

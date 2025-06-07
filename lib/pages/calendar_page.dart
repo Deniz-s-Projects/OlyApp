@@ -102,13 +102,14 @@ class _CalendarPageState extends State<CalendarPage> {
   void _addEvent() async {
     await showAddEventDialog(context,
         (title, date, location, interval, until, category) async {
+    await showAddEventDialog(context, (title, date, location, category) async {
       final event = await _service.createEvent(
         CalendarEvent(
           title: title,
           date: date,
           location: location.isNotEmpty ? location : null,
           repeatInterval: interval,
-          repeatUntil: until,
+          repeatUntil: until, 
           category: category.isNotEmpty ? category : null,
         ),
       );
@@ -447,6 +448,7 @@ Future<void> showAddEventDialog(
     DateTime? repeatUntil,
     String category,
   ) onConfirm,
+ 
 ) async {
   final textCtrl = TextEditingController();
   final locCtrl = TextEditingController();
@@ -475,11 +477,11 @@ Future<void> showAddEventDialog(
             controller: catCtrl,
             decoration: const InputDecoration(labelText: 'Category'),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 8), 
           TextButton.icon(
             icon: const Icon(Icons.calendar_today),
             label: Text(
-              '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
+              '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}', 
             ),
             onPressed: () async {
               final picked = await showDatePicker(
@@ -520,7 +522,7 @@ Future<void> showAddEventDialog(
                 );
                 if (picked != null) until = picked;
               },
-            ),
+            ), 
         ],
       ),
       actions: [
@@ -534,9 +536,9 @@ Future<void> showAddEventDialog(
               onConfirm(
                 textCtrl.text,
                 selectedDate,
-                locCtrl.text,
+                locCtrl.text, 
                 interval == 'none' ? null : interval,
-                until,
+                until, 
                 catCtrl.text,
               );
               Navigator.pop(ctx);

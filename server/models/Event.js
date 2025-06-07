@@ -14,7 +14,7 @@ const EventSchema = new mongoose.Schema({
     type: String,
     enum: ['daily', 'weekly', 'monthly', 'yearly'],
   },
-  repeatUntil: Date,
+  repeatUntil: Date, 
   category: String,
 }, { timestamps: true });
 
