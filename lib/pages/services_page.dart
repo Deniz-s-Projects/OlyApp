@@ -5,6 +5,7 @@ import '../models/models.dart';
 import '../services/service_list_service.dart';
 import '../utils/user_helpers.dart';
 import 'post_service_listing_page.dart';
+import 'service_detail_page.dart';
 
 class ServicesPage extends StatefulWidget {
   final ServiceListService? service;
@@ -71,11 +72,28 @@ class _ServicesPageState extends State<ServicesPage> {
                   return ListTile(
                     onTap: listing.userId == currentUserId()
                         ? () => _openForm(listing)
-                        : null,
+                        : () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ServiceDetailPage(
+                                  listing: listing,
+                                  service: _service,
+                                ),
+                              ),
+                            ),
                     title: Text(listing.title),
                     subtitle: Text(listing.description),
-                    trailing: listing.contact != null
-                        ? Row(
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (listing.ratings.isNotEmpty) ...[
+                          const Icon(Icons.star, size: 16, color: Colors.amber),
+                          const SizedBox(width: 4),
+                          Text(listing.averageRating.toStringAsFixed(1)),
+                          const SizedBox(width: 8),
+                        ],
+                        if (listing.contact != null)
+                          Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(listing.contact!),
@@ -94,8 +112,9 @@ class _ServicesPageState extends State<ServicesPage> {
                                 },
                               ),
                             ],
-                          )
-                        : null,
+                          ),
+                      ],
+                    ),
                   );
                 },
               ),
