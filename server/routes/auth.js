@@ -4,6 +4,8 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const User = require('../models/User');
+const validate = require('../middleware/validate');
+const { registerSchema, loginSchema } = require('../validation/auth');
 
 const SECRET = process.env.JWT_SECRET || 'secretkey';
 
@@ -14,12 +16,9 @@ const transporter = nodemailer.createTransport({
 const router = express.Router();
 
 // POST /auth/register - create user
-router.post('/register', async (req, res) => {
+router.post('/register', validate(registerSchema), async (req, res) => {
   try {
     const { name, email, password, avatarUrl, isAdmin, bio, room } = req.body;
-    if (!name || !email || !password) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
     const existing = await User.findOne({ email });
     if (existing) {
       return res.status(400).json({ error: 'Email already registered' });
@@ -53,7 +52,7 @@ router.post('/register', async (req, res) => {
 });
 
 // POST /auth/login - verify user
-router.post('/login', async (req, res) => {
+router.post('/login', validate(loginSchema), async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });

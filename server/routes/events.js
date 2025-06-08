@@ -4,72 +4,47 @@ const EventComment = require('../models/EventComment');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
 const requireAdmin = require('../middleware/requireAdmin');
+const validate = require('../middleware/validate');
+const { createEventSchema, updateEventSchema } = require('../validation/event');
 const QRCode = require('qrcode');
 const catchAsync = require('../middleware/catchAsync');
-
-const router = express.Router();
-router.use(auth);
-
-// GET /events - list events
 router.get('/', catchAsync(async (req, res) => {
-    const events = await Event.find();
-    const result = [];
-    const addInterval = (date, interval) => {
-      const d = new Date(date);
-      switch (interval) {
-        case 'daily':
-          d.setDate(d.getDate() + 1);
-          break;
-        case 'weekly':
-          d.setDate(d.getDate() + 7);
-          break;
-        case 'monthly':
-          d.setMonth(d.getMonth() + 1);
-          break;
-        case 'yearly':
-          d.setFullYear(d.getFullYear() + 1);
-          break;
-        default:
-          return null;
+  }));
+router.post(
+  '/',
+  validate(createEventSchema),
+  requireAdmin,
+  catchAsync(async (req, res) => {
+  })
+);
+router.put(
+  '/:id',
+  validate(updateEventSchema),
+  requireAdmin,
+  catchAsync(async (req, res) => {
+  })
+);
+router.delete('/:id', requireAdmin, catchAsync(async (req, res) => {
+  }));
+router.post('/:id/rsvp', catchAsync(async (req, res) => {
       }
-      return d;
-    };
-
-    for (const e of events) {
-      result.push(e);
-      if (e.repeatInterval && e.repeatUntil) {
-        let next = addInterval(e.date, e.repeatInterval);
-        while (next && next <= e.repeatUntil) {
-          const obj = { ...e.toObject(), date: next };
-          result.push(obj);
-          next = addInterval(next, e.repeatInterval);
-        }
-      }
-    }
-    res.json({ data: result });
+  }));
+router.get('/:id/attendees', catchAsync(async (req, res) => {
+  }));
+router.get('/:id/comments', catchAsync(async (req, res) => {
   }));
 
-// POST /events - create event
-router.post('/', requireAdmin, catchAsync(async (req, res) => {
-    const data = {
-      title: req.body.title,
-      date: req.body.date,
-      description: req.body.description,
-      attendees: req.body.attendees,
-      deviceTokens: req.body.deviceTokens,
-      checkIns: req.body.checkIns,
-      reminderSent: req.body.reminderSent,
-      location: req.body.location,
-      category: req.body.category, 
-      repeatInterval: req.body.repeatInterval,
-      repeatUntil: req.body.repeatUntil, 
-    };
-    const event = await Event.create(data);
-    res.json({ data: event });
+router.post('/:id/comments', catchAsync(async (req, res) => {
+  }));
+router.get('/:id/qr', catchAsync(async (req, res) => {
+  }));
+router.post('/:id/checkin', catchAsync(async (req, res) => {
+  }));
   }));
 
 // PUT /events/:id - update event
-router.put('/:id', requireAdmin, catchAsync(async (req, res) => {
+router.put('/:id', validate(updateEventSchema), requireAdmin, async (req, res) => {
+  try { 
     const data = {
       title: req.body.title,
       date: req.body.date,
