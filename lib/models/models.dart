@@ -24,6 +24,7 @@ part 'suggestion.dart';
 part 'gallery_image.dart';
 part 'study_group.dart';
 part 'tutoring_post.dart';
+part 'job_post.dart';
 part 'security_report.dart';
 
 DateTime _parseDate(dynamic value) {

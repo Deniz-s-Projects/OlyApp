@@ -21,6 +21,7 @@ import 'wiki_page.dart';
 import 'clubs_page.dart';
 import 'study_groups_page.dart';
 import 'tutoring_page.dart';
+import 'job_posts/job_posts_page.dart';
 import 'documents_page.dart';
 import 'gallery_page.dart';
 import 'weather_page.dart';
@@ -395,6 +396,15 @@ class DashboardPage extends StatelessWidget {
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const TutoringPage()),
+                  ),
+                ),
+                DashboardCard(
+                  icon: Icons.work,
+                  label: 'Jobs',
+                  colorScheme: colorScheme,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const JobPostsPage()),
                   ),
                 ),
                 DashboardCard(
