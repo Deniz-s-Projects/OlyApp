@@ -36,6 +36,7 @@ void main() async {
   await Hive.openBox('calendarBox');
   await Hive.openBox('eventsBox');
   await Hive.openBox('itemsBox');
+  await Hive.openBox('lostFoundBox');
   await Hive.openBox('userBox');
   await Hive.openBox('authBox');
   await Hive.openBox('directoryBox');
@@ -160,12 +161,11 @@ class OlyAppState extends State<OlyApp> {
         '/forgot': (_) => const ForgotPasswordPage(),
         '/reset': (_) => const ResetPasswordPage(),
       },
-      home:
-          !_seenOnboarding
-              ? OnboardingPage(onFinish: _finishOnboarding)
-              : _loggedIn
-              ? MainPage(isAdmin: _isAdmin, onLogout: _logout)
-              : LoginPage(onLoginSuccess: () => _handleLogin()),
+      home: !_seenOnboarding
+          ? OnboardingPage(onFinish: _finishOnboarding)
+          : _loggedIn
+          ? MainPage(isAdmin: _isAdmin, onLogout: _logout)
+          : LoginPage(onLoginSuccess: () => _handleLogin()),
     );
   }
 }

@@ -17,21 +17,37 @@ class LostFoundService extends ApiService {
     String? type,
     bool? resolved,
   }) async {
+    final box = Hive.isBoxOpen('lostFoundBox')
+        ? Hive.box('lostFoundBox')
+        : null;
     final query = <String, dynamic>{};
     if (search != null && search.isNotEmpty) query['search'] = search;
     if (type != null && type.isNotEmpty) query['type'] = type;
     if (resolved != null) query['resolved'] = '$resolved';
 
-    final uri = buildUri('/lostfound', query.isEmpty ? null : query);
-    final res = await client.get(uri, headers: _authHeaders());
-    if (res.statusCode == 200) {
-      final data = jsonDecode(res.body) as Map<String, dynamic>;
-      final list = data['data'] as List<dynamic>;
-      return list
-          .map((e) => LostItem.fromJson(e as Map<String, dynamic>))
+    try {
+      final uri = buildUri('/lostfound', query.isEmpty ? null : query);
+      final res = await client.get(uri, headers: _authHeaders());
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body) as Map<String, dynamic>;
+        final list = data['data'] as List<dynamic>;
+        final items = list
+            .map((e) => LostItem.fromJson(e as Map<String, dynamic>))
+            .toList();
+        await box?.put('items', items.map((e) => e.toJson()).toList());
+        return items;
+      }
+      throw Exception('Request failed: ${res.statusCode}');
+    } catch (e) {
+      final cached =
+          box?.get('items', defaultValue: const <dynamic>[]) as List?;
+      if (cached == null || cached.isEmpty) {
+        rethrow;
+      }
+      return cached
+          .map((e) => LostItem.fromJson(Map<String, dynamic>.from(e)))
           .toList();
     }
-    throw Exception('Request failed: ${res.statusCode}');
   }
 
   /// Creates a new lost or found post.

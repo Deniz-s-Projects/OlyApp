@@ -1,52 +1,27 @@
 require('dotenv').config();
+const path = require('path');
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const errorHandler = require('./middleware/errorHandler');
 const { createLogger, format, transports } = require('winston');
 const morgan = require('morgan');
-
-const logger = createLogger({
-  level: 'info',
-  format: format.combine(
-    format.timestamp(),
-    format.printf(({ timestamp, level, message }) =>
-      `${timestamp} ${level}: ${message}`
-    )
-  ),
-  transports: [new transports.Console()],
-});
-app.use(helmet());
-app.use(
-  morgan('tiny', {
-    stream: { write: (msg) => logger.info(msg.trim()) },
-  })
-);
-    logger.info('Using in-memory MongoDB instance');
-  logger.error(`MongoDB connection error: ${err}`);
-const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 });
-app.use('/api/auth', authLimiter);
-app.use(errorHandler);
-        logger.error(`Failed to send reminder: ${err}`);
-    logger.error(`Reminder check failed: ${err}`);
-  logger.info(`Server listening on port ${PORT}`);
+const { MongoMemoryServer } = require('mongodb-memory-server');
+const admin = require('firebase-admin');
 const cron = require('node-cron');
-const Event = require('./models/Event');
 const http = require('http');
+
+const apiRouter = require('./api');
+const Event = require('./models/Event');
 const websocket = require('./socket');
 const errorHandler = require('./middleware/errorHandler');
-const { createLogger, format, transports } = require('winston');
-const morgan = require('morgan');
 
 const logger = createLogger({
   level: 'info',
   format: format.combine(
     format.timestamp(),
-    format.printf(({ timestamp, level, message }) =>
-      `${timestamp} ${level}: ${message}`
-    )
+    format.printf(({ timestamp, level, message }) => `${timestamp} ${level}: ${message}`)
   ),
   transports: [new transports.Console()],
 });
@@ -55,12 +30,9 @@ const app = express();
 app.use(cors());
 app.use(helmet());
 app.use(express.json());
-app.use(
-  morgan('tiny', {
-    stream: { write: (msg) => logger.info(msg.trim()) },
-  })
-);
+app.use(morgan('tiny', { stream: { write: (msg) => logger.info(msg.trim()) } }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 admin.initializeApp();
 
 async function connectToDatabase() {
@@ -78,7 +50,6 @@ connectToDatabase().catch((err) => {
   process.exit(1);
 });
 
-const apiRouter = require('./api');
 const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 });
 app.use('/api/auth', authLimiter);
 app.use('/api', apiRouter);
