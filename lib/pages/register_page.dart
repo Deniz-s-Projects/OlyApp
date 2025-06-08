@@ -18,6 +18,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _nameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
+  final _confirmPasswordCtrl = TextEditingController();
   bool _loading = false;
   bool _passwordVisible = false;
 
@@ -26,11 +27,18 @@ class _RegisterPageState extends State<RegisterPage> {
     _nameCtrl.dispose();
     _emailCtrl.dispose();
     _passwordCtrl.dispose();
+    _confirmPasswordCtrl.dispose();
     super.dispose();
   }
 
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_confirmPasswordCtrl.text != _passwordCtrl.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Passwords do not match')),
+      );
+      return;
+    }
     setState(() => _loading = true);
     try {
       final service = AuthService();
@@ -116,6 +124,19 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                   obscureText: !_passwordVisible,
                   validator: validatePassword,
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _confirmPasswordCtrl,
+                  decoration: InputDecoration(
+                    labelText: 'Confirm password',
+                    filled: true,
+                    fillColor: cs.surfaceContainerHighest,
+                    prefixIcon: const Icon(Icons.lock),
+                  ),
+                  obscureText: true,
+                  validator: (v) =>
+                      validateConfirmPassword(v, _passwordCtrl.text),
                 ),
                 const SizedBox(height: 24),
                 SizedBox(

@@ -10,3 +10,9 @@ String? validatePassword(String? value) {
   if (value.length < 6) return 'Password must be at least 6 characters';
   return null;
 }
+
+String? validateConfirmPassword(String? value, String original) {
+  if (value == null || value.isEmpty) return 'Please confirm password';
+  if (value != original) return 'Passwords do not match';
+  return null;
+}
