@@ -89,7 +89,8 @@ router.post('/reset', async (req, res) => {
       return res.json({ message: 'If that email exists, a reset link has been sent' });
     }
     const token = crypto.randomBytes(20).toString('hex');
-    user.passwordResetToken = token;
+    const hashed = crypto.createHash('sha256').update(token).digest('hex');
+    user.passwordResetToken = hashed;
     user.passwordResetExpires = new Date(Date.now() + 3600_000);
     await user.save();
     await transporter.sendMail({
@@ -110,8 +111,9 @@ router.post('/reset/confirm', async (req, res) => {
     if (!token || !password) {
       return res.status(400).json({ error: 'Missing fields' });
     }
+    const hashed = crypto.createHash('sha256').update(token).digest('hex');
     const user = await User.findOne({
-      passwordResetToken: token,
+      passwordResetToken: hashed,
       passwordResetExpires: { $gt: new Date() },
     });
     if (!user) return res.status(400).json({ error: 'Invalid or expired token' });

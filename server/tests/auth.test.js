@@ -4,6 +4,9 @@ const { MongoMemoryServer } = require('mongodb-memory-server');
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const apiRouter = require('../api');
+const User = require('../models/User');
+const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 
 const SECRET = process.env.JWT_SECRET || 'secretkey';
 
@@ -56,5 +59,43 @@ describe('Auth API', () => {
       .send({ email: 'x@y.z', password: 'wrong' });
     expect(res.status).toBe(401);
     expect(res.body).toEqual({ error: 'Invalid credentials' });
+  });
+
+  test('POST /auth/reset stores hashed token', async () => {
+    await request(app)
+      .post('/api/auth/register')
+      .send({ name: 'Test', email: 'reset@test.com', password: 'pass' });
+
+    const res = await request(app)
+      .post('/api/auth/reset')
+      .send({ email: 'reset@test.com' });
+    expect(res.status).toBe(200);
+
+    const user = await User.findOne({ email: 'reset@test.com' });
+    expect(user.passwordResetToken).toHaveLength(64);
+  });
+
+  test('POST /auth/reset/confirm accepts unhashed token', async () => {
+    const token = crypto.randomBytes(20).toString('hex');
+    const hashed = crypto.createHash('sha256').update(token).digest('hex');
+    const hash = await bcrypt.hash('old', 1);
+    const user = await User.create({
+      name: 'R',
+      email: 'confirm@test.com',
+      passwordHash: hash,
+      passwordResetToken: hashed,
+      passwordResetExpires: new Date(Date.now() + 3600_000),
+    });
+
+    const res = await request(app)
+      .post('/api/auth/reset/confirm')
+      .send({ token, password: 'newpass' });
+    expect(res.status).toBe(200);
+
+    const updated = await User.findById(user._id);
+    const match = await bcrypt.compare('newpass', updated.passwordHash);
+    expect(match).toBe(true);
+    expect(updated.passwordResetToken).toBeUndefined();
+    expect(updated.passwordResetExpires).toBeUndefined();
   });
 });
