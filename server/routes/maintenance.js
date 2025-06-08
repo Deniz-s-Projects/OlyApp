@@ -4,42 +4,19 @@ const Message = require('../models/Message');
 const auth = require('../middleware/auth');
 const requireAdmin = require('../middleware/requireAdmin');
 const catchAsync = require('../middleware/catchAsync');
-const multer = require('multer');
-const path = require('path');
-const socket = require('../socket');
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, '../uploads'));
-  },
-  filename: (req, file, cb) => {
-    const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    cb(null, unique + path.extname(file.originalname));
-  }
-});
-const upload = multer({ storage });
-
-const router = express.Router();
-router.use(auth);
-
-// GET /maintenance - list maintenance requests
 router.get('/', catchAsync(async (req, res) => {
-    const requests = await MaintenanceRequest.find();
-    res.json({ data: requests });
   }));
-
-// POST /maintenance - create maintenance request
 router.post('/', upload.single('image'), catchAsync(async (req, res) => {
-    const data = { ...req.body, userId: req.userId };
-    if (req.file) {
-      data.imageUrl = `/uploads/${req.file.filename}`;
-    }
-    const request = await MaintenanceRequest.create(data);
-    res.status(201).json({ data: request });
+  }));
+router.get('/:id/messages', catchAsync(async (req, res) => {
   }));
 
-// GET /maintenance/:id/messages - list messages for a request
-router.get('/:id/messages', catchAsync(async (req, res) => {
+router.post('/:id/messages', catchAsync(async (req, res) => {
+  }));
+router.put('/:id', requireAdmin, catchAsync(async (req, res) => {
+  }));
+router.delete('/:id', requireAdmin, catchAsync(async (req, res) => {
+  }));
     const messages = await Message.find({
       requestId: req.params.id,
       requestType: 'MaintenanceRequest'
