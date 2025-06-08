@@ -27,19 +27,23 @@ class _DirectoryPageState extends State<DirectoryPage> {
 
   Future<void> _loadUsers() async {
     setState(() => _loading = true);
+    final cached = _service.loadCachedUsers(search: _searchCtrl.text);
+    if (cached.isNotEmpty) {
+      setState(() => _users = cached);
+    }
     try {
       final users = await _service.fetchUsers(search: _searchCtrl.text);
       if (!mounted) return;
-      setState(() {
-        _users = users;
-        _loading = false;
-      });
+      setState(() => _users = users);
     } catch (_) {
       if (!mounted) return;
-      setState(() => _loading = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Failed to load users')));
+      if (_users.isEmpty) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Failed to load users')));
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
   }
 
