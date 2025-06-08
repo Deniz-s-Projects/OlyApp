@@ -1,4 +1,4 @@
-import 'package:flutter_test/flutter_test.dart';
+import 'package:test/test.dart';
 import 'package:oly_app/models/models.dart';
 import 'package:oly_app/utils/item_filter.dart';
 
@@ -11,30 +11,45 @@ void main() {
     Item(ownerId: '1', title: 'Jacket', category: ItemCategory.clothing),
   ];
 
-  test('search query filters items', () {
-    final result = filterItems(items, 'book', 'All');
-    expect(result.map((e) => e.title).toList(), ['Dart Book']);
-  });
+  final cases = <({String description, String query, String category, List<String> expected})>[
+    (
+      description: 'search query filters items',
+      query: 'book',
+      category: 'All',
+      expected: ['Dart Book'],
+    ),
+    (
+      description: 'category filters items',
+      query: '',
+      category: 'Furniture',
+      expected: ['Wooden Chair'],
+    ),
+    (
+      description: 'combined search and category filters items',
+      query: 'laptop',
+      category: 'Electronics',
+      expected: ['Laptop'],
+    ),
+    (
+      description: 'appliances category works',
+      query: '',
+      category: 'Appliances',
+      expected: ['Toaster'],
+    ),
+    (
+      description: 'clothing category works',
+      query: '',
+      category: 'Clothing',
+      expected: ['Jacket'],
+    ),
+  ];
 
-  test('category filters items', () {
-    final result = filterItems(items, '', 'Furniture');
-    expect(result.map((e) => e.title).toList(), ['Wooden Chair']);
-  });
-
-  test('combined search and category filters items', () {
-    final result = filterItems(items, 'laptop', 'Electronics');
-    expect(result.map((e) => e.title).toList(), ['Laptop']);
-  });
-
-  test('appliances category works', () {
-    final result = filterItems(items, '', 'Appliances');
-    expect(result.map((e) => e.title).toList(), ['Toaster']);
-  });
-
-  test('clothing category works', () {
-    final result = filterItems(items, '', 'Clothing');
-    expect(result.map((e) => e.title).toList(), ['Jacket']);
-  });
+  for (final c in cases) {
+    test(c.description, () {
+      final result = filterItems(items, c.query, c.category);
+      expect(result.map((e) => e.title).toList(), c.expected);
+    });
+  }
 
   test('no match returns empty list', () {
     final result = filterItems(items, 'chair', 'Books');
