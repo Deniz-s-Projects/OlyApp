@@ -18,4 +18,8 @@ void main() {
     expect(ics, contains('LOCATION:Room 1'));
     expect(ics, contains('END:VEVENT'));
   });
+
+  test('slugify sanitizes file names', () {
+    expect(slugify('My Event @ Home!'), 'my_event_home');
+  });
 }
