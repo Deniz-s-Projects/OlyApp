@@ -257,7 +257,7 @@ class _CalendarPageState extends State<CalendarPage> {
                   final ics = calendarEventToIcs(event);
                   final dir = await getTemporaryDirectory();
                   final file = File(
-                    '${dir.path}/event_${event.id ?? event.title}.ics',
+                    '${dir.path}/event_${event.id ?? slugify(event.title)}.ics',
                   );
                   await file.writeAsString(ics);
                   await Share.shareXFiles([

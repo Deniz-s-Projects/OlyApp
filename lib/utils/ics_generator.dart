@@ -11,6 +11,13 @@ String _formatDate(DateTime date) {
   return '$y$m${d}T$h$min${s}Z';
 }
 
+/// Converts [title] into a safe string for use in filenames.
+String slugify(String title) {
+  var slug = title.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '_');
+  slug = slug.replaceAll(RegExp(r'^_+'), '').replaceAll(RegExp(r'_+$'), '');
+  return slug.isEmpty ? 'event' : slug;
+}
+
 /// Returns an ICS formatted string representing [event].
 String calendarEventToIcs(CalendarEvent event) {
   final start = event.date;
