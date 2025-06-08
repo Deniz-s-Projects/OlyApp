@@ -26,6 +26,7 @@ part 'study_group.dart';
 part 'tutoring_post.dart';
 part 'job_post.dart';
 part 'security_report.dart';
+part 'noise_report.dart';
 
 DateTime _parseDate(dynamic value) {
   if (value is int) return DateTime.fromMillisecondsSinceEpoch(value);

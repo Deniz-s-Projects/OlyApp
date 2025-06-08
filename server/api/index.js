@@ -25,6 +25,7 @@ const galleryRouter = require('../routes/gallery');
 const tutoringRouter = require('../routes/tutoring');
 const jobPostsRouter = require('../routes/job_posts');
 const securityReportsRouter = require('../routes/security_reports');
+const noiseReportsRouter = require('../routes/noise_reports');
 
 router.get("/", (req, res) => {
   res.json({ message: "API is running" });
@@ -55,4 +56,5 @@ router.use('/gallery', galleryRouter);
 router.use('/tutoring', tutoringRouter);
 router.use('/job_posts', jobPostsRouter);
 router.use('/security_reports', securityReportsRouter);
+router.use('/noise_reports', noiseReportsRouter);
 module.exports = router;
