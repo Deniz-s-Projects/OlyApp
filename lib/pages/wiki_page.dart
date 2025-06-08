@@ -91,6 +91,26 @@ class _WikiPageState extends State<WikiPage> {
 
   Future<void> _delete(WikiArticle article) async {
     if (article.id == null) return;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Article'),
+        content: const Text(
+          'Are you sure you want to delete this article?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true) return;
     await _service.deleteArticle(article.id!);
     if (!mounted) return;
     setState(() => _articles.removeWhere((a) => a.id == article.id));

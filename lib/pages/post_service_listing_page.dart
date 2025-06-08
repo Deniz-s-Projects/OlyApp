@@ -82,6 +82,26 @@ class _PostServiceListingPageState extends State<PostServiceListingPage> {
   Future<void> _delete() async {
     final id = widget.listing?.id;
     if (id == null) return;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Listing'),
+        content: const Text(
+          'Are you sure you want to delete this listing?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true) return;
     await _service.deleteListing(id);
     if (mounted) {
       ScaffoldMessenger.of(
