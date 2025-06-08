@@ -100,11 +100,13 @@ The optional Node.js backend lives in the `server/` directory.
 
 ### Setup
 
-1. Install dependencies:
+1. Install dependencies in the server folder:
    ```bash
    cd server
    npm install
    ```
+   If you run `npm install` from the project root, you may see an error such as
+   `npm ERR! must provide string spec` because there is no `package.json` there.
 
 2. Copy the example environment file and adjust values if needed:
    ```bash
