@@ -2,7 +2,7 @@ const Joi = require('joi');
 
 const registerSchema = Joi.object({
   name: Joi.string().required(),
-  email: Joi.string().email().required(),
+  email: Joi.string().email({ tlds: { allow: false } }).required(),
   password: Joi.string().min(1).required(),
   avatarUrl: Joi.string().allow(''),
   isAdmin: Joi.boolean(),
@@ -11,7 +11,7 @@ const registerSchema = Joi.object({
 });
 
 const loginSchema = Joi.object({
-  email: Joi.string().email().required(),
+  email: Joi.string().email({ tlds: { allow: false } }).required(),
   password: Joi.string().min(1).required(),
 });
 
