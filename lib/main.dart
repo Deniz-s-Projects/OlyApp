@@ -38,6 +38,7 @@ void main() async {
   await Hive.openBox('itemsBox');
   await Hive.openBox('userBox');
   await Hive.openBox('authBox');
+  await Hive.openBox('directoryBox');
   await Hive.openBox('favoritesBox');
   await Hive.openBox('settingsBox');
   await Hive.openBox('pinsBox');
