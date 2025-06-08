@@ -193,6 +193,25 @@ class _LostFoundDetailPageState extends State<LostFoundDetailPage> {
                   height: 200,
                   width: double.infinity,
                   fit: BoxFit.cover,
+                  loadingBuilder: (context, child, progress) {
+                    if (progress == null) return child;
+                    return SizedBox(
+                      height: 200,
+                      width: double.infinity,
+                      child: const Center(child: CircularProgressIndicator()),
+                    );
+                  },
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    height: 200,
+                    width: double.infinity,
+                    color: cs.surfaceContainerHighest,
+                    alignment: Alignment.center,
+                    child: Icon(
+                      Icons.broken_image,
+                      size: 64,
+                      color: cs.onSurfaceVariant,
+                    ),
+                  ),
                 )
               : Container(
                   height: 200,
