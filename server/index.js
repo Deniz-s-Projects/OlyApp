@@ -9,6 +9,7 @@ const cron = require('node-cron');
 const Event = require('./models/Event');
 const http = require('http');
 const websocket = require('./socket');
+const errorHandler = require('./middleware/errorHandler');
 const { createLogger, format, transports } = require('winston');
 const morgan = require('morgan');
 
@@ -51,6 +52,7 @@ connectToDatabase().catch((err) => {
 
 const apiRouter = require('./api');
 app.use('/api', apiRouter);
+app.use(errorHandler);
 
 // Send event reminders 15 minutes before start
 cron.schedule('* * * * *', async () => {
