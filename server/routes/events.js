@@ -4,6 +4,8 @@ const EventComment = require('../models/EventComment');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
 const requireAdmin = require('../middleware/requireAdmin');
+const validate = require('../middleware/validate');
+const { createEventSchema, updateEventSchema } = require('../validation/event');
 const QRCode = require('qrcode');
 
 const router = express.Router();
@@ -53,7 +55,7 @@ router.get('/', async (req, res) => {
 });
 
 // POST /events - create event
-router.post('/', requireAdmin, async (req, res) => {
+router.post('/', validate(createEventSchema), requireAdmin, async (req, res) => {
   try {
     const data = {
       title: req.body.title,
@@ -76,7 +78,7 @@ router.post('/', requireAdmin, async (req, res) => {
 });
 
 // PUT /events/:id - update event
-router.put('/:id', requireAdmin, async (req, res) => {
+router.put('/:id', validate(updateEventSchema), requireAdmin, async (req, res) => {
   try {
     const data = {
       title: req.body.title,
