@@ -23,6 +23,7 @@ part 'document.dart';
 part 'suggestion.dart';
 part 'gallery_image.dart';
 part 'study_group.dart';
+part 'tutoring_post.dart';
 
 DateTime _parseDate(dynamic value) {
   if (value is int) return DateTime.fromMillisecondsSinceEpoch(value);

@@ -22,6 +22,7 @@ const studyGroupsRouter = require('../routes/studygroups');
 const documentsRouter = require('../routes/documents');
 const suggestionsRouter = require("../routes/suggestions");
 const galleryRouter = require('../routes/gallery');
+const tutoringRouter = require('../routes/tutoring');
 
 router.get("/", (req, res) => {
   res.json({ message: "API is running" });
@@ -49,4 +50,5 @@ router.use('/studygroups', studyGroupsRouter);
 router.use('/documents', documentsRouter);
 router.use("/suggestions", suggestionsRouter);
 router.use('/gallery', galleryRouter);
+router.use('/tutoring', tutoringRouter);
 module.exports = router;
