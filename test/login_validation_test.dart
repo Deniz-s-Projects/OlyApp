@@ -29,4 +29,19 @@ void main() {
       expect(validatePassword('123456'), isNull);
     });
   });
+
+  group('validateConfirmPassword', () {
+    test('empty confirmation', () {
+      expect(validateConfirmPassword('', 'password'), 'Please confirm password');
+    });
+
+    test('mismatch confirmation', () {
+      expect(
+          validateConfirmPassword('abc', 'password'), 'Passwords do not match');
+    });
+
+    test('matching confirmation', () {
+      expect(validateConfirmPassword('password', 'password'), isNull);
+    });
+  });
 }
