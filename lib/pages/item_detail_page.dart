@@ -134,11 +134,30 @@ class _ItemDetailPageState extends State<ItemDetailPage> {
             // Item Image
             _item.imageUrl != null
                 ? Image.network(
-                  _item.imageUrl!,
-                  height: 200,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                )
+                    _item.imageUrl!,
+                    height: 200,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    loadingBuilder: (context, child, progress) {
+                      if (progress == null) return child;
+                      return SizedBox(
+                        height: 200,
+                        width: double.infinity,
+                        child: const Center(child: CircularProgressIndicator()),
+                      );
+                    },
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      height: 200,
+                      width: double.infinity,
+                      color: colorScheme.surfaceContainerHighest,
+                      alignment: Alignment.center,
+                      child: Icon(
+                        Icons.broken_image,
+                        size: 64,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  )
                 : Container(
                   height: 200,
                   color: colorScheme.surfaceContainerHighest,

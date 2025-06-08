@@ -71,7 +71,22 @@ class _GalleryPageState extends State<GalleryPage> {
                 final img = _images[i];
                 return GestureDetector(
                   onTap: () => _view(img),
-                  child: Image.network(img.url, fit: BoxFit.cover),
+                  child: Image.network(
+                    img.url,
+                    fit: BoxFit.cover,
+                    loadingBuilder: (context, child, progress) {
+                      if (progress == null) return child;
+                      return const Center(child: CircularProgressIndicator());
+                    },
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      color: cs.surfaceContainerHighest,
+                      alignment: Alignment.center,
+                      child: Icon(
+                        Icons.broken_image,
+                        color: cs.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
                 );
               },
             ),
@@ -89,7 +104,22 @@ class _FullScreenImage extends StatelessWidget {
       backgroundColor: Colors.black,
       body: GestureDetector(
         onTap: () => Navigator.pop(context),
-        child: Center(child: InteractiveViewer(child: Image.network(url))),
+        child: Center(
+          child: InteractiveViewer(
+            child: Image.network(
+              url,
+              loadingBuilder: (context, child, progress) {
+                if (progress == null) return child;
+                return const Center(child: CircularProgressIndicator());
+              },
+              errorBuilder: (context, error, stackTrace) => Container(
+                color: Colors.black,
+                alignment: Alignment.center,
+                child: const Icon(Icons.broken_image, color: Colors.white),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
