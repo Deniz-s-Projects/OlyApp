@@ -2,6 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const path = require('path');
 const admin = require('firebase-admin');
@@ -12,6 +14,7 @@ const websocket = require('./socket');
 
 const app = express();
 app.use(cors());
+app.use(helmet());
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 admin.initializeApp();
@@ -32,6 +35,8 @@ connectToDatabase().catch((err) => {
 });
 
 const apiRouter = require('./api');
+const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 });
+app.use('/api/auth', authLimiter);
 app.use('/api', apiRouter);
 
 // Send event reminders 15 minutes before start
