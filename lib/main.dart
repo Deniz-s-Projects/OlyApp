@@ -5,6 +5,7 @@ import 'pages/register_page.dart';
 import 'pages/forgot_password_page.dart';
 import 'pages/reset_password_page.dart';
 import 'pages/onboarding_page.dart';
+import 'pages/auth_home_page.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 import 'dart:io';
@@ -157,6 +158,7 @@ class OlyAppState extends State<OlyApp> {
       themeMode: _themeMode,
 
       routes: {
+        '/login': (_) => LoginPage(onLoginSuccess: _handleLogin),
         '/register': (_) => RegisterPage(onRegistered: _handleLogin),
         '/forgot': (_) => const ForgotPasswordPage(),
         '/reset': (_) => const ResetPasswordPage(),
@@ -165,7 +167,7 @@ class OlyAppState extends State<OlyApp> {
           ? OnboardingPage(onFinish: _finishOnboarding)
           : _loggedIn
           ? MainPage(isAdmin: _isAdmin, onLogout: _logout)
-          : LoginPage(onLoginSuccess: () => _handleLogin()),
+          : const AuthHomePage(),
     );
   }
 }
