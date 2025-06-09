@@ -42,6 +42,7 @@ void main() {
     await tester.tap(find.widgetWithText(ElevatedButton, 'Login'));
     await tester.pump();
 
+    expect(find.byType(SnackBar), findsOneWidget);
     expect(find.text('Invalid credentials'), findsOneWidget);
   });
 }
