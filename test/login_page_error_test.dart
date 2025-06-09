@@ -40,7 +40,7 @@ void main() {
     await tester.enterText(find.byType(TextFormField).at(0), 'a@b.com');
     await tester.enterText(find.byType(TextFormField).at(1), 'wrong');
     await tester.tap(find.widgetWithText(ElevatedButton, 'Login'));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(find.byType(SnackBar), findsOneWidget);
     expect(find.text('Invalid credentials'), findsOneWidget);
