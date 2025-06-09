@@ -9,12 +9,14 @@ import '../services/auth_service.dart';
 /// A simple login page with email/password and placeholder Google/Apple login buttons.
 class LoginPage extends StatefulWidget {
   final VoidCallback onLoginSuccess;
+  final AuthService? service;
   final GoogleSignIn? googleSignIn;
   final Future<AuthorizationCredentialAppleID> Function()? appleSignIn;
 
   const LoginPage({
     super.key,
     required this.onLoginSuccess,
+    this.service,
     this.googleSignIn,
     this.appleSignIn,
   });
@@ -51,7 +53,7 @@ class _LoginPageState extends State<LoginPage> {
       };
     }
 
-    final service = AuthService();
+    final service = widget.service ?? AuthService();
     return service.login(email, password);
   }
 
@@ -82,9 +84,11 @@ class _LoginPageState extends State<LoginPage> {
       widget.onLoginSuccess();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Login failed: $e')));
+      final message =
+          e is Exception ? e.toString().replaceFirst('Exception: ', '') : '$e';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);

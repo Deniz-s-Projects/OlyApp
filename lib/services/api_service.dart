@@ -29,6 +29,18 @@ class ApiService {
     };
   }
 
+  Exception _errorFromResponse(http.Response response) {
+    try {
+      if (response.body.isNotEmpty) {
+        final json = jsonDecode(response.body);
+        if (json is Map && json['error'] is String) {
+          return Exception(json['error']);
+        }
+      }
+    } catch (_) {}
+    return Exception('Request failed: ${response.statusCode}');
+  }
+
   Future<T> get<T>(String path, T Function(dynamic json) parser) async {
     final response = await _client.get(
       buildUri(path),
@@ -38,7 +50,7 @@ class ApiService {
       final data = jsonDecode(response.body);
       return parser(data);
     } else {
-      throw Exception('Request failed: ${response.statusCode}');
+      throw _errorFromResponse(response);
     }
   }
 
@@ -56,7 +68,7 @@ class ApiService {
       final data = jsonDecode(response.body);
       return parser(data);
     } else {
-      throw Exception('Request failed: ${response.statusCode}');
+      throw _errorFromResponse(response);
     }
   }
 
@@ -74,7 +86,7 @@ class ApiService {
       final data = jsonDecode(response.body);
       return parser(data);
     } else {
-      throw Exception('Request failed: ${response.statusCode}');
+      throw _errorFromResponse(response);
     }
   }
 
@@ -88,7 +100,7 @@ class ApiService {
       final data = jsonDecode(body);
       return parser(data);
     } else {
-      throw Exception('Request failed: ${response.statusCode}');
+      throw _errorFromResponse(response);
     }
   }
 }
