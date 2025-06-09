@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
@@ -86,9 +87,9 @@ class _LoginPageState extends State<LoginPage> {
       if (!mounted) return;
       final message =
           e is Exception ? e.toString().replaceFirst('Exception: ', '') : '$e';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -179,6 +180,8 @@ class _LoginPageState extends State<LoginPage> {
                     prefixIcon: const Icon(Icons.email),
                   ),
                   keyboardType: TextInputType.emailAddress,
+                  autofillHints: const [AutofillHints.username],
+                  textInputAction: TextInputAction.next,
                   validator: _validateEmail,
                 ),
                 const SizedBox(height: 16),
@@ -202,6 +205,9 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   obscureText: !_passwordVisible,
+                  autofillHints: const [AutofillHints.password],
+                  textInputAction: TextInputAction.done,
+                  onFieldSubmitted: (_) => _handleLogin(),
                   validator: _validatePassword,
                 ),
                 const SizedBox(height: 24),
