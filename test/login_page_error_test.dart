@@ -38,7 +38,8 @@ void main() {
     );
 
     await tester.enterText(find.byType(TextFormField).at(0), 'a@b.com');
-    await tester.enterText(find.byType(TextFormField).at(1), 'wrong');
+    // Password must satisfy minimum length validation.
+    await tester.enterText(find.byType(TextFormField).at(1), 'wrongpwd');
     await tester.tap(find.widgetWithText(ElevatedButton, 'Login'));
     await tester.pumpAndSettle();
 
