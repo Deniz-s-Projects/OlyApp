@@ -12,6 +12,14 @@ const ItemSchema = new mongoose.Schema({
     enum: ['furniture', 'books', 'electronics', 'other', 'appliances', 'clothing'],
     default: 'other'
   },
+  notice: {
+    _id: false,
+    text: String,
+    severity: {
+      type: String,
+      enum: ['info', 'warning', 'critical']
+    }
+  },
   createdAt: { type: Date, default: Date.now },
   requested: { type: Boolean, default: false },
   completed: { type: Boolean, default: false },

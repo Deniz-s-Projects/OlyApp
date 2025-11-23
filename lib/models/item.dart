@@ -1,4 +1,5 @@
 part of 'models.dart';
+
 @HiveType(typeId: 4)
 enum ItemCategory {
   @HiveField(0)
@@ -22,17 +23,40 @@ class ItemRating {
   ItemRating({required this.rating, this.review});
 
   factory ItemRating.fromMap(Map<String, dynamic> map) => ItemRating(
-        rating: (map['rating'] as num).toInt(),
-        review: map['review'] as String?,
-      );
+    rating: (map['rating'] as num).toInt(),
+    review: map['review'] as String?,
+  );
 
   Map<String, dynamic> toMap() => {
-        'rating': rating,
-        if (review != null) 'review': review,
-      };
+    'rating': rating,
+    if (review != null) 'review': review,
+  };
 
   factory ItemRating.fromJson(Map<String, dynamic> json) =>
       ItemRating.fromMap(json);
+  Map<String, dynamic> toJson() => toMap();
+}
+
+enum ItemNoticeSeverity { info, warning, critical }
+
+class ItemNotice {
+  final String text;
+  final ItemNoticeSeverity severity;
+
+  const ItemNotice({required this.text, required this.severity});
+
+  factory ItemNotice.fromMap(Map<String, dynamic> map) => ItemNotice(
+    text: map['text'] as String? ?? '',
+    severity: ItemNoticeSeverity.values.firstWhere(
+      (e) => e.name == map['severity'],
+      orElse: () => ItemNoticeSeverity.info,
+    ),
+  );
+
+  Map<String, dynamic> toMap() => {'text': text, 'severity': severity.name};
+
+  factory ItemNotice.fromJson(Map<String, dynamic> json) =>
+      ItemNotice.fromMap(json);
   Map<String, dynamic> toJson() => toMap();
 }
 
@@ -56,6 +80,7 @@ class Item {
   final ItemCategory category;
   @HiveField(8)
   final DateTime createdAt;
+  final ItemNotice? notice;
   final bool completed;
   final List<ItemRating> ratings;
 
@@ -69,6 +94,7 @@ class Item {
     this.isFree = false,
     this.category = ItemCategory.other,
     DateTime? createdAt,
+    this.notice,
     this.completed = false,
     this.ratings = const [],
   }) : createdAt = createdAt ?? DateTime.now();
@@ -80,17 +106,18 @@ class Item {
     description: map['description'] as String?,
     imageUrl: map['imageUrl'] as String?,
     price: map['price'] != null ? (map['price'] as num).toDouble() : null,
-    isFree:
-        map['isFree'] is bool
-            ? map['isFree'] as bool
-            : (map['isFree'] as int) == 1,
-    category:
-        map['category'] is int
-            ? ItemCategory.values[map['category'] as int]
-            : ItemCategory.values.firstWhere(
-              (e) => e.name == map['category'] as String,
-            ),
+    isFree: map['isFree'] is bool
+        ? map['isFree'] as bool
+        : (map['isFree'] as int) == 1,
+    category: map['category'] is int
+        ? ItemCategory.values[map['category'] as int]
+        : ItemCategory.values.firstWhere(
+            (e) => e.name == map['category'] as String,
+          ),
     createdAt: _parseDate(map['createdAt']),
+    notice: map['notice'] is Map<String, dynamic>
+        ? ItemNotice.fromMap(map['notice'] as Map<String, dynamic>)
+        : null,
     completed: map['completed'] as bool? ?? false,
     ratings: (map['ratings'] as List<dynamic>? ?? const [])
         .map((e) => ItemRating.fromMap(Map<String, dynamic>.from(e)))
@@ -107,6 +134,7 @@ class Item {
     'isFree': isFree,
     'category': category.name,
     'createdAt': createdAt.toIso8601String(),
+    if (notice != null) 'notice': notice!.toMap(),
     'completed': completed,
     'ratings': ratings.map((e) => e.toMap()).toList(),
   };

@@ -24,8 +24,8 @@ class ItemService extends ApiService {
       await box?.put('items', items.map((e) => e.toJson()).toList());
       return items;
     } catch (e) {
-      final cached = box?.get('items', defaultValue: const <dynamic>[])
-          as List?;
+      final cached =
+          box?.get('items', defaultValue: const <dynamic>[]) as List?;
       if (cached == null || cached.isEmpty) {
         rethrow;
       }
@@ -38,12 +38,9 @@ class ItemService extends ApiService {
   /// Creates a new item listing.
   Future<Item> createItem(Item item, {File? imageFile}) async {
     if (imageFile != null) {
-      final request =
-          http.MultipartRequest('POST', buildUri('/items'))
-            ..fields.addAll(item.toJson().map((k, v) => MapEntry(k, '$v')))
-            ..files.add(
-              await http.MultipartFile.fromPath('image', imageFile.path),
-            );
+      final request = http.MultipartRequest('POST', buildUri('/items'))
+        ..fields.addAll(item.toJson().map((k, v) => MapEntry(k, '$v')))
+        ..files.add(await http.MultipartFile.fromPath('image', imageFile.path));
       final streamed = await client.send(request);
       final response = await http.Response.fromStream(streamed);
       if (response.statusCode == 201 || response.statusCode == 200) {
@@ -95,6 +92,28 @@ class ItemService extends ApiService {
     );
   }
 
+  /// Sets or updates an admin notice for an item.
+  Future<Item> updateNotice(
+    int itemId, {
+    required String text,
+    required ItemNoticeSeverity severity,
+  }) async {
+    return post(
+      '/items/$itemId/notice',
+      {'text': text, 'severity': severity.name},
+      (json) => Item.fromJson(json['data'] as Map<String, dynamic>),
+    );
+  }
+
+  /// Removes the admin notice for an item.
+  Future<Item> clearNotice(int itemId) async {
+    return post(
+      '/items/$itemId/notice',
+      {'text': null},
+      (json) => Item.fromJson(json['data'] as Map<String, dynamic>),
+    );
+  }
+
   /// Deletes the item with the given [id].
   Future<void> deleteItem(int id) async {
     await post('/items/$id/delete', {}, (_) => null);
@@ -102,8 +121,10 @@ class ItemService extends ApiService {
 
   /// Submits a rating for the item with [itemId].
   Future<void> submitRating(int itemId, int rating, {String? review}) async {
-    await post('/items/$itemId/ratings',
-        {'rating': rating, 'review': review}, (_) => null);
+    await post('/items/$itemId/ratings', {
+      'rating': rating,
+      'review': review,
+    }, (_) => null);
   }
 
   /// Fetches ratings for the item with [itemId].
