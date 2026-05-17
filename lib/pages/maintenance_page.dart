@@ -1,54 +1,45 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import '../models/models.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import '../services/maintenance_service.dart';
-import 'maintenance_chat_page.dart';
-import '../utils/user_helpers.dart';
 
-class MaintenancePage extends StatefulWidget {
+import '../models/models.dart';
+import '../providers/maintenance_providers.dart';
+import '../services/maintenance_service.dart';
+import '../utils/user_helpers.dart';
+import 'maintenance_chat_page.dart';
+
+class MaintenancePage extends StatelessWidget {
+  /// Optional service override. Mainly used by widget tests; production
+  /// callers rely on the top-level [ProviderScope] in main.dart.
   final MaintenanceService? service;
   const MaintenancePage({super.key, this.service});
 
   @override
-  State<MaintenancePage> createState() => _MaintenancePageState();
+  Widget build(BuildContext context) {
+    if (service == null) {
+      return const _MaintenanceBody();
+    }
+    return ProviderScope(
+      overrides: [maintenanceServiceProvider.overrideWithValue(service!)],
+      child: const _MaintenanceBody(),
+    );
+  }
 }
 
-class _MaintenancePageState extends State<MaintenancePage> {
-  late final MaintenanceService _service;
+class _MaintenanceBody extends ConsumerStatefulWidget {
+  const _MaintenanceBody();
+
+  @override
+  ConsumerState<_MaintenanceBody> createState() => _MaintenanceBodyState();
+}
+
+class _MaintenanceBodyState extends ConsumerState<_MaintenanceBody> {
   int _selectedTab = 0;
   final _subjectController = TextEditingController();
   final _descriptionController = TextEditingController();
   XFile? _imageFile;
-
-  List<MaintenanceRequest> _tickets = [];
-  bool _loading = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _service = widget.service ?? MaintenanceService();
-    _loadTickets();
-  }
-
-  Future<void> _loadTickets() async {
-    setState(() => _loading = true);
-    try {
-      final tickets = await _service.fetchRequests();
-      if (!mounted) return;
-      setState(() {
-        _tickets = tickets;
-        _loading = false;
-      });
-    } catch (_) {
-      if (!mounted) return;
-      setState(() => _loading = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Failed to load tickets')));
-    }
-  }
 
   Future<void> _pickImage(ImageSource source) async {
     final picker = ImagePicker();
@@ -67,6 +58,18 @@ class _MaintenancePageState extends State<MaintenancePage> {
 
   @override
   Widget build(BuildContext context) {
+    // Surface load errors via a snackbar, matching the prior behavior.
+    ref.listen<AsyncValue<List<MaintenanceRequest>>>(
+      maintenanceRequestsProvider,
+      (previous, next) {
+        if (next.hasError && !next.isLoading) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to load tickets')),
+          );
+        }
+      },
+    );
+
     return Scaffold(
       body: Column(
         children: [
@@ -138,7 +141,8 @@ class _MaintenancePageState extends State<MaintenancePage> {
               final subject = _subjectController.text.trim();
               final desc = _descriptionController.text.trim();
               if (subject.isEmpty || desc.isEmpty) return;
-              await _service.createRequest(
+              final service = ref.read(maintenanceServiceProvider);
+              await service.createRequest(
                 MaintenanceRequest(
                   userId: currentUserId(),
                   subject: subject,
@@ -153,7 +157,7 @@ class _MaintenancePageState extends State<MaintenancePage> {
               _subjectController.clear();
               _descriptionController.clear();
               setState(() => _imageFile = null);
-              _loadTickets();
+              ref.invalidate(maintenanceRequestsProvider);
             },
             child: const Text('Send Request'),
           ),
@@ -163,17 +167,19 @@ class _MaintenancePageState extends State<MaintenancePage> {
   }
 
   Widget _buildConversations() {
-    if (_loading) {
+    final ticketsAsync = ref.watch(maintenanceRequestsProvider);
+    if (ticketsAsync.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
-    if (_tickets.isEmpty) {
+    final tickets = ticketsAsync.valueOrNull ?? const <MaintenanceRequest>[];
+    if (tickets.isEmpty) {
       return const Center(child: Text('No conversations yet.'));
     }
     return ListView.separated(
-      itemCount: _tickets.length,
+      itemCount: tickets.length,
       separatorBuilder: (_, __) => const Divider(height: 1),
       itemBuilder: (context, index) {
-        final ticket = _tickets[index];
+        final ticket = tickets[index];
         return ListTile(
           title: Text(ticket.subject),
           subtitle: Text('Status: ${ticket.status}'),
