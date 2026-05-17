@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'calendar_page.dart';
 import 'item_exchange_page.dart';
 import 'maintenance_page.dart';
@@ -26,9 +27,9 @@ import 'documents_page.dart';
 import 'gallery_page.dart';
 import 'weather_page.dart';
 import '../models/models.dart';
-import '../services/event_service.dart';
+import '../providers/calendar_providers.dart';
 
-class MainPage extends StatefulWidget {
+class MainPage extends ConsumerStatefulWidget {
   final CalendarPage? calendarPage;
   final BookingPage? bookingPage;
   final MaintenancePage? maintenancePage;
@@ -46,10 +47,10 @@ class MainPage extends StatefulWidget {
   });
 
   @override
-  State<MainPage> createState() => _MainPageState();
+  ConsumerState<MainPage> createState() => _MainPageState();
 }
 
-class _MainPageState extends State<MainPage> {
+class _MainPageState extends ConsumerState<MainPage> {
   int _currentIndex = 0;
 
   static const List<String> _titles = [
@@ -203,7 +204,7 @@ class _MainPageState extends State<MainPage> {
             until,
             category,
           ) async {
-            final service = EventService();
+            final service = ref.read(eventServiceProvider);
             await service.createEvent(
               CalendarEvent(
                 title: title,
