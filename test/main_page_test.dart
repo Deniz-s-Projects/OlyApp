@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:oly_app/pages/calendar_page.dart';
 import 'package:oly_app/pages/main_page.dart';
@@ -145,10 +146,12 @@ void main() {
   testWidgets('FAB on exchange tab opens PostItemPage', (tester) async {
     final fakeItemService = FakeItemService();
     await tester.pumpWidget(
-      MaterialApp(
-        home: MainPage(
-          itemExchangePage: ItemExchangePage(service: fakeItemService),
-          onLogout: null,
+      ProviderScope(
+        child: MaterialApp(
+          home: MainPage(
+            itemExchangePage: ItemExchangePage(service: fakeItemService),
+            onLogout: null,
+          ),
         ),
       ),
     );

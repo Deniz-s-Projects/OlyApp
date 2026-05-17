@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
 import 'package:oly_app/pages/post_item_page.dart';
@@ -41,7 +42,9 @@ void main() {
     TestWidgetsFlutterBinding.ensureInitialized();
     ImagePickerPlatform.instance = FakeImagePicker();
 
-    await tester.pumpWidget(const MaterialApp(home: PostItemPage()));
+    await tester.pumpWidget(
+      const ProviderScope(child: MaterialApp(home: PostItemPage())),
+    );
     expect(find.byType(Image), findsNothing);
 
     await tester.tap(find.text('Gallery'));
