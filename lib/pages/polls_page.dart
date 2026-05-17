@@ -1,46 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../models/models.dart';
+import '../providers/polls_providers.dart';
 import '../services/poll_service.dart';
 
-class PollsPage extends StatefulWidget {
+class PollsPage extends StatelessWidget {
   final PollService? service;
   const PollsPage({super.key, this.service});
 
   @override
-  State<PollsPage> createState() => _PollsPageState();
+  Widget build(BuildContext context) {
+    if (service == null) {
+      return const _PollsBody();
+    }
+    return ProviderScope(
+      overrides: [pollServiceProvider.overrideWithValue(service!)],
+      child: const _PollsBody(),
+    );
+  }
 }
 
-class _PollsPageState extends State<PollsPage> {
-  late final PollService _service;
-  List<Poll> _polls = [];
+class _PollsBody extends ConsumerWidget {
+  const _PollsBody();
 
-  @override
-  void initState() {
-    super.initState();
-    _service = widget.service ?? PollService();
-    _load();
-  }
-
-  Future<void> _load() async {
-    try {
-      final polls = await _service.fetchPolls();
-      if (!mounted) return;
-      setState(() => _polls = polls);
-    } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to load polls')),
-      );
-    }
-  }
-
-  Future<void> _vote(Poll poll, int index) async {
+  Future<void> _vote(WidgetRef ref, BuildContext context, Poll poll, int index)
+      async {
     if (poll.id == null) return;
     try {
-      await _service.vote(poll.id!, index);
-      await _load();
+      await ref.read(pollServiceProvider).vote(poll.id!, index);
+      ref.invalidate(pollsProvider);
     } catch (_) {
-      if (!mounted) return;
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Failed to submit vote')),
       );
@@ -48,13 +39,21 @@ class _PollsPageState extends State<PollsPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen<AsyncValue<List<Poll>>>(pollsProvider, (prev, next) {
+      if (next.hasError && !next.isLoading) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to load polls')),
+        );
+      }
+    });
+    final polls = ref.watch(pollsProvider).valueOrNull ?? const <Poll>[];
     return RefreshIndicator(
-      onRefresh: _load,
+      onRefresh: () async => ref.invalidate(pollsProvider),
       child: ListView.builder(
-        itemCount: _polls.length,
+        itemCount: polls.length,
         itemBuilder: (context, index) {
-          final poll = _polls[index];
+          final poll = polls[index];
           return Card(
             margin: const EdgeInsets.all(12),
             child: Padding(
@@ -73,7 +72,7 @@ class _PollsPageState extends State<PollsPage> {
                         '${poll.options[i]} (${poll.counts.length > i ? poll.counts[i] : 0})',
                       ),
                       trailing: ElevatedButton(
-                        onPressed: () => _vote(poll, i),
+                        onPressed: () => _vote(ref, context, poll, i),
                         child: const Text('Vote'),
                       ),
                     ),
