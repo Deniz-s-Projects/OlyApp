@@ -1,40 +1,49 @@
-import 'package:flutter/material.dart';
-import '../models/models.dart';
-import '../services/item_service.dart';
-import '../utils/user_helpers.dart';
-import '../services/chat_service.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 import 'dart:convert';
 
-class ItemChatPage extends StatefulWidget {
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
+
+import '../models/models.dart';
+import '../providers/chat_providers.dart';
+import '../providers/item_providers.dart';
+import '../services/item_service.dart';
+import '../utils/user_helpers.dart';
+
+class ItemChatPage extends ConsumerStatefulWidget {
   final Item item;
   final ItemService? service;
   const ItemChatPage({super.key, required this.item, this.service});
 
   @override
-  State<ItemChatPage> createState() => _ItemChatPageState();
+  ConsumerState<ItemChatPage> createState() => _ItemChatPageState();
 }
 
-class _ItemChatPageState extends State<ItemChatPage> {
-  late final ItemService _service;
+class _ItemChatPageState extends ConsumerState<ItemChatPage> {
   final TextEditingController _messageCtrl = TextEditingController();
-
   List<Message> _messages = [];
-  final ChatService _chat = ChatService();
   WebSocketChannel? _channel;
   bool _online = false;
+
+  ItemService _resolveService() {
+    final ItemService service =
+        widget.service ?? ref.read(itemServiceProvider);
+    return service;
+  }
 
   @override
   void initState() {
     super.initState();
-    _service = widget.service ?? ItemService();
-    _loadMessages();
-    _connectSocket();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadMessages();
+      _connectSocket();
+    });
   }
 
   void _connectSocket() {
     if (widget.item.id == null) return;
-    _channel = _chat.connect(widget.item.id!.toString());
+    _channel =
+        ref.read(chatServiceProvider).connect(widget.item.id!.toString());
     _channel!.stream.listen((event) {
       final data = jsonDecode(event as String) as Map<String, dynamic>;
       if (data['type'] == 'message') {
@@ -54,7 +63,7 @@ class _ItemChatPageState extends State<ItemChatPage> {
   Future<void> _loadMessages() async {
     if (widget.item.id == null) return;
     try {
-      final msgs = await _service.fetchMessages(widget.item.id!);
+      final msgs = await _resolveService().fetchMessages(widget.item.id!);
       if (!mounted) return;
       setState(() => _messages = msgs);
     } catch (_) {
@@ -71,7 +80,7 @@ class _ItemChatPageState extends State<ItemChatPage> {
       content: text,
     );
     try {
-      await _service.sendMessage(message);
+      await _resolveService().sendMessage(message);
       _messageCtrl.clear();
     } catch (_) {
       // ignore errors in example

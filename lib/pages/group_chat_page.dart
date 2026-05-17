@@ -1,21 +1,22 @@
-import 'package:flutter/material.dart';
-
-import '../models/models.dart';
-import '../services/chat_service.dart';
-import '../utils/user_helpers.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 import 'dart:convert';
 
-class GroupChatPage extends StatefulWidget {
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
+
+import '../models/models.dart';
+import '../providers/chat_providers.dart';
+import '../utils/user_helpers.dart';
+
+class GroupChatPage extends ConsumerStatefulWidget {
   final ChatChannel channel;
   const GroupChatPage({super.key, required this.channel});
 
   @override
-  State<GroupChatPage> createState() => _GroupChatPageState();
+  ConsumerState<GroupChatPage> createState() => _GroupChatPageState();
 }
 
-class _GroupChatPageState extends State<GroupChatPage> {
-  final ChatService _service = ChatService();
+class _GroupChatPageState extends ConsumerState<GroupChatPage> {
   final TextEditingController _messageCtrl = TextEditingController();
   List<Message> _messages = [];
   WebSocketChannel? _channel;
@@ -24,13 +25,15 @@ class _GroupChatPageState extends State<GroupChatPage> {
   @override
   void initState() {
     super.initState();
-    _loadMessages();
-    _connectSocket();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadMessages();
+      _connectSocket();
+    });
   }
 
   void _connectSocket() {
     if (widget.channel.id == null) return;
-    _channel = _service.connect(widget.channel.id!);
+    _channel = ref.read(chatServiceProvider).connect(widget.channel.id!);
     _channel!.stream.listen((event) {
       final data = jsonDecode(event as String) as Map<String, dynamic>;
       if (data['type'] == 'message') {
@@ -55,7 +58,8 @@ class _GroupChatPageState extends State<GroupChatPage> {
 
   Future<void> _loadMessages() async {
     if (widget.channel.id == null) return;
-    final msgs = await _service.fetchMessages(widget.channel.id!);
+    final service = ref.read(chatServiceProvider);
+    final msgs = await service.fetchMessages(widget.channel.id!);
     if (!mounted) return;
     setState(() => _messages = msgs);
   }
@@ -63,7 +67,7 @@ class _GroupChatPageState extends State<GroupChatPage> {
   Future<void> _sendMessage() async {
     final text = _messageCtrl.text.trim();
     if (text.isEmpty || widget.channel.id == null) return;
-    await _service.sendMessage(widget.channel.id!, text);
+    await ref.read(chatServiceProvider).sendMessage(widget.channel.id!, text);
     _messageCtrl.clear();
   }
 
