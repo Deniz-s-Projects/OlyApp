@@ -1,43 +1,51 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+
 import '../models/models.dart';
+import '../providers/item_providers.dart';
 import '../services/item_service.dart';
 import 'item_chat_page.dart';
 import 'post_item_page.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 
-class ItemDetailPage extends StatefulWidget {
+class ItemDetailPage extends ConsumerStatefulWidget {
   final Item item;
   final ItemService? service;
 
   const ItemDetailPage({super.key, required this.item, this.service});
 
   @override
-  State<ItemDetailPage> createState() => _ItemDetailPageState();
+  ConsumerState<ItemDetailPage> createState() => _ItemDetailPageState();
 }
 
-class _ItemDetailPageState extends State<ItemDetailPage> {
-  late Item _item;
-  late ItemService _service;
+class _ItemDetailPageState extends ConsumerState<ItemDetailPage> {
+  late final Item _item = widget.item;
   final _ratingCtrl = TextEditingController();
   final _reviewCtrl = TextEditingController();
 
-  @override
-  void initState() {
-    super.initState();
-    _item = widget.item;
-    _service = widget.service ?? ItemService();
+  ItemService _resolveService() {
+    final ItemService service =
+        widget.service ?? ref.read(itemServiceProvider);
+    return service;
   }
 
   Future<void> _requestItem(BuildContext context) async {
     if (_item.id == null) return;
-    final svc = _service;
     final messenger = ScaffoldMessenger.of(context);
     try {
-      await svc.requestItem(_item.id!);
+      await _resolveService().requestItem(_item.id!);
       messenger.showSnackBar(const SnackBar(content: Text('Request sent!')));
+      if (mounted) ref.invalidate(itemsProvider);
     } catch (e) {
       messenger.showSnackBar(SnackBar(content: Text('Failed: $e')));
     }
+  }
+
+  @override
+  void dispose() {
+    _ratingCtrl.dispose();
+    _reviewCtrl.dispose();
+    super.dispose();
   }
 
   @override
@@ -48,7 +56,7 @@ class _ItemDetailPageState extends State<ItemDetailPage> {
       user = Hive.box<User>('userBox').get('currentUser');
     }
     final isOwner = user != null && user.id == _item.ownerId;
-    final favBox = Hive.box('favoritesBox');
+    final favorites = ref.watch(favoritesProvider);
     return Scaffold(
       appBar: AppBar(
         title: Text(_item.title),
@@ -57,27 +65,14 @@ class _ItemDetailPageState extends State<ItemDetailPage> {
         elevation: 1,
         actions: [
           if (_item.id != null)
-            ValueListenableBuilder(
-              valueListenable: favBox.listenable(),
-              builder: (context, Box box, _) {
-                final ids =
-                    (box.get('ids', defaultValue: const <int>[]) as List)
-                        .cast<int>();
-                final isFav = ids.contains(_item.id);
-                return IconButton(
-                  key: const Key('toggleFavoriteDetail'),
-                  icon: Icon(isFav ? Icons.star : Icons.star_border),
-                  onPressed: () {
-                    final set = ids.toSet();
-                    if (isFav) {
-                      set.remove(_item.id);
-                    } else {
-                      set.add(_item.id as int);
-                    }
-                    box.put('ids', set.toList());
-                  },
-                );
-              },
+            IconButton(
+              key: const Key('toggleFavoriteDetail'),
+              icon: Icon(
+                favorites.contains(_item.id) ? Icons.star : Icons.star_border,
+              ),
+              onPressed: () => ref
+                  .read(favoritesProvider.notifier)
+                  .toggle(_item.id as int),
             ),
           if (isOwner) ...[
             IconButton(
@@ -87,8 +82,10 @@ class _ItemDetailPageState extends State<ItemDetailPage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder:
-                        (_) => PostItemPage(item: _item, service: _service),
+                    builder: (_) => PostItemPage(
+                      item: _item,
+                      service: _resolveService(),
+                    ),
                   ),
                 );
               },
@@ -100,27 +97,28 @@ class _ItemDetailPageState extends State<ItemDetailPage> {
                 if (_item.id == null) return;
                 final confirm = await showDialog<bool>(
                   context: context,
-                  builder:
-                      (ctx) => AlertDialog(
-                        title: const Text('Delete Item'),
-                        content: const Text(
-                          'Are you sure you want to delete this item?',
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx, false),
-                            child: const Text('Cancel'),
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx, true),
-                            child: const Text('Delete'),
-                          ),
-                        ],
+                  builder: (ctx) => AlertDialog(
+                    title: const Text('Delete Item'),
+                    content: const Text(
+                      'Are you sure you want to delete this item?',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx, false),
+                        child: const Text('Cancel'),
                       ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx, true),
+                        child: const Text('Delete'),
+                      ),
+                    ],
+                  ),
                 );
                 if (confirm != true) return;
-                final svc = _service;
-                await svc.deleteItem(_item.id!);
+                await _resolveService().deleteItem(_item.id!);
+                if (mounted) {
+                  ref.invalidate(itemsProvider);
+                }
                 if (context.mounted) Navigator.pop(context, true);
               },
             ),
@@ -159,14 +157,14 @@ class _ItemDetailPageState extends State<ItemDetailPage> {
                     ),
                   )
                 : Container(
-                  height: 200,
-                  color: colorScheme.surfaceContainerHighest,
-                  child: Icon(
-                    Icons.image_not_supported,
-                    size: 64,
-                    color: colorScheme.onSurfaceVariant,
+                    height: 200,
+                    color: colorScheme.surfaceContainerHighest,
+                    child: Icon(
+                      Icons.image_not_supported,
+                      size: 64,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
                   ),
-                ),
 
             // Details
             Padding(
@@ -223,11 +221,10 @@ class _ItemDetailPageState extends State<ItemDetailPage> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder:
-                                    (_) => ItemChatPage(
-                                      item: _item,
-                                      service: _service,
-                                    ),
+                                builder: (_) => ItemChatPage(
+                                  item: _item,
+                                  service: _resolveService(),
+                                ),
                               ),
                             );
                           },
@@ -269,12 +266,13 @@ class _ItemDetailPageState extends State<ItemDetailPage> {
                       onPressed: () async {
                         if (_item.id == null) return;
                         final rating = int.tryParse(_ratingCtrl.text) ?? 0;
-                        await _service.submitRating(
+                        await _resolveService().submitRating(
                           _item.id!,
                           rating,
                           review: _reviewCtrl.text,
                         );
                         if (context.mounted) {
+                          ref.invalidate(itemsProvider);
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text('Rating submitted')),
                           );
