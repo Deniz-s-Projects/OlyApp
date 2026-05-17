@@ -1,22 +1,25 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+
 import '../models/models.dart';
+import '../providers/item_providers.dart';
 import '../services/item_service.dart';
 import '../utils/user_helpers.dart';
 
-class PostItemPage extends StatefulWidget {
+class PostItemPage extends ConsumerStatefulWidget {
   final Item? item;
   final ItemService? service;
 
   const PostItemPage({super.key, this.item, this.service});
 
   @override
-  State<PostItemPage> createState() => _PostItemPageState();
+  ConsumerState<PostItemPage> createState() => _PostItemPageState();
 }
 
-class _PostItemPageState extends State<PostItemPage> {
+class _PostItemPageState extends ConsumerState<PostItemPage> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _titleCtrl;
   late final TextEditingController _descCtrl;
@@ -24,7 +27,6 @@ class _PostItemPageState extends State<PostItemPage> {
   late final TextEditingController _imageCtrl;
   XFile? _imageFile;
   late ItemCategory _category;
-  late final ItemService _service;
   bool _submitting = false;
 
   bool get _editing => widget.item != null;
@@ -32,7 +34,6 @@ class _PostItemPageState extends State<PostItemPage> {
   @override
   void initState() {
     super.initState();
-    _service = widget.service ?? ItemService();
     final item = widget.item;
     _titleCtrl = TextEditingController(text: item?.title ?? '');
     _descCtrl = TextEditingController(text: item?.description ?? '');
@@ -80,15 +81,18 @@ class _PostItemPageState extends State<PostItemPage> {
         isFree: price == null || price == 0,
         category: _category,
       );
+      final ItemService service =
+          widget.service ?? ref.read(itemServiceProvider);
       if (editing) {
-        await _service.updateItem(item);
+        await service.updateItem(item);
       } else {
-        await _service.createItem(
+        await service.createItem(
           item,
           imageFile: _imageFile != null ? File(_imageFile!.path) : null,
         );
       }
       if (mounted) {
+        ref.invalidate(itemsProvider);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(editing ? 'Item updated!' : 'Item posted!')),
         );

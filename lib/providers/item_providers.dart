@@ -11,10 +11,18 @@ final itemServiceProvider = Provider<ItemService>((ref) => ItemService());
 
 /// Loads the catalogue of items. Refresh by invalidating the provider
 /// (e.g. `ref.invalidate(itemsProvider)`).
-final itemsProvider = FutureProvider<List<Item>>((ref) async {
-  final service = ref.watch(itemServiceProvider);
-  return service.fetchItems();
-});
+///
+/// `dependencies: [itemServiceProvider]` is required because some callers
+/// (e.g. `ItemExchangePage(service: …)`) override `itemServiceProvider` in
+/// a nested `ProviderScope`. Without declaring the dependency Riverpod
+/// would re-use the outer scope's instance and ignore the override.
+final itemsProvider = FutureProvider<List<Item>>(
+  (ref) async {
+    final service = ref.watch(itemServiceProvider);
+    return service.fetchItems();
+  },
+  dependencies: [itemServiceProvider],
+);
 
 /// Filter and sort settings for the item exchange page.
 class ItemFilters {
@@ -97,34 +105,46 @@ final favoritesProvider =
     NotifierProvider<FavoritesNotifier, Set<int>>(FavoritesNotifier.new);
 
 /// The item list after the user's current filters, favorites, and sort.
-final filteredItemsProvider = Provider<List<Item>>((ref) {
-  final items = ref.watch(itemsProvider).valueOrNull ?? const <Item>[];
-  final filters = ref.watch(itemFiltersProvider);
-  final favorites = ref.watch(favoritesProvider);
+///
+/// Inherits the scoping of [itemsProvider] so that nested
+/// `itemServiceProvider` overrides flow through correctly.
+final filteredItemsProvider = Provider<List<Item>>(
+  (ref) {
+    final items = ref.watch(itemsProvider).valueOrNull ?? const <Item>[];
+    final filters = ref.watch(itemFiltersProvider);
+    final favorites = ref.watch(favoritesProvider);
 
-  var results = filterItems(items, filters.search, filters.selectedCategory);
-  if (filters.minPrice != null) {
-    results = results.where((item) => (item.price ?? 0) >= filters.minPrice!).toList();
-  }
-  if (filters.maxPrice != null) {
-    results = results.where((item) => (item.price ?? 0) <= filters.maxPrice!).toList();
-  }
-  if (filters.onlyFavorites) {
-    results = results
-        .where((item) => item.id != null && favorites.contains(item.id))
-        .toList();
-  }
-  switch (filters.sortOrder) {
-    case 'priceAsc':
-      results.sort((a, b) =>
-          (a.price ?? double.infinity).compareTo(b.price ?? double.infinity));
-      break;
-    case 'priceDesc':
-      results.sort((a, b) =>
-          (b.price ?? -double.infinity).compareTo(a.price ?? -double.infinity));
-      break;
-    default:
-      results.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-  }
-  return results;
-});
+    var results =
+        filterItems(items, filters.search, filters.selectedCategory);
+    if (filters.minPrice != null) {
+      results = results
+          .where((item) => (item.price ?? 0) >= filters.minPrice!)
+          .toList();
+    }
+    if (filters.maxPrice != null) {
+      results = results
+          .where((item) => (item.price ?? 0) <= filters.maxPrice!)
+          .toList();
+    }
+    if (filters.onlyFavorites) {
+      results = results
+          .where((item) => item.id != null && favorites.contains(item.id))
+          .toList();
+    }
+    switch (filters.sortOrder) {
+      case 'priceAsc':
+        results.sort((a, b) =>
+            (a.price ?? double.infinity).compareTo(b.price ?? double.infinity));
+        break;
+      case 'priceDesc':
+        results.sort((a, b) =>
+            (b.price ?? -double.infinity)
+                .compareTo(a.price ?? -double.infinity));
+        break;
+      default:
+        results.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    }
+    return results;
+  },
+  dependencies: [itemsProvider],
+);
