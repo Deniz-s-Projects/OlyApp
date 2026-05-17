@@ -1,51 +1,42 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/models.dart';
+import '../providers/tutoring_providers.dart';
 import '../services/tutoring_service.dart';
 import 'post_tutoring_page.dart';
 
-class TutoringPage extends StatefulWidget {
+class TutoringPage extends StatelessWidget {
   final TutoringService? service;
   const TutoringPage({super.key, this.service});
 
   @override
-  State<TutoringPage> createState() => _TutoringPageState();
+  Widget build(BuildContext context) {
+    if (service == null) {
+      return const _TutoringBody();
+    }
+    return ProviderScope(
+      overrides: [tutoringServiceProvider.overrideWithValue(service!)],
+      child: const _TutoringBody(),
+    );
+  }
 }
 
-class _TutoringPageState extends State<TutoringPage> {
-  late final TutoringService _service;
-  List<TutoringPost> _posts = [];
+class _TutoringBody extends ConsumerWidget {
+  const _TutoringBody();
 
   @override
-  void initState() {
-    super.initState();
-    _service = widget.service ?? TutoringService();
-    _load();
-  }
-
-  Future<void> _load() async {
-    final posts = await _service.fetchPosts();
-    if (mounted) setState(() => _posts = posts);
-  }
-
-  Future<void> _openForm() async {
-    final created = await Navigator.push<bool>(
-      context,
-      MaterialPageRoute(builder: (_) => PostTutoringPage(service: _service)),
-    );
-    if (created == true) _load();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final posts =
+        ref.watch(tutoringPostsProvider).valueOrNull ?? const <TutoringPost>[];
     return Scaffold(
       appBar: AppBar(title: const Text('Tutoring')),
       body: RefreshIndicator(
-        onRefresh: _load,
+        onRefresh: () async => ref.invalidate(tutoringPostsProvider),
         child: ListView.builder(
-          itemCount: _posts.length,
+          itemCount: posts.length,
           itemBuilder: (_, index) {
-            final post = _posts[index];
+            final post = posts[index];
             return ListTile(
               title: Text(post.subject),
               subtitle: Text(post.description),
@@ -55,7 +46,10 @@ class _TutoringPageState extends State<TutoringPage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _openForm,
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const PostTutoringPage()),
+        ),
         child: const Icon(Icons.add),
       ),
     );
