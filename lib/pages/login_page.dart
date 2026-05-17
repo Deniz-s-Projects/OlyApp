@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import '../models/models.dart';
-import '../utils/validators.dart';
+import '../providers/auth_providers.dart';
 import '../services/auth_service.dart';
+import '../utils/validators.dart';
 
 /// A simple login page with email/password and placeholder Google/Apple login buttons.
-class LoginPage extends StatefulWidget {
+class LoginPage extends ConsumerStatefulWidget {
   final VoidCallback onLoginSuccess;
   final AuthService? service;
   final GoogleSignIn? googleSignIn;
@@ -23,10 +25,10 @@ class LoginPage extends StatefulWidget {
   });
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  ConsumerState<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends ConsumerState<LoginPage> {
   static const bool useMock = false; // Toggle between mock and real API
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
@@ -54,7 +56,7 @@ class _LoginPageState extends State<LoginPage> {
       };
     }
 
-    final service = widget.service ?? AuthService();
+    final AuthService service = widget.service ?? ref.read(authServiceProvider);
     return service.login(email, password);
   }
 
