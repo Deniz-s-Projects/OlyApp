@@ -45,7 +45,7 @@ dependencies:
   firebase_core: ^2.27.0
   firebase_messaging: ^14.7.10
 
-  http: any
+  http: ^1.4.0
   google_sign_in: ^6.3.0
   sign_in_with_apple: ^7.0.1
   image_picker: ^1.1.2
@@ -59,7 +59,7 @@ dependencies:
   fl_chart: ^1.0.0
   google_fonts: ^6.1.0
 dev_dependencies:
-  test: any
+  test: ^1.25.0
   flutter_test:
     sdk: flutter
   google_sign_in_mocks: ^0.3.0
