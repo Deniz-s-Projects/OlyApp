@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 const apiRouter = require('../api');
 const User = require('../models/User');
 
-const SECRET = process.env.JWT_SECRET || 'secretkey';
+const SECRET = process.env.JWT_SECRET;
 
 function tokenFor(id) {
   return jwt.sign({ userId: id }, SECRET);

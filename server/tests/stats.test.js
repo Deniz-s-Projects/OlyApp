@@ -9,7 +9,7 @@ const Event = require('../models/Event');
 const Item = require('../models/Item');
 const ServiceListing = require('../models/ServiceListing');
 
-const SECRET = process.env.JWT_SECRET || 'secretkey';
+const SECRET = process.env.JWT_SECRET;
 
 let app;
 let mongo;

@@ -18,7 +18,7 @@ jest.spyOn(admin, 'messaging').mockReturnValue({
   sendEachForMulticast: jest.fn().mockResolvedValue({ successCount: 1 }),
 });
 
-const SECRET = process.env.JWT_SECRET || 'secretkey'; 
+const SECRET = process.env.JWT_SECRET;
 
 function getToken(id = 1) {
   return jwt.sign({ userId: id }, SECRET);

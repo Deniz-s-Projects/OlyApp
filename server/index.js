@@ -16,6 +16,7 @@ const apiRouter = require('./api');
 const Event = require('./models/Event');
 const websocket = require('./socket');
 const errorHandler = require('./middleware/errorHandler');
+const { corsOrigins } = require('./config');
 
 const logger = createLogger({
   level: 'info',
@@ -27,7 +28,17 @@ const logger = createLogger({
 });
 
 const app = express();
-app.use(cors());
+const corsOptions =
+  corsOrigins === '*'
+    ? { origin: true }
+    : {
+        origin: (origin, cb) => {
+          if (!origin) return cb(null, true);
+          if (corsOrigins.includes(origin)) return cb(null, true);
+          return cb(new Error(`Origin ${origin} not allowed by CORS`));
+        },
+      };
+app.use(cors(corsOptions));
 app.use(helmet());
 app.use(express.json());
 app.use(morgan('tiny', { stream: { write: (msg) => logger.info(msg.trim()) } }));
@@ -50,8 +61,34 @@ connectToDatabase().catch((err) => {
   process.exit(1);
 });
 
-const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 });
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+const writeLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS',
+});
+const globalLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.use('/api', globalLimiter);
 app.use('/api/auth', authLimiter);
+app.use('/api/items', writeLimiter);
+app.use('/api/maintenance', writeLimiter);
+app.use('/api/bulletin', writeLimiter);
+app.use('/api/lostfound', writeLimiter);
+app.use('/api/gallery', writeLimiter);
+app.use('/api/suggestions', writeLimiter);
 app.use('/api', apiRouter);
 app.use(errorHandler);
 

@@ -5,9 +5,8 @@ const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const User = require('../models/User');
 const validate = require('../middleware/validate');
-const { registerSchema, loginSchema } = require('../validation/auth');
-
-const SECRET = process.env.JWT_SECRET || 'secretkey';
+const { registerSchema, loginSchema, resetConfirmSchema } = require('../validation/auth');
+const { jwtSecret: SECRET } = require('../config');
 
 const transporter = nodemailer.createTransport({
   jsonTransport: true,
@@ -104,12 +103,9 @@ router.post('/reset', async (req, res) => {
 });
 
 // POST /auth/reset/confirm - set new password
-router.post('/reset/confirm', async (req, res) => {
+router.post('/reset/confirm', validate(resetConfirmSchema), async (req, res) => {
   try {
     const { token, password } = req.body;
-    if (!token || !password) {
-      return res.status(400).json({ error: 'Missing fields' });
-    }
     const hashed = crypto.createHash('sha256').update(token).digest('hex');
     const user = await User.findOne({
       passwordResetToken: hashed,

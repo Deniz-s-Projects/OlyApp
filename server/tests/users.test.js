@@ -7,7 +7,7 @@ const apiRouter = require('../api');
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 
-const SECRET = process.env.JWT_SECRET || 'secretkey';
+const SECRET = process.env.JWT_SECRET;
 
 let app;
 let mongo;

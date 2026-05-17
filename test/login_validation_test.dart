@@ -22,11 +22,19 @@ void main() {
     });
 
     test('too short password', () {
-      expect(validatePassword('123'), 'Password must be at least 6 characters');
+      expect(validatePassword('Aa1!'), 'Password must be at least 8 characters');
+    });
+
+    test('missing letter', () {
+      expect(validatePassword('12345678'), 'Password must contain a letter');
+    });
+
+    test('missing digit', () {
+      expect(validatePassword('abcdefgh'), 'Password must contain a number');
     });
 
     test('valid password', () {
-      expect(validatePassword('123456'), isNull);
+      expect(validatePassword('Passw0rd'), isNull);
     });
   });
 

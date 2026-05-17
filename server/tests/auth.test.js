@@ -8,7 +8,7 @@ const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 
-const SECRET = process.env.JWT_SECRET || 'secretkey';
+const SECRET = process.env.JWT_SECRET;
 
 let app;
 let mongo;
@@ -34,7 +34,7 @@ describe('Auth API', () => {
   test('registers and logs in a user', async () => {
     const reg = await request(app)
       .post('/api/auth/register')
-      .send({ name: 'Test', email: 'a@b.c', password: 'pass' });
+      .send({ name: 'Test', email: 'a@b.c', password: 'Passw0rd!' });
     expect(reg.status).toBe(201);
     expect(reg.body).toHaveProperty('token');
     expect(() => jwt.verify(reg.body.token, SECRET)).not.toThrow();
@@ -42,7 +42,7 @@ describe('Auth API', () => {
 
     const res = await request(app)
       .post('/api/auth/login')
-      .send({ email: 'a@b.c', password: 'pass' });
+      .send({ email: 'a@b.c', password: 'Passw0rd!' });
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty('token');
     expect(() => jwt.verify(res.body.token, SECRET)).not.toThrow();
@@ -52,7 +52,7 @@ describe('Auth API', () => {
   test('invalid credentials return HTTP 401', async () => {
     await request(app)
       .post('/api/auth/register')
-      .send({ name: 'Test', email: 'x@y.z', password: 'pass' });
+      .send({ name: 'Test', email: 'x@y.z', password: 'Passw0rd!' });
 
     const res = await request(app)
       .post('/api/auth/login')
@@ -64,7 +64,7 @@ describe('Auth API', () => {
   test('POST /auth/reset stores hashed token', async () => {
     await request(app)
       .post('/api/auth/register')
-      .send({ name: 'Test', email: 'reset@test.com', password: 'pass' });
+      .send({ name: 'Test', email: 'reset@test.com', password: 'Passw0rd!' });
 
     const res = await request(app)
       .post('/api/auth/reset')
@@ -89,11 +89,11 @@ describe('Auth API', () => {
 
     const res = await request(app)
       .post('/api/auth/reset/confirm')
-      .send({ token, password: 'newpass' });
+      .send({ token, password: 'NewPassw0rd!' });
     expect(res.status).toBe(200);
 
     const updated = await User.findById(user._id);
-    const match = await bcrypt.compare('newpass', updated.passwordHash);
+    const match = await bcrypt.compare('NewPassw0rd!', updated.passwordHash);
     expect(match).toBe(true);
     expect(updated.passwordResetToken).toBeUndefined();
     expect(updated.passwordResetExpires).toBeUndefined();
