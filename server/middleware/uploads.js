@@ -60,7 +60,9 @@ function makeStorage() {
 function makeFileFilter(whitelist) {
   return (req, file, cb) => {
     if (whitelist.has(file.mimetype)) return cb(null, true);
-    cb(new Error(`Unsupported file type: ${file.mimetype}`));
+    const err = new Error(`Unsupported file type: ${file.mimetype}`);
+    err.status = 400;
+    cb(err);
   };
 }
 

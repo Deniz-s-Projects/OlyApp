@@ -28,6 +28,16 @@ const logger = createLogger({
 });
 
 const app = express();
+
+// Trust proxy headers when deployed behind nginx/Cloudflare/etc. so that
+// express-rate-limit, req.ip, and req.protocol see the real client. Disabled
+// by default to avoid IP spoofing in setups without a proxy.
+const trustProxy = process.env.TRUST_PROXY;
+if (trustProxy) {
+  const numeric = Number(trustProxy);
+  app.set('trust proxy', Number.isFinite(numeric) ? numeric : trustProxy);
+}
+
 const corsOptions =
   corsOrigins === '*'
     ? { origin: true }
@@ -35,7 +45,9 @@ const corsOptions =
         origin: (origin, cb) => {
           if (!origin) return cb(null, true);
           if (corsOrigins.includes(origin)) return cb(null, true);
-          return cb(new Error(`Origin ${origin} not allowed by CORS`));
+          const err = new Error(`Origin ${origin} not allowed by CORS`);
+          err.status = 403;
+          return cb(err);
         },
       };
 app.use(cors(corsOptions));
