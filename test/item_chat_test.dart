@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:oly_app/models/models.dart';
 import 'package:oly_app/pages/item_detail_page.dart';
@@ -33,7 +34,11 @@ void main() {
   testWidgets('Chat Owner opens ItemChatPage', (tester) async {
     final item = Item(id: 1, ownerId: '1', title: 'Chair');
     await tester.pumpWidget(
-      MaterialApp(home: ItemDetailPage(item: item, service: FakeItemService())),
+      ProviderScope(
+        child: MaterialApp(
+          home: ItemDetailPage(item: item, service: FakeItemService()),
+        ),
+      ),
     );
 
     await tester.tap(find.text('Chat Owner'));

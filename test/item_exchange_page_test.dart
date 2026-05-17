@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:oly_app/models/models.dart';
 import 'package:oly_app/pages/item_exchange_page.dart';
@@ -95,7 +96,9 @@ void main() {
     await tester.runAsync(() async {
       final item = Item(id: 5, ownerId: '2', title: 'Chair');
 
-      await tester.pumpWidget(MaterialApp(home: ItemDetailPage(item: item)));
+      await tester.pumpWidget(
+        ProviderScope(child: MaterialApp(home: ItemDetailPage(item: item))),
+      );
       await tester.pumpAndSettle();
 
       await tester.tap(find.byKey(const Key('toggleFavoriteDetail')));
@@ -160,7 +163,9 @@ void main() {
     final service = FakeItemService([item]);
 
     await tester.pumpWidget(
-      MaterialApp(home: ItemExchangePage(service: service)),
+      ProviderScope(
+        child: MaterialApp(home: ItemExchangePage(service: service)),
+      ),
     );
     await tester.pumpAndSettle();
 
@@ -217,7 +222,11 @@ void main() {
       final service = FakeItemService([item]);
 
       await tester.pumpWidget(
-        MaterialApp(home: ItemDetailPage(item: item, service: service)),
+        ProviderScope(
+          child: MaterialApp(
+            home: ItemDetailPage(item: item, service: service),
+          ),
+        ),
       );
       await tester.pumpAndSettle();
 
@@ -258,7 +267,11 @@ void main() {
       final service = FakeItemService([item]);
 
       await tester.pumpWidget(
-        MaterialApp(home: ItemDetailPage(item: item, service: service)),
+        ProviderScope(
+          child: MaterialApp(
+            home: ItemDetailPage(item: item, service: service),
+          ),
+        ),
       );
       await tester.pumpAndSettle();
 
