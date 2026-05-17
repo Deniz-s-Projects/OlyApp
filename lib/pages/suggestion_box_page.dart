@@ -1,47 +1,55 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/models.dart';
+import '../providers/suggestions_providers.dart';
 import '../services/suggestion_service.dart';
 import '../utils/user_helpers.dart';
 
-class SuggestionBoxPage extends StatefulWidget {
+class SuggestionBoxPage extends StatelessWidget {
   final SuggestionService? service;
   const SuggestionBoxPage({super.key, this.service});
 
   @override
-  State<SuggestionBoxPage> createState() => _SuggestionBoxPageState();
+  Widget build(BuildContext context) {
+    if (service == null) {
+      return const _SuggestionBoxBody();
+    }
+    return ProviderScope(
+      overrides: [suggestionServiceProvider.overrideWithValue(service!)],
+      child: const _SuggestionBoxBody(),
+    );
+  }
 }
 
-class _SuggestionBoxPageState extends State<SuggestionBoxPage> {
-  late final SuggestionService _service;
+class _SuggestionBoxBody extends ConsumerStatefulWidget {
+  const _SuggestionBoxBody();
+
+  @override
+  ConsumerState<_SuggestionBoxBody> createState() => _SuggestionBoxBodyState();
+}
+
+class _SuggestionBoxBodyState extends ConsumerState<_SuggestionBoxBody> {
   final TextEditingController _ctrl = TextEditingController();
-  List<Suggestion> _suggestions = [];
 
   bool get _isAdmin => currentUserIsAdmin();
 
   @override
-  void initState() {
-    super.initState();
-    _service = widget.service ?? SuggestionService();
-    if (_isAdmin) _load();
-  }
-
-  Future<void> _load() async {
-    final list = await _service.fetchSuggestions();
-    if (!mounted) return;
-    setState(() => _suggestions = list);
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
   }
 
   Future<void> _submit() async {
     final text = _ctrl.text.trim();
     if (text.isEmpty) return;
     try {
-      await _service.createSuggestion(
-        Suggestion(userId: currentUserId(), content: text),
-      );
+      await ref.read(suggestionServiceProvider).createSuggestion(
+            Suggestion(userId: currentUserId(), content: text),
+          );
       if (!mounted) return;
       _ctrl.clear();
-      if (_isAdmin) _load();
+      if (_isAdmin) ref.invalidate(suggestionsProvider);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Thank you for the feedback!')),
       );
@@ -55,20 +63,17 @@ class _SuggestionBoxPageState extends State<SuggestionBoxPage> {
 
   Future<void> _delete(Suggestion s) async {
     if (s.id == null) return;
-    await _service.deleteSuggestion(s.id!);
+    await ref.read(suggestionServiceProvider).deleteSuggestion(s.id!);
     if (!mounted) return;
-    _load();
-  }
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
+    ref.invalidate(suggestionsProvider);
   }
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final suggestions = _isAdmin
+        ? (ref.watch(suggestionsProvider).valueOrNull ?? const <Suggestion>[])
+        : const <Suggestion>[];
     return Scaffold(
       appBar: AppBar(
         title: const Text('Suggestion Box'),
@@ -96,26 +101,25 @@ class _SuggestionBoxPageState extends State<SuggestionBoxPage> {
           if (_isAdmin)
             Expanded(
               child: RefreshIndicator(
-                onRefresh: _load,
-                child:
-                    _suggestions.isEmpty
-                        ? const Center(child: Text('No suggestions yet.'))
-                        : ListView.builder(
-                          itemCount: _suggestions.length,
-                          itemBuilder: (_, i) {
-                            final s = _suggestions[i];
-                            return ListTile(
-                              title: Text(s.content),
-                              subtitle: Text(
-                                'User ${s.userId} - ${s.createdAt.day}/${s.createdAt.month}/${s.createdAt.year}',
-                              ),
-                              trailing: IconButton(
-                                icon: const Icon(Icons.delete),
-                                onPressed: () => _delete(s),
-                              ),
-                            );
-                          },
-                        ),
+                onRefresh: () async => ref.invalidate(suggestionsProvider),
+                child: suggestions.isEmpty
+                    ? const Center(child: Text('No suggestions yet.'))
+                    : ListView.builder(
+                        itemCount: suggestions.length,
+                        itemBuilder: (_, i) {
+                          final s = suggestions[i];
+                          return ListTile(
+                            title: Text(s.content),
+                            subtitle: Text(
+                              'User ${s.userId} - ${s.createdAt.day}/${s.createdAt.month}/${s.createdAt.year}',
+                            ),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () => _delete(s),
+                            ),
+                          );
+                        },
+                      ),
               ),
             ),
         ],
