@@ -9,7 +9,9 @@ class FakeBulletinService extends BulletinService {
   final List<BulletinPost> posts;
   final Map<int, List<BulletinComment>> comments;
   BulletinPost? updated;
+  BulletinComment? updatedComment;
   int? deletedId;
+  ({int postId, int id})? deletedComment;
   FakeBulletinService(this.posts, this.comments);
 
   @override
@@ -59,6 +61,21 @@ class FakeBulletinService extends BulletinService {
     deletedId = id;
     posts.removeWhere((p) => p.id == id);
     comments.remove(id);
+  }
+
+  @override
+  Future<BulletinComment> updateComment(BulletinComment comment) async {
+    updatedComment = comment;
+    final list = comments[comment.postId];
+    final idx = list?.indexWhere((c) => c.id == comment.id) ?? -1;
+    if (idx != -1) list![idx] = comment;
+    return comment;
+  }
+
+  @override
+  Future<void> deleteComment(int postId, int commentId) async {
+    deletedComment = (postId: postId, id: commentId);
+    comments[postId]?.removeWhere((c) => c.id == commentId);
   }
 }
 
@@ -152,5 +169,66 @@ void main() {
     await tester.pump();
 
     expect(service.deletedId, 1);
+  });
+
+  testWidgets('Edit comment icon calls updateComment', (tester) async {
+    final service = FakeBulletinService(
+      [BulletinPost(id: 1, userId: '1', content: 'p', date: DateTime.now())],
+      {
+        1: [
+          BulletinComment(
+            id: 7,
+            postId: 1,
+            userId: '2',
+            content: 'old',
+            date: DateTime.now(),
+          ),
+        ],
+      },
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(home: BulletinBoardPage(service: service)),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('editComment_1_7')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).last, 'new');
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+
+    expect(service.updatedComment?.content, 'new');
+    expect(service.updatedComment?.id, 7);
+  });
+
+  testWidgets('Delete comment icon calls deleteComment', (tester) async {
+    final service = FakeBulletinService(
+      [BulletinPost(id: 1, userId: '1', content: 'p', date: DateTime.now())],
+      {
+        1: [
+          BulletinComment(
+            id: 9,
+            postId: 1,
+            userId: '2',
+            content: 'c',
+            date: DateTime.now(),
+          ),
+        ],
+      },
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(home: BulletinBoardPage(service: service)),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('deleteComment_1_9')));
+    await tester.pumpAndSettle();
+
+    expect(service.deletedComment?.postId, 1);
+    expect(service.deletedComment?.id, 9);
   });
 }

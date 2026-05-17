@@ -50,4 +50,17 @@ class BulletinService extends ApiService {
   Future<void> deletePost(int id) async {
     await delete('/bulletin/$id', (_) => null);
   }
+
+  Future<BulletinComment> updateComment(BulletinComment comment) async {
+    if (comment.id == null) throw ArgumentError('id required');
+    return put(
+      '/bulletin/${comment.postId}/comments/${comment.id}',
+      comment.toJson(),
+      (json) => BulletinComment.fromJson(json['data'] as Map<String, dynamic>),
+    );
+  }
+
+  Future<void> deleteComment(int postId, int commentId) async {
+    await delete('/bulletin/$postId/comments/$commentId', (_) => null);
+  }
 }
