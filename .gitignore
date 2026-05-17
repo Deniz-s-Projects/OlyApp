@@ -46,3 +46,7 @@ app.*.map.json
 
 # Node server
 server/node_modules/
+
+# Server upload directory — keep the placeholder but ignore uploaded files
+server/uploads/*
+!server/uploads/.gitkeep
