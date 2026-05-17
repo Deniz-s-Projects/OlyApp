@@ -1,31 +1,45 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../models/models.dart';
+import '../providers/item_providers.dart';
+import '../services/item_service.dart';
 import '../widgets/item_card.dart';
 import 'item_detail_page.dart';
 import 'post_item_page.dart';
-import '../models/models.dart';
-import '../services/item_service.dart';
-import '../utils/item_filter.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 
-class ItemExchangePage extends StatefulWidget {
+class ItemExchangePage extends StatelessWidget {
+  /// Optional service override. Mainly used by widget tests; production
+  /// callers rely on the top-level [ProviderScope] in main.dart.
   final ItemService? service;
+
   const ItemExchangePage({super.key, this.service});
 
   @override
-  State<ItemExchangePage> createState() => _ItemExchangePageState();
+  Widget build(BuildContext context) {
+    if (service == null) {
+      return const _ItemExchangeBody();
+    }
+    return ProviderScope(
+      overrides: [itemServiceProvider.overrideWithValue(service!)],
+      child: const _ItemExchangeBody(),
+    );
+  }
 }
 
-class _ItemExchangePageState extends State<ItemExchangePage> {
-  late final ItemService _service;
+class _ItemExchangeBody extends ConsumerStatefulWidget {
+  const _ItemExchangeBody();
+
+  @override
+  ConsumerState<_ItemExchangeBody> createState() => _ItemExchangeBodyState();
+}
+
+class _ItemExchangeBodyState extends ConsumerState<_ItemExchangeBody> {
   final _searchCtrl = TextEditingController();
   final _minPriceCtrl = TextEditingController();
   final _maxPriceCtrl = TextEditingController();
-  String _selectedCategory = 'All';
-  bool _onlyFavorites = false;
-  String _sortOrder = 'newest';
-  bool _loading = false;
 
-  final _categories = [
+  static const _categories = [
     'All',
     'Furniture',
     'Books',
@@ -34,85 +48,22 @@ class _ItemExchangePageState extends State<ItemExchangePage> {
     'Clothing',
   ];
 
-  List<Item> _allItems = [];
-  List<Item> _filteredItems = [];
-
-  Set<int> _favoriteIds() {
-    final box = Hive.box('favoritesBox');
-    return (box.get('ids', defaultValue: const <int>[]) as List)
-        .cast<int>()
-        .toSet();
-  }
-
   @override
-  void initState() {
-    super.initState();
-    _service = widget.service ?? ItemService();
-    _loadItems();
-  }
-
-  Future<void> _loadItems() async {
-    setState(() => _loading = true);
-    try {
-      final items = await _service.fetchItems();
-      if (!mounted) return;
-      setState(() {
-        _allItems = items;
-        _filteredItems = List.from(_allItems);
-        _loading = false;
-      });
-      _filter();
-    } finally {
-      if (mounted && _loading) setState(() => _loading = false);
-    }
-  }
-
-  void _filter() {
-    final query = _searchCtrl.text;
-    final minPrice = double.tryParse(_minPriceCtrl.text);
-    final maxPrice = double.tryParse(_maxPriceCtrl.text);
-    setState(() {
-      var results = filterItems(_allItems, query, _selectedCategory);
-      if (minPrice != null) {
-        results = results
-            .where((item) => (item.price ?? 0) >= minPrice)
-            .toList();
-      }
-      if (maxPrice != null) {
-        results = results
-            .where((item) => (item.price ?? 0) <= maxPrice)
-            .toList();
-      }
-      if (_onlyFavorites) {
-        final favs = _favoriteIds();
-        results = results
-            .where((item) => item.id != null && favs.contains(item.id))
-            .toList();
-      }
-      switch (_sortOrder) {
-        case 'priceAsc':
-          results.sort(
-            (a, b) => (a.price ?? double.infinity).compareTo(
-              b.price ?? double.infinity,
-            ),
-          );
-          break;
-        case 'priceDesc':
-          results.sort(
-            (a, b) => (b.price ?? -double.infinity).compareTo(
-              a.price ?? -double.infinity,
-            ),
-          );
-          break;
-        default:
-          results.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-      }
-      _filteredItems = results;
-    });
+  void dispose() {
+    _searchCtrl.dispose();
+    _minPriceCtrl.dispose();
+    _maxPriceCtrl.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final itemsAsync = ref.watch(itemsProvider);
+    final filters = ref.watch(itemFiltersProvider);
+    final filteredItems = ref.watch(filteredItemsProvider);
+    final favorites = ref.watch(favoritesProvider);
+    final filtersNotifier = ref.read(itemFiltersProvider.notifier);
+
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -136,12 +87,12 @@ class _ItemExchangePageState extends State<ItemExchangePage> {
                         borderSide: BorderSide.none,
                       ),
                     ),
-                    onChanged: (_) => _filter(),
+                    onChanged: filtersNotifier.setSearch,
                   ),
                 ),
                 IconButton(
                   icon: const Icon(Icons.refresh),
-                  onPressed: _loadItems,
+                  onPressed: () => ref.invalidate(itemsProvider),
                 ),
               ],
             ),
@@ -156,16 +107,11 @@ class _ItemExchangePageState extends State<ItemExchangePage> {
                 separatorBuilder: (_, __) => const SizedBox(width: 8),
                 itemBuilder: (ctx, i) {
                   final cat = _categories[i];
-                  final selected = cat == _selectedCategory;
+                  final selected = cat == filters.selectedCategory;
                   return ChoiceChip(
                     label: Text(cat),
                     selected: selected,
-                    onSelected: (_) {
-                      setState(() {
-                        _selectedCategory = cat;
-                        _filter();
-                      });
-                    },
+                    onSelected: (_) => filtersNotifier.setCategory(cat),
                   );
                 },
               ),
@@ -177,13 +123,8 @@ class _ItemExchangePageState extends State<ItemExchangePage> {
               alignment: Alignment.centerLeft,
               child: FilterChip(
                 label: const Text('Favorites'),
-                selected: _onlyFavorites,
-                onSelected: (val) {
-                  setState(() {
-                    _onlyFavorites = val;
-                    _filter();
-                  });
-                },
+                selected: filters.onlyFavorites,
+                onSelected: filtersNotifier.setOnlyFavorites,
               ),
             ),
 
@@ -198,7 +139,8 @@ class _ItemExchangePageState extends State<ItemExchangePage> {
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
-                    onChanged: (_) => _filter(),
+                    onChanged: (val) =>
+                        filtersNotifier.setMinPrice(double.tryParse(val)),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -209,7 +151,8 @@ class _ItemExchangePageState extends State<ItemExchangePage> {
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
-                    onChanged: (_) => _filter(),
+                    onChanged: (val) =>
+                        filtersNotifier.setMaxPrice(double.tryParse(val)),
                   ),
                 ),
               ],
@@ -219,14 +162,11 @@ class _ItemExchangePageState extends State<ItemExchangePage> {
 
             DropdownButton<String>(
               key: const ValueKey('sortDropdown'),
-              value: _sortOrder,
+              value: filters.sortOrder,
               isExpanded: true,
               onChanged: (val) {
                 if (val == null) return;
-                setState(() {
-                  _sortOrder = val;
-                  _filter();
-                });
+                filtersNotifier.setSortOrder(val);
               },
               items: const [
                 DropdownMenuItem(value: 'newest', child: Text('Newest')),
@@ -246,72 +186,65 @@ class _ItemExchangePageState extends State<ItemExchangePage> {
             // Grid of items
             Expanded(
               child: RefreshIndicator(
-                onRefresh: _loadItems,
-                child: _loading
+                onRefresh: () async => ref.invalidate(itemsProvider),
+                child: itemsAsync.isLoading
                     ? const Center(child: CircularProgressIndicator())
-                    : _filteredItems.isEmpty
+                    : filteredItems.isEmpty
                         ? const Center(child: Text('No items found.'))
                         : GridView.builder(
                             gridDelegate:
                                 const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  mainAxisSpacing: 12,
-                                  crossAxisSpacing: 12,
-                                  childAspectRatio: 0.8,
-                                ),
-                            itemCount: _filteredItems.length,
+                              crossAxisCount: 2,
+                              mainAxisSpacing: 12,
+                              crossAxisSpacing: 12,
+                              childAspectRatio: 0.8,
+                            ),
+                            itemCount: filteredItems.length,
                             itemBuilder: (ctx, idx) {
-                          final item = _filteredItems[idx];
-                          final favs = _favoriteIds();
-                          final isFav =
-                              item.id != null && favs.contains(item.id);
-                          return Stack(
-                            children: [
-                              InkWell(
-                                borderRadius: BorderRadius.circular(12),
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) =>
-                                          ItemDetailPage(item: item),
-                                    ),
-                                  );
-                                },
-                                child: ItemCard(
-                                  title: item.title,
-                                  averageRating: item.ratings.isNotEmpty
-                                      ? item.averageRating
-                                      : null,
-                                ),
-                              ),
-                              if (item.id != null)
-                                Positioned(
-                                  top: 0,
-                                  right: 0,
-                                  child: IconButton(
-                                    key: Key('toggleFavorite_${item.id}'),
-                                    icon: Icon(
-                                      isFav ? Icons.star : Icons.star_border,
-                                      color: Colors.amber,
-                                    ),
-                                    onPressed: () {
-                                      final box = Hive.box('favoritesBox');
-                                      final set = favs.toSet();
-                                      if (isFav) {
-                                        set.remove(item.id);
-                                      } else {
-                                        set.add(item.id as int);
-                                      }
-                                      box.put('ids', set.toList());
-                                      _filter();
+                              final item = filteredItems[idx];
+                              final isFav =
+                                  item.id != null && favorites.contains(item.id);
+                              return Stack(
+                                children: [
+                                  InkWell(
+                                    borderRadius: BorderRadius.circular(12),
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) =>
+                                              ItemDetailPage(item: item),
+                                        ),
+                                      );
                                     },
+                                    child: ItemCard(
+                                      title: item.title,
+                                      averageRating: item.ratings.isNotEmpty
+                                          ? item.averageRating
+                                          : null,
+                                    ),
                                   ),
-                                ),
-                            ],
-                          );
-                        },
-                      ),
+                                  if (item.id != null)
+                                    Positioned(
+                                      top: 0,
+                                      right: 0,
+                                      child: IconButton(
+                                        key: Key('toggleFavorite_${item.id}'),
+                                        icon: Icon(
+                                          isFav
+                                              ? Icons.star
+                                              : Icons.star_border,
+                                          color: Colors.amber,
+                                        ),
+                                        onPressed: () => ref
+                                            .read(favoritesProvider.notifier)
+                                            .toggle(item.id as int),
+                                      ),
+                                    ),
+                                ],
+                              );
+                            },
+                          ),
               ),
             ),
           ],
@@ -326,8 +259,8 @@ class _ItemExchangePageState extends State<ItemExchangePage> {
             context,
             MaterialPageRoute(builder: (_) => const PostItemPage()),
           );
-          if (created == true) {
-            _loadItems();
+          if (created == true && mounted) {
+            ref.invalidate(itemsProvider);
           }
         },
         child: const Icon(Icons.add),
