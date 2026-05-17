@@ -81,7 +81,8 @@ class _PostItemPageState extends ConsumerState<PostItemPage> {
         isFree: price == null || price == 0,
         category: _category,
       );
-      final service = widget.service ?? ref.read(itemServiceProvider);
+      final ItemService service =
+          widget.service ?? ref.read(itemServiceProvider);
       if (editing) {
         await service.updateItem(item);
       } else {
