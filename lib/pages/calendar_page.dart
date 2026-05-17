@@ -1,90 +1,55 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:table_calendar/table_calendar.dart';
+
+import '../models/map_pin.dart';
 import '../models/models.dart';
+import '../providers/calendar_providers.dart';
 import '../services/event_service.dart';
 import '../services/map_service.dart';
-import '../utils/ics_generator.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:path_provider/path_provider.dart';
-import 'dart:io';
-import 'map_page.dart';
-import '../models/map_pin.dart';
-import 'package:latlong2/latlong.dart';
-import 'dart:typed_data';
 import '../services/qr_service.dart';
+import '../utils/ics_generator.dart';
+import 'map_page.dart';
 import 'qr_scanner_page.dart';
 
-class CalendarPage extends StatefulWidget {
+class CalendarPage extends StatelessWidget {
   final EventService? service;
   final bool isAdmin;
   const CalendarPage({super.key, this.service, this.isAdmin = false});
 
   @override
-  State<CalendarPage> createState() => _CalendarPageState();
+  Widget build(BuildContext context) {
+    final body = _CalendarBody(isAdmin: isAdmin);
+    if (service == null) return body;
+    return ProviderScope(
+      overrides: [eventServiceProvider.overrideWithValue(service!)],
+      child: body,
+    );
+  }
 }
 
-class _CalendarPageState extends State<CalendarPage> {
-  late final EventService _service;
-  final Map<DateTime, List<CalendarEvent>> _events = {};
-  late final ValueNotifier<List<CalendarEvent>> _selectedEvents;
+class _CalendarBody extends ConsumerStatefulWidget {
+  final bool isAdmin;
+  const _CalendarBody({required this.isAdmin});
+
+  @override
+  ConsumerState<_CalendarBody> createState() => _CalendarBodyState();
+}
+
+class _CalendarBodyState extends ConsumerState<_CalendarBody> {
   CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
   DateTime _selectedDay = DateTime.now();
-  List<String> _categories = ['All'];
-  String _selectedCategory = 'All';
-  bool _loading = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _service = widget.service ?? EventService();
-    _selectedEvents = ValueNotifier(_getEventsForDay(_selectedDay));
-    _loadEvents();
-  }
-
-  @override
-  void dispose() {
-    _selectedEvents.dispose();
-    super.dispose();
-  }
-
-  Future<void> _loadEvents() async {
-    setState(() => _loading = true);
-    try {
-      final events = await _service.fetchEvents();
-      if (!mounted) return;
-      setState(() {
-        _events.clear();
-        _categories = ['All'];
-        for (final e in events) {
-          final key = DateTime(e.date.year, e.date.month, e.date.day);
-          _events.putIfAbsent(key, () => []).add(e);
-          if (e.category != null && !_categories.contains(e.category)) {
-            _categories.add(e.category!);
-          }
-        }
-        if (!_categories.contains(_selectedCategory)) {
-          _selectedCategory = 'All';
-        }
-        _selectedEvents.value = _getEventsForDay(_selectedDay);
-        _loading = false;
-      });
-    } catch (_) {
-      if (!mounted) return;
-      setState(() => _loading = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Failed to load events')));
-    }
-  }
-
-  List<CalendarEvent> _getEventsForDay(DateTime day) {
-    final list = _events[DateTime(day.year, day.month, day.day)] ?? [];
-    return list
-        .where(
-          (e) => _selectedCategory == 'All' || e.category == _selectedCategory,
-        )
-        .toList();
+  List<CalendarEvent> _eventsForDay(DateTime day) {
+    final map = ref.read(eventsByDayProvider);
+    return map[DateTime(day.year, day.month, day.day)] ?? const [];
   }
 
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
@@ -92,93 +57,56 @@ class _CalendarPageState extends State<CalendarPage> {
       setState(() {
         _selectedDay = selectedDay;
         _focusedDay = focusedDay;
-        _selectedEvents.value = _getEventsForDay(selectedDay);
       });
     }
   }
 
   void _onFormatChanged(CalendarFormat format) {
-    setState(() {
-      _calendarFormat = format;
-    });
+    setState(() => _calendarFormat = format);
   }
 
-  void _addEvent() async {
+  Future<void> _addEvent() async {
     await showAddEventDialog(
       context,
       (title, date, location, interval, until, category) async {
-      final event = await _service.createEvent(
-        CalendarEvent(
-          title: title,
-          date: date,
-          location: location.isNotEmpty ? location : null,
-          repeatInterval: interval,
-          repeatUntil: until, 
-          category: category.isNotEmpty ? category : null,
-        ),
-      );
-      final dayKey = DateTime(
-        event.date.year,
-        event.date.month,
-        event.date.day,
-      );
-      if (_events.containsKey(dayKey)) {
-        _events[dayKey]!.add(event);
-      } else {
-        _events[dayKey] = [event];
-      }
-      if (event.category != null && !_categories.contains(event.category)) {
-        _categories.add(event.category!);
-      }
-      _selectedEvents.value = _getEventsForDay(_selectedDay);
-    });
+        await ref.read(eventServiceProvider).createEvent(
+              CalendarEvent(
+                title: title,
+                date: date,
+                location: location.isNotEmpty ? location : null,
+                repeatInterval: interval,
+                repeatUntil: until,
+                category: category.isNotEmpty ? category : null,
+              ),
+            );
+        ref.invalidate(eventsProvider);
+      },
+    );
   }
 
   Future<void> _rsvp(CalendarEvent event) async {
     if (event.id == null) return;
     try {
-      await _service.rsvpEvent(event.id!.toString());
-      final attendees = await _service.fetchAttendees(event.id!.toString());
-      if (!mounted) return;
-      setState(() {
-        final updated = CalendarEvent(
-          id: event.id,
-          title: event.title,
-          date: event.date,
-          description: event.description,
-          attendees: attendees,
-          location: event.location,
-          category: event.category,
-        );
-        final dayKey = DateTime(
-          event.date.year,
-          event.date.month,
-          event.date.day,
-        );
-        final list = _events[dayKey];
-        if (list != null) {
-          final index = list.indexWhere((e) => e.id == event.id);
-          if (index != -1) list[index] = updated;
-        }
-        _selectedEvents.value = _getEventsForDay(_selectedDay);
-      });
+      await ref.read(eventServiceProvider).rsvpEvent(event.id!.toString());
+      ref.invalidate(eventsProvider);
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Failed to RSVP')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to RSVP')),
+      );
     }
   }
 
   Future<void> _showEventDetails(CalendarEvent event) async {
     if (event.id == null) return;
+    final service = ref.read(eventServiceProvider);
     try {
-      final attendees = await _service.fetchAttendees(event.id!.toString());
+      final attendees = await service.fetchAttendees(event.id!.toString());
       List<EventComment> comments = [];
       try {
-        comments = await _service.fetchComments(event.id!);
+        comments = await service.fetchComments(event.id!);
       } catch (_) {
-        // Ignore comment loading errors
+        // ignore comment loading errors
       }
       Uint8List? qrImage;
       if (widget.isAdmin) {
@@ -212,7 +140,8 @@ class _CalendarPageState extends State<CalendarPage> {
                   if (event.location != null)
                     Padding(
                       padding: const EdgeInsets.only(top: 8),
-                      child: Text('Location: ${pin?.title ?? event.location}'),
+                      child: Text(
+                          'Location: ${pin?.title ?? event.location}'),
                     ),
                   const SizedBox(height: 8),
                   const Text('Comments:'),
@@ -224,7 +153,8 @@ class _CalendarPageState extends State<CalendarPage> {
                   if (qrImage != null)
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Image.memory(qrImage, width: 150, height: 150),
+                      child:
+                          Image.memory(qrImage, width: 150, height: 150),
                     ),
                   if (!widget.isAdmin)
                     Padding(
@@ -274,7 +204,7 @@ class _CalendarPageState extends State<CalendarPage> {
                 onPressed: () async {
                   final text = commentCtrl.text.trim();
                   if (text.isEmpty) return;
-                  final comment = await _service.addComment(
+                  final comment = await service.addComment(
                     EventComment(eventId: event.id!, content: text),
                   );
                   setState(() {
@@ -305,39 +235,32 @@ class _CalendarPageState extends State<CalendarPage> {
           ),
         ),
       );
-      setState(() {
-        final updated = CalendarEvent(
-          id: event.id,
-          title: event.title,
-          date: event.date,
-          description: event.description,
-          attendees: attendees,
-          location: event.location,
-          category: event.category,
-        );
-        final dayKey = DateTime(
-          event.date.year,
-          event.date.month,
-          event.date.day,
-        );
-        final list = _events[dayKey];
-        if (list != null) {
-          final index = list.indexWhere((e) => e.id == event.id);
-          if (index != -1) list[index] = updated;
-        }
-        _selectedEvents.value = _getEventsForDay(_selectedDay);
-      });
+      // Refresh attendee counts etc. after the dialog closes.
+      if (mounted) ref.invalidate(eventsProvider);
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Failed to load attendees')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to load attendees')),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<AsyncValue<List<CalendarEvent>>>(eventsProvider, (prev, next) {
+      if (next.hasError && !next.isLoading) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to load events')),
+        );
+      }
+    });
+
     final cs = Theme.of(context).colorScheme;
+    final eventsAsync = ref.watch(eventsProvider);
+    final categories = ref.watch(calendarCategoriesProvider);
+    final selectedCategory = ref.watch(calendarCategoryProvider);
+    final selectedEvents = _eventsForDay(_selectedDay);
+
     return Scaffold(
       body: Column(
         children: [
@@ -347,7 +270,7 @@ class _CalendarPageState extends State<CalendarPage> {
             focusedDay: _focusedDay,
             calendarFormat: _calendarFormat,
             selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-            eventLoader: _getEventsForDay,
+            eventLoader: _eventsForDay,
             onDaySelected: _onDaySelected,
             onFormatChanged: _onFormatChanged,
             headerStyle: HeaderStyle(
@@ -381,45 +304,39 @@ class _CalendarPageState extends State<CalendarPage> {
             alignment: Alignment.centerRight,
             child: IconButton(
               icon: const Icon(Icons.refresh),
-              onPressed: _loadEvents,
+              onPressed: () => ref.invalidate(eventsProvider),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: DropdownButton<String>(
-              value: _selectedCategory,
+              value: categories.contains(selectedCategory)
+                  ? selectedCategory
+                  : 'All',
               isExpanded: true,
-              items: _categories
+              items: categories
                   .map((c) => DropdownMenuItem(value: c, child: Text(c)))
                   .toList(),
               onChanged: (val) {
                 if (val == null) return;
-                setState(() {
-                  _selectedCategory = val;
-                  _selectedEvents.value = _getEventsForDay(_selectedDay);
-                });
+                ref.read(calendarCategoryProvider.notifier).set(val);
               },
             ),
           ),
           Expanded(
-            child: _loading
+            child: eventsAsync.isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : ValueListenableBuilder<List<CalendarEvent>>(
-                    valueListenable: _selectedEvents,
-                    builder: (context, events, _) {
-                      if (events.isEmpty) {
-                        return const Center(
-                            child: Text('No events for this day.'));
-                      }
-                      return ListView.builder(
-                        itemCount: events.length,
+                : selectedEvents.isEmpty
+                    ? const Center(child: Text('No events for this day.'))
+                    : ListView.builder(
+                        itemCount: selectedEvents.length,
                         itemBuilder: (ctx, idx) {
-                          final event = events[idx];
+                          final event = selectedEvents[idx];
                           return ListTile(
                             leading: const Icon(Icons.event_note),
                             title: Text(event.title),
-                            subtitle:
-                                Text('Attendees: ${event.attendees.length}'),
+                            subtitle: Text(
+                                'Attendees: ${event.attendees.length}'),
                             trailing: TextButton(
                               onPressed: () => _rsvp(event),
                               child: const Text('RSVP'),
@@ -427,9 +344,7 @@ class _CalendarPageState extends State<CalendarPage> {
                             onTap: () => _showEventDetails(event),
                           );
                         },
-                      );
-                    },
-                  ),
+                      ),
           ),
         ],
       ),
@@ -445,7 +360,6 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 }
 
-
 Future<void> showAddEventDialog(
   BuildContext context,
   void Function(
@@ -456,7 +370,6 @@ Future<void> showAddEventDialog(
     DateTime? repeatUntil,
     String category,
   ) onConfirm,
- 
 ) async {
   final textCtrl = TextEditingController();
   final locCtrl = TextEditingController();
@@ -485,11 +398,11 @@ Future<void> showAddEventDialog(
             controller: catCtrl,
             decoration: const InputDecoration(labelText: 'Category'),
           ),
-          const SizedBox(height: 8), 
+          const SizedBox(height: 8),
           TextButton.icon(
             icon: const Icon(Icons.calendar_today),
             label: Text(
-              '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}', 
+              '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
             ),
             onPressed: () async {
               final picked = await showDatePicker(
@@ -530,7 +443,7 @@ Future<void> showAddEventDialog(
                 );
                 if (picked != null) until = picked;
               },
-            ), 
+            ),
         ],
       ),
       actions: [
@@ -544,9 +457,9 @@ Future<void> showAddEventDialog(
               onConfirm(
                 textCtrl.text,
                 selectedDate,
-                locCtrl.text, 
+                locCtrl.text,
                 interval == 'none' ? null : interval,
-                until, 
+                until,
                 catCtrl.text,
               );
               Navigator.pop(ctx);
