@@ -31,7 +31,9 @@ void main() {
     TestWidgetsFlutterBinding.ensureInitialized();
     dir = await Directory.systemTemp.createTemp();
     Hive.init(dir.path);
-    Hive.registerAdapter(UserAdapter());
+    if (!Hive.isAdapterRegistered(UserAdapter().typeId)) {
+      Hive.registerAdapter(UserAdapter());
+    }
     await Hive.openBox<User>('userBox');
     await Hive.openBox('settingsBox');
   });
