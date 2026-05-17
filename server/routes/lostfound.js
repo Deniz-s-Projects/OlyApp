@@ -3,19 +3,9 @@ const LostItem = require('../models/LostItem');
 const Message = require('../models/Message');
 const auth = require('../middleware/auth');
 const socket = require('../socket');
-const multer = require('multer');
-const path = require('path');
+const { imageUploader } = require('../middleware/uploads');
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, '../uploads'));
-  },
-  filename: (req, file, cb) => {
-    const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    cb(null, unique + path.extname(file.originalname));
-  }
-});
-const upload = multer({ storage });
+const upload = imageUploader();
 
 const router = express.Router();
 router.use(auth);
