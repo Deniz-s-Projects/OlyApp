@@ -7,7 +7,7 @@ const apiRouter = require('../api');
 const BookingSlot = require('../models/BookingSlot');
 const User = require('../models/User');
 
-const SECRET = process.env.JWT_SECRET || 'secretkey';
+const SECRET = process.env.JWT_SECRET;
 
 function getToken(id = 1) {
   return jwt.sign({ userId: id }, SECRET);
