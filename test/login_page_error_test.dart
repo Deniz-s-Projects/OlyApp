@@ -38,8 +38,8 @@ void main() {
     );
 
     await tester.enterText(find.byType(TextFormField).at(0), 'a@b.com');
-    // Password must satisfy minimum length validation.
-    await tester.enterText(find.byType(TextFormField).at(1), 'wrongpwd');
+    // Password must satisfy client-side validation (>=8 chars, letter + digit).
+    await tester.enterText(find.byType(TextFormField).at(1), 'Wrongpwd1');
     await tester.tap(find.widgetWithText(ElevatedButton, 'Login'));
     await tester.pumpAndSettle();
 
