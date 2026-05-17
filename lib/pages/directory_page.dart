@@ -1,54 +1,60 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/models.dart';
+import '../providers/directory_providers.dart';
 import '../services/directory_service.dart';
 import 'user_chat_page.dart';
 
-class DirectoryPage extends StatefulWidget {
+class DirectoryPage extends StatelessWidget {
   final DirectoryService? service;
   const DirectoryPage({super.key, this.service});
 
   @override
-  State<DirectoryPage> createState() => _DirectoryPageState();
+  Widget build(BuildContext context) {
+    if (service == null) {
+      return const _DirectoryBody();
+    }
+    return ProviderScope(
+      overrides: [directoryServiceProvider.overrideWithValue(service!)],
+      child: const _DirectoryBody(),
+    );
+  }
 }
 
-class _DirectoryPageState extends State<DirectoryPage> {
-  late final DirectoryService _service;
-  final TextEditingController _searchCtrl = TextEditingController();
-  List<User> _users = [];
-  bool _loading = false;
+class _DirectoryBody extends ConsumerStatefulWidget {
+  const _DirectoryBody();
 
   @override
-  void initState() {
-    super.initState();
-    _service = widget.service ?? DirectoryService();
-    _loadUsers();
-  }
+  ConsumerState<_DirectoryBody> createState() => _DirectoryBodyState();
+}
 
-  Future<void> _loadUsers() async {
-    setState(() => _loading = true);
-    final cached = _service.loadCachedUsers(search: _searchCtrl.text);
-    if (cached.isNotEmpty) {
-      setState(() => _users = cached);
-    }
-    try {
-      final users = await _service.fetchUsers(search: _searchCtrl.text);
-      if (!mounted) return;
-      setState(() => _users = users);
-    } catch (_) {
-      if (!mounted) return;
-      if (_users.isEmpty) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Failed to load users')));
-      }
-    } finally {
-      if (mounted) setState(() => _loading = false);
-    }
+class _DirectoryBodyState extends ConsumerState<_DirectoryBody> {
+  final TextEditingController _searchCtrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<AsyncValue<List<User>>>(directoryUsersProvider, (prev, next) {
+      // Only surface errors when no users are shown (matches prior behavior).
+      if (next.hasError && !next.isLoading) {
+        final fallback = (prev?.valueOrNull ?? const <User>[]);
+        if (fallback.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to load users')),
+          );
+        }
+      }
+    });
+
+    final usersAsync = ref.watch(directoryUsersProvider);
+    final users = usersAsync.valueOrNull ?? const <User>[];
+
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -61,28 +67,30 @@ class _DirectoryPageState extends State<DirectoryPage> {
                 hintText: 'Search residents…',
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.refresh),
-                  onPressed: _loadUsers,
+                  onPressed: () => ref.invalidate(directoryUsersProvider),
                 ),
               ),
-              onChanged: (_) => _loadUsers(),
+              onChanged: (value) =>
+                  ref.read(directorySearchProvider.notifier).set(value),
             ),
             const SizedBox(height: 12),
             Expanded(
-              child: _loading
+              child: usersAsync.isLoading
                   ? const Center(child: CircularProgressIndicator())
-                  : _users.isEmpty
+                  : users.isEmpty
                       ? const Center(child: Text('No residents found.'))
                       : ListView.builder(
-                          itemCount: _users.length,
+                          itemCount: users.length,
                           itemBuilder: (context, index) {
-                            final user = _users[index];
+                            final user = users[index];
                             return ListTile(
                               leading: user.avatarUrl != null
                                   ? CircleAvatar(
                                       backgroundImage:
                                           NetworkImage(user.avatarUrl!),
                                     )
-                                  : const CircleAvatar(child: Icon(Icons.person)),
+                                  : const CircleAvatar(
+                                      child: Icon(Icons.person)),
                               title: Text(user.name),
                               subtitle: Text(user.email),
                               onTap: () {
@@ -90,7 +98,8 @@ class _DirectoryPageState extends State<DirectoryPage> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) => UserChatPage(user: user),
+                                    builder: (_) =>
+                                        UserChatPage(user: user),
                                   ),
                                 );
                               },
