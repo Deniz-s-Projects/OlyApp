@@ -1,47 +1,46 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../models/models.dart';
+import '../providers/clubs_providers.dart';
 import '../services/club_service.dart';
 import 'club_detail_page.dart';
 
-class ClubsPage extends StatefulWidget {
+class ClubsPage extends StatelessWidget {
   final ClubService? service;
   const ClubsPage({super.key, this.service});
 
   @override
-  State<ClubsPage> createState() => _ClubsPageState();
+  Widget build(BuildContext context) {
+    if (service == null) {
+      return const _ClubsBody();
+    }
+    return ProviderScope(
+      overrides: [clubServiceProvider.overrideWithValue(service!)],
+      child: const _ClubsBody(),
+    );
+  }
 }
 
-class _ClubsPageState extends State<ClubsPage> {
-  late final ClubService _service;
-  List<Club> _clubs = [];
+class _ClubsBody extends ConsumerWidget {
+  const _ClubsBody();
 
   @override
-  void initState() {
-    super.initState();
-    _service = widget.service ?? ClubService();
-    _load();
-  }
-
-  Future<void> _load() async {
-    final list = await _service.fetchClubs();
-    if (mounted) setState(() => _clubs = list);
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final clubsAsync = ref.watch(clubsProvider);
+    final service = ref.watch(clubServiceProvider);
+    final clubs = clubsAsync.valueOrNull ?? const [];
     return Scaffold(
       body: ListView.builder(
-        itemCount: _clubs.length,
+        itemCount: clubs.length,
         itemBuilder: (context, index) {
-          final club = _clubs[index];
+          final club = clubs[index];
           return ListTile(
             title: Text(club.name),
             subtitle: Text(club.description ?? ''),
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (_) => ClubDetailPage(club: club, service: _service),
+                builder: (_) => ClubDetailPage(club: club, service: service),
               ),
             ),
           );
