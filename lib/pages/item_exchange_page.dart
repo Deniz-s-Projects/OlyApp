@@ -251,17 +251,15 @@ class _ItemExchangeBodyState extends ConsumerState<_ItemExchangeBody> {
         ),
       ),
 
-      // FAB to post a new listing
+      // FAB to post a new listing. PostItemPage invalidates itemsProvider
+      // itself on success, so we don't need a return-value side-effect here.
       floatingActionButton: FloatingActionButton(
         heroTag: 'exchangeFab',
-        onPressed: () async {
-          final created = await Navigator.push<bool>(
+        onPressed: () {
+          Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const PostItemPage()),
           );
-          if (created == true && mounted) {
-            ref.invalidate(itemsProvider);
-          }
         },
         child: const Icon(Icons.add),
       ),
