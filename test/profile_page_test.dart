@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:network_image_mock/network_image_mock.dart';
 import 'package:hive/hive.dart';
@@ -54,7 +55,9 @@ void main() {
 
         // 2) Pump ProfilePage:
         await tester.pumpWidget(
-          MaterialApp(home: ProfilePage(service: service)),
+          ProviderScope(
+            child: MaterialApp(home: ProfilePage(service: service)),
+          ),
         );
         // Give 300ms for any images/animations to complete (instead of pumpAndSettle):
         await tester.pump(const Duration(milliseconds: 300));
@@ -104,7 +107,9 @@ void main() {
 
         // 8) Re‐pump the ProfilePage and give it time to rebuild:
         await tester.pumpWidget(
-          MaterialApp(home: ProfilePage(service: service)),
+          ProviderScope(
+            child: MaterialApp(home: ProfilePage(service: service)),
+          ),
         );
         await tester.pump(const Duration(milliseconds: 300));
 

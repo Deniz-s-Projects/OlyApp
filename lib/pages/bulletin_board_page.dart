@@ -1,22 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../models/models.dart';
+import '../providers/bulletin_providers.dart';
 import '../services/bulletin_service.dart';
 import '../utils/user_helpers.dart';
 
-class BulletinBoardPage extends StatefulWidget {
+class BulletinBoardPage extends ConsumerStatefulWidget {
   final BulletinService? service;
   const BulletinBoardPage({super.key, this.service});
 
   @override
-  State<BulletinBoardPage> createState() => _BulletinBoardPageState();
+  ConsumerState<BulletinBoardPage> createState() => _BulletinBoardPageState();
 }
 
-class _BulletinBoardPageState extends State<BulletinBoardPage> {
-  late final BulletinService _service;
+class _BulletinBoardPageState extends ConsumerState<BulletinBoardPage> {
   final TextEditingController _textCtrl = TextEditingController();
   List<BulletinPost> _posts = [];
   final Map<int, List<BulletinComment>> _comments = {};
   final Map<int, TextEditingController> _commentCtrls = {};
+
+  BulletinService _resolveService() {
+    final BulletinService service =
+        widget.service ?? ref.read(bulletinServiceProvider);
+    return service;
+  }
 
   String _authorName(String userId) {
     final me = currentUserId();
@@ -26,29 +34,31 @@ class _BulletinBoardPageState extends State<BulletinBoardPage> {
   @override
   void initState() {
     super.initState();
-    _service = widget.service ?? BulletinService();
-    _loadPosts();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadPosts());
   }
 
   Future<void> _loadPosts() async {
-    final posts = await _service.fetchPosts();
+    final service = _resolveService();
+    final posts = await service.fetchPosts();
     if (!mounted) return;
     final commentEntries = <int, List<BulletinComment>>{};
     for (final p in posts) {
       if (p.id != null) {
-        commentEntries[p.id!] = await _service.fetchComments(p.id!);
+        commentEntries[p.id!] = await service.fetchComments(p.id!);
       }
     }
     setState(() {
       _posts = posts;
-      _comments.addAll(commentEntries);
+      _comments
+        ..clear()
+        ..addAll(commentEntries);
     });
   }
 
   Future<void> _submit() async {
     final text = _textCtrl.text.trim();
     if (text.isEmpty) return;
-    final post = await _service.addPost(
+    final post = await _resolveService().addPost(
       BulletinPost(userId: currentUserId(), content: text),
     );
     if (!mounted) return;
@@ -64,7 +74,7 @@ class _BulletinBoardPageState extends State<BulletinBoardPage> {
     if (ctrl == null) return;
     final text = ctrl.text.trim();
     if (text.isEmpty) return;
-    final comment = await _service.addComment(
+    final comment = await _resolveService().addComment(
       BulletinComment(
         postId: postId,
         userId: currentUserId(),
@@ -96,7 +106,7 @@ class _BulletinBoardPageState extends State<BulletinBoardPage> {
       ),
     );
     if (result != null && result.isNotEmpty) {
-      final updated = await _service.updatePost(
+      final updated = await _resolveService().updatePost(
         BulletinPost(
           id: post.id,
           userId: post.userId,
@@ -113,7 +123,7 @@ class _BulletinBoardPageState extends State<BulletinBoardPage> {
   }
 
   Future<void> _deletePost(int id) async {
-    await _service.deletePost(id);
+    await _resolveService().deletePost(id);
     if (!mounted) return;
     setState(() {
       _posts.removeWhere((p) => p.id == id);
@@ -141,6 +151,9 @@ class _BulletinBoardPageState extends State<BulletinBoardPage> {
       ),
     );
     if (result != null && result.isNotEmpty) {
+      // NOTE: the previous implementation only mutated local state here;
+      // there is no BulletinService.updateComment endpoint. Preserved as-is
+      // — fixing the comment-mutation API is its own follow-up.
       setState(() {
         final list = _comments[postId];
         final idx = list?.indexWhere((c) => c.id == comment.id) ?? -1;
@@ -158,6 +171,8 @@ class _BulletinBoardPageState extends State<BulletinBoardPage> {
   }
 
   void _deleteComment(int postId, int id) {
+    // NOTE: server-side comment deletion is also missing; we only drop the
+    // local entry. Same caveat as _editComment.
     setState(() {
       _comments[postId]?.removeWhere((c) => c.id == id);
     });

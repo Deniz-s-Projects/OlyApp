@@ -1,34 +1,40 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-import '../models/models.dart';
 import '../main.dart';
-import '../services/user_service.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
+import '../models/models.dart';
+import '../providers/user_providers.dart';
 import '../services/notification_service.dart';
+import '../services/user_service.dart';
 import 'emergency_contacts_page.dart';
 import 'suggestion_box_page.dart';
 
-class SettingsPage extends StatefulWidget {
+class SettingsPage extends ConsumerStatefulWidget {
   final UserService? service;
   const SettingsPage({super.key, this.service});
 
   @override
-  State<SettingsPage> createState() => _SettingsPageState();
+  ConsumerState<SettingsPage> createState() => _SettingsPageState();
 }
 
-class _SettingsPageState extends State<SettingsPage> {
+class _SettingsPageState extends ConsumerState<SettingsPage> {
   ThemeMode _themeMode = ThemeMode.system;
   bool _listed = false;
   bool _eventNotif = true;
   bool _announcementNotif = true;
-  late final UserService _service;
   late User _user;
+
+  UserService _resolveService() {
+    final UserService service =
+        widget.service ?? ref.read(userServiceProvider);
+    return service;
+  }
 
   @override
   void initState() {
     super.initState();
-    _service = widget.service ?? UserService();
     final settingsBox = Hive.box('settingsBox');
     final stored = settingsBox.get('themeMode', defaultValue: 'system') as String;
     _themeMode = ThemeMode.values.firstWhere(
@@ -58,7 +64,7 @@ class _SettingsPageState extends State<SettingsPage> {
       room: _user.room,
     );
     try {
-      final user = await _service.updateProfile(updated);
+      final user = await _resolveService().updateProfile(updated);
       await Hive.box<User>('userBox').put('currentUser', user);
       if (mounted) setState(() => _user = user);
     } catch (e) {

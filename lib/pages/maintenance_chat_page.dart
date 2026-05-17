@@ -1,38 +1,42 @@
-import 'package:flutter/material.dart';
-import '../models/models.dart';
-import '../services/maintenance_service.dart';
-import '../utils/user_helpers.dart';
-import '../services/chat_service.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 import 'dart:convert';
 
-class MaintenanceChatPage extends StatefulWidget {
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
+
+import '../models/models.dart';
+import '../providers/chat_providers.dart';
+import '../providers/maintenance_providers.dart';
+import '../utils/user_helpers.dart';
+
+class MaintenanceChatPage extends ConsumerStatefulWidget {
   final MaintenanceRequest request;
   const MaintenanceChatPage({super.key, required this.request});
 
   @override
-  State<MaintenanceChatPage> createState() => _MaintenanceChatPageState();
+  ConsumerState<MaintenanceChatPage> createState() =>
+      _MaintenanceChatPageState();
 }
 
-class _MaintenanceChatPageState extends State<MaintenanceChatPage> {
-  final MaintenanceService _service = MaintenanceService();
+class _MaintenanceChatPageState extends ConsumerState<MaintenanceChatPage> {
   final TextEditingController _messageCtrl = TextEditingController();
-
   List<Message> _messages = [];
-  final ChatService _chat = ChatService();
   WebSocketChannel? _channel;
   bool _online = false;
 
   @override
   void initState() {
     super.initState();
-    _loadMessages();
-    _connectSocket();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadMessages();
+      _connectSocket();
+    });
   }
 
   void _connectSocket() {
     if (widget.request.id == null) return;
-    _channel = _chat.connect(widget.request.id!.toString());
+    _channel =
+        ref.read(chatServiceProvider).connect(widget.request.id!.toString());
     _channel!.stream.listen((event) {
       final data = jsonDecode(event as String) as Map<String, dynamic>;
       if (data['type'] == 'message') {
@@ -51,8 +55,9 @@ class _MaintenanceChatPageState extends State<MaintenanceChatPage> {
 
   Future<void> _loadMessages() async {
     if (widget.request.id == null) return;
-    final msgs = await _service.fetchMessages(widget.request.id!);
-    setState(() => _messages = msgs);
+    final service = ref.read(maintenanceServiceProvider);
+    final msgs = await service.fetchMessages(widget.request.id!);
+    if (mounted) setState(() => _messages = msgs);
   }
 
   Future<void> _sendMessage() async {
@@ -63,7 +68,7 @@ class _MaintenanceChatPageState extends State<MaintenanceChatPage> {
       senderId: currentUserId(),
       content: text,
     );
-    await _service.sendMessage(message);
+    await ref.read(maintenanceServiceProvider).sendMessage(message);
     _messageCtrl.clear();
   }
 

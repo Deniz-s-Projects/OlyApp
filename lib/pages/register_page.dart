@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import '../models/models.dart';
-import '../services/auth_service.dart';
+import '../providers/auth_providers.dart';
 import '../utils/validators.dart';
 
-class RegisterPage extends StatefulWidget {
+class RegisterPage extends ConsumerStatefulWidget {
   final VoidCallback? onRegistered;
   const RegisterPage({super.key, this.onRegistered});
 
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  ConsumerState<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
+class _RegisterPageState extends ConsumerState<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
@@ -41,12 +42,11 @@ class _RegisterPageState extends State<RegisterPage> {
     }
     setState(() => _loading = true);
     try {
-      final service = AuthService();
-      final res = await service.register(
-        _nameCtrl.text.trim(),
-        _emailCtrl.text.trim(),
-        _passwordCtrl.text,
-      );
+      final res = await ref.read(authServiceProvider).register(
+            _nameCtrl.text.trim(),
+            _emailCtrl.text.trim(),
+            _passwordCtrl.text,
+          );
       final token = res['token'] as String;
       final userMap = res['user'] as Map<String, dynamic>;
       final user = User.fromMap(userMap);

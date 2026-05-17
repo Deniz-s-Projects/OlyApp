@@ -1,51 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/models.dart';
+import '../providers/service_listings_providers.dart';
 import '../services/service_list_service.dart';
 import '../utils/user_helpers.dart';
 import 'post_service_listing_page.dart';
 import 'service_detail_page.dart';
 
-class ServicesPage extends StatefulWidget {
+class ServicesPage extends StatelessWidget {
   final ServiceListService? service;
   const ServicesPage({super.key, this.service});
 
   @override
-  State<ServicesPage> createState() => _ServicesPageState();
+  Widget build(BuildContext context) {
+    if (service == null) return const _ServicesBody();
+    return ProviderScope(
+      overrides: [serviceListServiceProvider.overrideWithValue(service!)],
+      child: const _ServicesBody(),
+    );
+  }
 }
 
-class _ServicesPageState extends State<ServicesPage> {
-  late final ServiceListService _service;
-  List<ServiceListing> _listings = [];
+class _ServicesBody extends ConsumerWidget {
+  const _ServicesBody();
 
   @override
-  void initState() {
-    super.initState();
-    _service = widget.service ?? ServiceListService();
-    _load();
-  }
-
-  Future<void> _load() async {
-    final listings = await _service.fetchListings();
-    if (!mounted) return;
-    setState(() => _listings = listings);
-  }
-
-  Future<void> _openForm([ServiceListing? listing]) async {
-    final created = await Navigator.push<bool>(
-      context,
-      MaterialPageRoute(
-        builder: (_) =>
-            PostServiceListingPage(listing: listing, service: _service),
-      ),
-    );
-    if (created == true) _load();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final cs = Theme.of(context).colorScheme;
+    final listings = ref.watch(serviceListingsProvider).valueOrNull ??
+        const <ServiceListing>[];
     return Scaffold(
       appBar: AppBar(
         title: const Text('Services'),
@@ -53,8 +38,8 @@ class _ServicesPageState extends State<ServicesPage> {
         foregroundColor: cs.onPrimaryContainer,
       ),
       body: RefreshIndicator(
-        onRefresh: _load,
-        child: _listings.isEmpty
+        onRefresh: () async => ref.invalidate(serviceListingsProvider),
+        child: listings.isEmpty
             ? ListView(
                 children: const [
                   SizedBox(
@@ -65,20 +50,24 @@ class _ServicesPageState extends State<ServicesPage> {
               )
             : ListView.separated(
                 padding: const EdgeInsets.all(16),
-                itemCount: _listings.length,
+                itemCount: listings.length,
                 separatorBuilder: (_, __) => const Divider(height: 1),
                 itemBuilder: (context, index) {
-                  final listing = _listings[index];
+                  final listing = listings[index];
                   return ListTile(
                     onTap: listing.userId == currentUserId()
-                        ? () => _openForm(listing)
+                        ? () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    PostServiceListingPage(listing: listing),
+                              ),
+                            )
                         : () => Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => ServiceDetailPage(
-                                  listing: listing,
-                                  service: _service,
-                                ),
+                                builder: (_) =>
+                                    ServiceDetailPage(listing: listing),
                               ),
                             ),
                     title: Text(listing.title),
@@ -120,7 +109,12 @@ class _ServicesPageState extends State<ServicesPage> {
               ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _openForm(),
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const PostServiceListingPage(),
+          ),
+        ),
         child: const Icon(Icons.add),
       ),
     );

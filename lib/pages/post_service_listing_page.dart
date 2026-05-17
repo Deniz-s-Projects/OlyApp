@@ -1,32 +1,41 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../models/models.dart';
+import '../providers/service_listings_providers.dart';
 import '../services/service_list_service.dart';
 import '../utils/user_helpers.dart';
 
-class PostServiceListingPage extends StatefulWidget {
+class PostServiceListingPage extends ConsumerStatefulWidget {
   final ServiceListing? listing;
   final ServiceListService? service;
 
   const PostServiceListingPage({super.key, this.listing, this.service});
 
   @override
-  State<PostServiceListingPage> createState() => _PostServiceListingPageState();
+  ConsumerState<PostServiceListingPage> createState() =>
+      _PostServiceListingPageState();
 }
 
-class _PostServiceListingPageState extends State<PostServiceListingPage> {
+class _PostServiceListingPageState
+    extends ConsumerState<PostServiceListingPage> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _titleCtrl;
   late final TextEditingController _descCtrl;
   late final TextEditingController _contactCtrl;
-  late final ServiceListService _service;
   bool _submitting = false;
 
   bool get _editing => widget.listing != null;
 
+  ServiceListService _resolveService() {
+    final ServiceListService service =
+        widget.service ?? ref.read(serviceListServiceProvider);
+    return service;
+  }
+
   @override
   void initState() {
     super.initState();
-    _service = widget.service ?? ServiceListService();
     final l = widget.listing;
     _titleCtrl = TextEditingController(text: l?.title ?? '');
     _descCtrl = TextEditingController(text: l?.description ?? '');
@@ -55,12 +64,14 @@ class _PostServiceListingPageState extends State<PostServiceListingPage> {
             ? null
             : _contactCtrl.text.trim(),
       );
+      final service = _resolveService();
       if (editing) {
-        await _service.updateListing(listing);
+        await service.updateListing(listing);
       } else {
-        await _service.addListing(listing);
+        await service.addListing(listing);
       }
       if (mounted) {
+        ref.invalidate(serviceListingsProvider);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(editing ? 'Listing updated!' : 'Listing posted!'),
@@ -102,8 +113,9 @@ class _PostServiceListingPageState extends State<PostServiceListingPage> {
       ),
     );
     if (confirm != true) return;
-    await _service.deleteListing(id);
+    await _resolveService().deleteListing(id);
     if (mounted) {
+      ref.invalidate(serviceListingsProvider);
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Listing deleted')));

@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:oly_app/models/models.dart';
@@ -32,8 +33,10 @@ void main() {
 
   testWidgets('shows server error on invalid credentials', (tester) async {
     await tester.pumpWidget(
-      MaterialApp(
-        home: LoginPage(onLoginSuccess: () {}, service: FakeAuthService()),
+      ProviderScope(
+        child: MaterialApp(
+          home: LoginPage(onLoginSuccess: () {}, service: FakeAuthService()),
+        ),
       ),
     );
 

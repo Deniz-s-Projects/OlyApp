@@ -1,41 +1,50 @@
-import 'package:flutter/material.dart';
-import '../models/models.dart';
-import '../services/lost_found_service.dart';
-import '../utils/user_helpers.dart';
-import '../services/chat_service.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 import 'dart:convert';
 
-class LostFoundDetailPage extends StatefulWidget {
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
+
+import '../models/models.dart';
+import '../providers/chat_providers.dart';
+import '../providers/lost_found_providers.dart';
+import '../services/lost_found_service.dart';
+import '../utils/user_helpers.dart';
+
+class LostFoundDetailPage extends ConsumerStatefulWidget {
   final LostItem item;
   final LostFoundService? service;
   const LostFoundDetailPage({super.key, required this.item, this.service});
 
   @override
-  State<LostFoundDetailPage> createState() => _LostFoundDetailPageState();
+  ConsumerState<LostFoundDetailPage> createState() =>
+      _LostFoundDetailPageState();
 }
 
-class _LostFoundDetailPageState extends State<LostFoundDetailPage> {
-  late LostItem _item;
-  late final LostFoundService _service;
+class _LostFoundDetailPageState extends ConsumerState<LostFoundDetailPage> {
+  late LostItem _item = widget.item;
   final _messageCtrl = TextEditingController();
   List<Message> _messages = [];
-  final ChatService _chat = ChatService();
   WebSocketChannel? _channel;
   bool _online = false;
+
+  LostFoundService _resolveService() {
+    final LostFoundService service =
+        widget.service ?? ref.read(lostFoundServiceProvider);
+    return service;
+  }
 
   @override
   void initState() {
     super.initState();
-    _item = widget.item;
-    _service = widget.service ?? LostFoundService();
-    _loadMessages();
-    _connectSocket();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadMessages();
+      _connectSocket();
+    });
   }
 
   void _connectSocket() {
     if (_item.id == null) return;
-    _channel = _chat.connect(_item.id!.toString());
+    _channel = ref.read(chatServiceProvider).connect(_item.id!.toString());
     _channel!.stream.listen((event) {
       final data = jsonDecode(event as String) as Map<String, dynamic>;
       if (data['type'] == 'message') {
@@ -55,7 +64,7 @@ class _LostFoundDetailPageState extends State<LostFoundDetailPage> {
   Future<void> _loadMessages() async {
     if (_item.id == null) return;
     try {
-      final msgs = await _service.fetchMessages(_item.id!);
+      final msgs = await _resolveService().fetchMessages(_item.id!);
       if (mounted) setState(() => _messages = msgs);
     } catch (_) {}
   }
@@ -69,7 +78,7 @@ class _LostFoundDetailPageState extends State<LostFoundDetailPage> {
       content: text,
     );
     try {
-      await _service.sendMessage(_item.id!, msg);
+      await _resolveService().sendMessage(_item.id!, msg);
       if (mounted) {
         _messageCtrl.clear();
       }
@@ -78,14 +87,20 @@ class _LostFoundDetailPageState extends State<LostFoundDetailPage> {
 
   Future<void> _resolveItem() async {
     if (_item.id == null) return;
-    await _service.resolveItem(_item.id!);
-    if (mounted) Navigator.pop(context, true);
+    await _resolveService().resolveItem(_item.id!);
+    if (mounted) {
+      ref.invalidate(lostFoundItemsProvider);
+      Navigator.pop(context, true);
+    }
   }
 
   Future<void> _deleteItem() async {
     if (_item.id == null) return;
-    await _service.deleteItem(_item.id!);
-    if (mounted) Navigator.pop(context, true);
+    await _resolveService().deleteItem(_item.id!);
+    if (mounted) {
+      ref.invalidate(lostFoundItemsProvider);
+      Navigator.pop(context, true);
+    }
   }
 
   Future<void> _editItem() async {
@@ -121,7 +136,7 @@ class _LostFoundDetailPageState extends State<LostFoundDetailPage> {
       ),
     );
     if (result == true && _item.id != null) {
-      final updated = await _service.updateItem(
+      final updated = await _resolveService().updateItem(
         LostItem(
           id: _item.id,
           ownerId: _item.ownerId,
@@ -135,7 +150,10 @@ class _LostFoundDetailPageState extends State<LostFoundDetailPage> {
           createdAt: _item.createdAt,
         ),
       );
-      if (mounted) setState(() => _item = updated);
+      if (mounted) {
+        setState(() => _item = updated);
+        ref.invalidate(lostFoundItemsProvider);
+      }
     }
   }
 

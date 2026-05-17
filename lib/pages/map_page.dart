@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:latlong2/latlong.dart';
 
 import '../models/map_pin.dart';
+import '../providers/map_providers.dart';
 import '../services/map_service.dart';
 
-class MapPage extends StatefulWidget {
+class MapPage extends StatelessWidget {
   final MapService? service;
   final bool loadTiles;
   final List<LatLng>? route;
@@ -21,13 +23,31 @@ class MapPage extends StatefulWidget {
   });
 
   @override
-  State<MapPage> createState() => _MapPageState();
+  Widget build(BuildContext context) {
+    final body = _MapBody(loadTiles: loadTiles, route: route, center: center);
+    if (service == null) return body;
+    return ProviderScope(
+      overrides: [mapServiceProvider.overrideWithValue(service!)],
+      child: body,
+    );
+  }
 }
 
-class _MapPageState extends State<MapPage> {
-  late final MapService _service;
-  List<MapPin> _allPins = [];
-  List<MapPin> _visiblePins = [];
+class _MapBody extends ConsumerStatefulWidget {
+  final bool loadTiles;
+  final List<LatLng>? route;
+  final LatLng? center;
+  const _MapBody({
+    required this.loadTiles,
+    required this.route,
+    required this.center,
+  });
+
+  @override
+  ConsumerState<_MapBody> createState() => _MapBodyState();
+}
+
+class _MapBodyState extends ConsumerState<_MapBody> {
   final TextEditingController _searchCtrl = TextEditingController();
   Set<MapPinCategory> _selectedCats = {};
   List<MapPin> _selectedPins = [];
@@ -36,53 +56,39 @@ class _MapPageState extends State<MapPage> {
   @override
   void initState() {
     super.initState();
-    _service = widget.service ?? MapService();
     _selectedCats = Set.from(MapPinCategory.values);
     _route = widget.route;
-    _loadPins();
   }
 
-  Future<void> _loadPins() async {
-    final pins = await _service.fetchPins();
-    setState(() {
-      _allPins = pins;
-      _applyFilters();
-    });
-  }
-
-  void _applyFilters() {
+  List<MapPin> _filteredPins(List<MapPin> all) {
     final query = _searchCtrl.text.toLowerCase();
-    setState(() {
-      _visiblePins =
-          _allPins.where((p) {
-            final matchesText = p.title.toLowerCase().contains(query);
-            final matchesCat = _selectedCats.contains(p.category);
-            return matchesText && matchesCat;
-          }).toList();
-    });
+    return all
+        .where((p) =>
+            p.title.toLowerCase().contains(query) &&
+            _selectedCats.contains(p.category))
+        .toList();
   }
 
   Future<void> _onPinTap(MapPin pin) async {
     final result = await showModalBottomSheet<String>(
       context: context,
-      builder:
-          (ctx) => SafeArea(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  leading: const Icon(Icons.add_location),
-                  title: const Text('Add to route'),
-                  onTap: () => Navigator.pop(ctx, 'add'),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.my_location),
-                  title: const Text('Route from my location'),
-                  onTap: () => Navigator.pop(ctx, 'from'),
-                ),
-              ],
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.add_location),
+              title: const Text('Add to route'),
+              onTap: () => Navigator.pop(ctx, 'add'),
             ),
-          ),
+            ListTile(
+              leading: const Icon(Icons.my_location),
+              title: const Text('Route from my location'),
+              onTap: () => Navigator.pop(ctx, 'from'),
+            ),
+          ],
+        ),
+      ),
     );
 
     if (result == 'add') {
@@ -106,11 +112,12 @@ class _MapPageState extends State<MapPage> {
   }
 
   Future<void> _updateRoute() async {
+    final service = ref.read(mapServiceProvider);
     if (_selectedPins.length == 2) {
       final start = LatLng(_selectedPins[0].lat, _selectedPins[0].lon);
       final end = LatLng(_selectedPins[1].lat, _selectedPins[1].lon);
-      final r = await _service.fetchRoute(start, end);
-      setState(() => _route = r);
+      final r = await service.fetchRoute(start, end);
+      if (mounted) setState(() => _route = r);
     } else if (_selectedPins.length == 1) {
       try {
         var perm = await Geolocator.checkPermission();
@@ -119,19 +126,19 @@ class _MapPageState extends State<MapPage> {
         }
         if (perm == LocationPermission.denied ||
             perm == LocationPermission.deniedForever) {
-          setState(() => _route = null);
+          if (mounted) setState(() => _route = null);
           return;
         }
         final pos = await Geolocator.getCurrentPosition();
         final start = LatLng(pos.latitude, pos.longitude);
         final end = LatLng(_selectedPins[0].lat, _selectedPins[0].lon);
-        final r = await _service.fetchRoute(start, end);
-        setState(() => _route = r);
+        final r = await service.fetchRoute(start, end);
+        if (mounted) setState(() => _route = r);
       } catch (_) {
-        setState(() => _route = null);
+        if (mounted) setState(() => _route = null);
       }
     } else {
-      setState(() => _route = null);
+      if (mounted) setState(() => _route = null);
     }
   }
 
@@ -143,9 +150,12 @@ class _MapPageState extends State<MapPage> {
 
   @override
   Widget build(BuildContext context) {
+    final allPins =
+        ref.watch(mapPinsProvider).valueOrNull ?? const <MapPin>[];
+    final visiblePins = _filteredPins(allPins);
     return Scaffold(
       floatingActionButton: FloatingActionButton(
-        onPressed: _loadPins,
+        onPressed: () => ref.invalidate(mapPinsProvider),
         child: const Icon(Icons.refresh),
       ),
       body: Stack(
@@ -163,28 +173,27 @@ class _MapPageState extends State<MapPage> {
                   tileProvider: _safeProvider(),
                 ),
               MarkerLayer(
-                markers:
-                    _visiblePins
-                        .map(
-                          (p) => Marker(
-                            width: 40,
-                            height: 40,
-                            point: LatLng(p.lat, p.lon),
-                            child: GestureDetector(
-                              key: ValueKey(p.id),
-                              onTap: () => _onPinTap(p),
-                              child: Semantics(
-                                label: p.id,
-                                child: Icon(
-                                  Icons.location_pin,
-                                  color: _colorFor(p.category),
-                                  size: 32,
-                                ),
-                              ),
+                markers: visiblePins
+                    .map(
+                      (p) => Marker(
+                        width: 40,
+                        height: 40,
+                        point: LatLng(p.lat, p.lon),
+                        child: GestureDetector(
+                          key: ValueKey(p.id),
+                          onTap: () => _onPinTap(p),
+                          child: Semantics(
+                            label: p.id,
+                            child: Icon(
+                              Icons.location_pin,
+                              color: _colorFor(p.category),
+                              size: 32,
                             ),
                           ),
-                        )
-                        .toList(),
+                        ),
+                      ),
+                    )
+                    .toList(),
               ),
               if (_route != null)
                 PolylineLayer(
@@ -217,7 +226,7 @@ class _MapPageState extends State<MapPage> {
                         borderSide: BorderSide.none,
                       ),
                     ),
-                    onChanged: (_) => _applyFilters(),
+                    onChanged: (_) => setState(() {}),
                   ),
                   const SizedBox(height: 8),
                   SizedBox(
@@ -239,7 +248,6 @@ class _MapPageState extends State<MapPage> {
                               } else {
                                 _selectedCats.add(cat);
                               }
-                              _applyFilters();
                             });
                           },
                         );

@@ -1,24 +1,26 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:image_picker/image_picker.dart';
-import '../models/models.dart';
+
 import '../main.dart';
+import '../models/models.dart';
+import '../providers/user_providers.dart';
 import '../services/user_service.dart';
 
-class ProfilePage extends StatefulWidget {
+class ProfilePage extends ConsumerStatefulWidget {
   final UserService? service;
   const ProfilePage({super.key, this.service});
 
   @override
-  State<ProfilePage> createState() => _ProfilePageState();
+  ConsumerState<ProfilePage> createState() => _ProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
+class _ProfilePageState extends ConsumerState<ProfilePage> {
   late final Box<User> _userBox;
   late User _user;
-  late final UserService _service;
 
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameCtrl;
@@ -28,10 +30,15 @@ class _ProfilePageState extends State<ProfilePage> {
   late final TextEditingController _roomCtrl;
   XFile? _avatarFile;
 
+  UserService _resolveService() {
+    final UserService service =
+        widget.service ?? ref.read(userServiceProvider);
+    return service;
+  }
+
   @override
   void initState() {
     super.initState();
-    _service = widget.service ?? UserService();
     _userBox = Hive.box<User>('userBox');
     _user = _userBox.get('currentUser')!;
     _nameCtrl = TextEditingController(text: _user.name);
@@ -62,9 +69,10 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
+    final service = _resolveService();
     if (_avatarFile != null) {
       try {
-        final path = await _service.uploadAvatar(File(_avatarFile!.path));
+        final path = await service.uploadAvatar(File(_avatarFile!.path));
         _avatarCtrl.text = path;
       } catch (e) {
         if (mounted) {
@@ -87,7 +95,7 @@ class _ProfilePageState extends State<ProfilePage> {
       room: _roomCtrl.text.trim().isEmpty ? null : _roomCtrl.text.trim(),
     );
     try {
-      final user = await _service.updateProfile(updated);
+      final user = await service.updateProfile(updated);
       await _userBox.put('currentUser', user);
       if (mounted) {
         setState(() => _user = user);
@@ -124,7 +132,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
     if (confirm != true) return;
     try {
-      await _service.deleteAccount();
+      await _resolveService().deleteAccount();
       if (!mounted) return;
       await OlyApp.of(context)?.logout();
     } catch (e) {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:oly_app/pages/bulletin_board_page.dart';
 import 'package:oly_app/services/bulletin_service.dart';
@@ -70,7 +71,9 @@ void main() {
       },
     );
     await tester.pumpWidget(
-      MaterialApp(home: BulletinBoardPage(service: service)),
+      ProviderScope(
+        child: MaterialApp(home: BulletinBoardPage(service: service)),
+      ),
     );
     await tester.pumpAndSettle();
     expect(find.text('Hello'), findsOneWidget);
@@ -80,7 +83,9 @@ void main() {
   testWidgets('Submitting adds new post', (tester) async {
     final service = FakeBulletinService([], {});
     await tester.pumpWidget(
-      MaterialApp(home: BulletinBoardPage(service: service)),
+      ProviderScope(
+        child: MaterialApp(home: BulletinBoardPage(service: service)),
+      ),
     );
     await tester.pumpAndSettle();
 
@@ -97,7 +102,9 @@ void main() {
       {1: []},
     );
     await tester.pumpWidget(
-      MaterialApp(home: BulletinBoardPage(service: service)),
+      ProviderScope(
+        child: MaterialApp(home: BulletinBoardPage(service: service)),
+      ),
     );
     await tester.pumpAndSettle();
 
@@ -114,7 +121,9 @@ void main() {
       {1: []},
     );
     await tester.pumpWidget(
-      MaterialApp(home: BulletinBoardPage(service: service)),
+      ProviderScope(
+        child: MaterialApp(home: BulletinBoardPage(service: service)),
+      ),
     );
     await tester.pumpAndSettle();
 
@@ -133,7 +142,9 @@ void main() {
       {1: []},
     );
     await tester.pumpWidget(
-      MaterialApp(home: BulletinBoardPage(service: service)),
+      ProviderScope(
+        child: MaterialApp(home: BulletinBoardPage(service: service)),
+      ),
     );
     await tester.pumpAndSettle();
 

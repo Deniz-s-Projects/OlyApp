@@ -1,44 +1,50 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../models/models.dart';
+import '../providers/service_listings_providers.dart';
 import '../services/service_list_service.dart';
 import '../utils/user_helpers.dart';
 
-class ServiceDetailPage extends StatefulWidget {
+class ServiceDetailPage extends ConsumerStatefulWidget {
   final ServiceListing listing;
   final ServiceListService? service;
 
   const ServiceDetailPage({super.key, required this.listing, this.service});
 
   @override
-  State<ServiceDetailPage> createState() => _ServiceDetailPageState();
+  ConsumerState<ServiceDetailPage> createState() => _ServiceDetailPageState();
 }
 
-class _ServiceDetailPageState extends State<ServiceDetailPage> {
-  late ServiceListing _listing;
-  late ServiceListService _service;
-  List<ServiceRating> _ratings = [];
+class _ServiceDetailPageState extends ConsumerState<ServiceDetailPage> {
+  late ServiceListing _listing = widget.listing;
+  late List<ServiceRating> _ratings = widget.listing.ratings;
   final _ratingCtrl = TextEditingController();
   final _reviewCtrl = TextEditingController();
+
+  ServiceListService _resolveService() {
+    final ServiceListService service =
+        widget.service ?? ref.read(serviceListServiceProvider);
+    return service;
+  }
 
   @override
   void initState() {
     super.initState();
-    _listing = widget.listing;
-    _service = widget.service ?? ServiceListService();
-    _ratings = _listing.ratings;
-    _loadRatings();
+    // Fire the initial fresh fetch after the first frame so ref is usable.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadRatings());
   }
 
   Future<void> _loadRatings() async {
     if (_listing.id == null) return;
-    final list = await _service.fetchRatings(_listing.id!);
+    final list = await _resolveService().fetchRatings(_listing.id!);
     if (mounted) setState(() => _ratings = list);
   }
 
   Future<void> _submitRating() async {
     if (_listing.id == null) return;
     final rating = int.tryParse(_ratingCtrl.text) ?? 0;
-    await _service.submitRating(
+    await _resolveService().submitRating(
       _listing.id!,
       rating,
       review: _reviewCtrl.text,
@@ -48,7 +54,8 @@ class _ServiceDetailPageState extends State<ServiceDetailPage> {
     _reviewCtrl.clear();
     ScaffoldMessenger.of(context)
         .showSnackBar(const SnackBar(content: Text('Rating submitted')));
-    _loadRatings();
+    await _loadRatings();
+    if (mounted) ref.invalidate(serviceListingsProvider);
   }
 
   @override

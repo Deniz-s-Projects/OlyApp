@@ -1,40 +1,48 @@
-import 'package:flutter/material.dart';
-
-import '../models/models.dart';
-import '../services/directory_service.dart';
-import '../utils/user_helpers.dart';
-import '../services/chat_service.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 import 'dart:convert';
 
-class UserChatPage extends StatefulWidget {
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
+
+import '../models/models.dart';
+import '../providers/chat_providers.dart';
+import '../providers/directory_providers.dart';
+import '../services/directory_service.dart';
+import '../utils/user_helpers.dart';
+
+class UserChatPage extends ConsumerStatefulWidget {
   final User user;
   final DirectoryService? service;
   const UserChatPage({super.key, required this.user, this.service});
 
   @override
-  State<UserChatPage> createState() => _UserChatPageState();
+  ConsumerState<UserChatPage> createState() => _UserChatPageState();
 }
 
-class _UserChatPageState extends State<UserChatPage> {
-  late final DirectoryService _service;
+class _UserChatPageState extends ConsumerState<UserChatPage> {
   final TextEditingController _messageCtrl = TextEditingController();
   List<Message> _messages = [];
-  final ChatService _chat = ChatService();
   WebSocketChannel? _channel;
   bool _online = false;
+
+  DirectoryService _resolveService() {
+    final DirectoryService service =
+        widget.service ?? ref.read(directoryServiceProvider);
+    return service;
+  }
 
   @override
   void initState() {
     super.initState();
-    _service = widget.service ?? DirectoryService();
-    _loadMessages();
-    _connectSocket();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadMessages();
+      _connectSocket();
+    });
   }
 
   void _connectSocket() {
     if (widget.user.id == null) return;
-    _channel = _chat.connect(widget.user.id!);
+    _channel = ref.read(chatServiceProvider).connect(widget.user.id!);
     _channel!.stream.listen((event) {
       final data = jsonDecode(event as String) as Map<String, dynamic>;
       if (data['type'] == 'message') {
@@ -53,7 +61,7 @@ class _UserChatPageState extends State<UserChatPage> {
 
   Future<void> _loadMessages() async {
     if (widget.user.id == null) return;
-    final msgs = await _service.fetchMessages(widget.user.id!);
+    final msgs = await _resolveService().fetchMessages(widget.user.id!);
     if (!mounted) return;
     setState(() => _messages = msgs);
   }
@@ -61,7 +69,7 @@ class _UserChatPageState extends State<UserChatPage> {
   Future<void> _sendMessage() async {
     final text = _messageCtrl.text.trim();
     if (text.isEmpty || widget.user.id == null) return;
-    await _service.sendMessage(widget.user.id!, text);
+    await _resolveService().sendMessage(widget.user.id!, text);
     _messageCtrl.clear();
   }
 

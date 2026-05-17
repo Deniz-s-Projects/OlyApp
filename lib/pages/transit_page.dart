@@ -1,35 +1,41 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/models.dart';
+import '../providers/transit_providers.dart';
 import '../services/transit_service.dart';
 
-class TransitPage extends StatefulWidget {
+class TransitPage extends StatelessWidget {
   final TransitService? service;
   const TransitPage({super.key, this.service});
 
   @override
-  State<TransitPage> createState() => _TransitPageState();
+  Widget build(BuildContext context) {
+    if (service == null) return const _TransitBody();
+    return ProviderScope(
+      overrides: [transitServiceProvider.overrideWithValue(service!)],
+      child: const _TransitBody(),
+    );
+  }
 }
 
-class _TransitPageState extends State<TransitPage> {
-  late final TransitService _service;
+class _TransitBody extends ConsumerStatefulWidget {
+  const _TransitBody();
+
+  @override
+  ConsumerState<_TransitBody> createState() => _TransitBodyState();
+}
+
+class _TransitBodyState extends ConsumerState<_TransitBody> {
   final TextEditingController _searchCtrl = TextEditingController();
   List<TransitStop> _searchResults = [];
-  List<TransitStop> _pinned = [];
   TransitStop? _selected;
   List<TransitDeparture> _departures = [];
 
   @override
-  void initState() {
-    super.initState();
-    _service = widget.service ?? TransitService();
-    _loadPinned();
-  }
-
-  Future<void> _loadPinned() async {
-    final list = await _service.loadPinnedStops();
-    if (!mounted) return;
-    setState(() => _pinned = list);
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
   }
 
   Future<void> _search(String q) async {
@@ -38,7 +44,7 @@ class _TransitPageState extends State<TransitPage> {
       return;
     }
     try {
-      final results = await _service.searchStops(q);
+      final results = await ref.read(transitServiceProvider).searchStops(q);
       if (!mounted) return;
       setState(() => _searchResults = results);
     } catch (_) {
@@ -50,7 +56,8 @@ class _TransitPageState extends State<TransitPage> {
 
   Future<void> _selectStop(TransitStop stop) async {
     try {
-      final deps = await _service.fetchDepartures(stop.id);
+      final deps =
+          await ref.read(transitServiceProvider).fetchDepartures(stop.id);
       if (!mounted) return;
       setState(() {
         _selected = stop;
@@ -65,24 +72,21 @@ class _TransitPageState extends State<TransitPage> {
     }
   }
 
-  Future<void> _togglePin(TransitStop stop) async {
-    final exists = _pinned.any((p) => p.id == stop.id);
+  Future<void> _togglePin(TransitStop stop, List<TransitStop> pinned) async {
+    final exists = pinned.any((p) => p.id == stop.id);
+    final service = ref.read(transitServiceProvider);
     if (exists) {
-      await _service.unpinStop(stop.id);
+      await service.unpinStop(stop.id);
     } else {
-      await _service.pinStop(stop);
+      await service.pinStop(stop);
     }
-    await _loadPinned();
-  }
-
-  @override
-  void dispose() {
-    _searchCtrl.dispose();
-    super.dispose();
+    ref.invalidate(pinnedStopsProvider);
   }
 
   @override
   Widget build(BuildContext context) {
+    final pinned =
+        ref.watch(pinnedStopsProvider).valueOrNull ?? const <TransitStop>[];
     return Scaffold(
       body: Column(
         children: [
@@ -94,12 +98,12 @@ class _TransitPageState extends State<TransitPage> {
               onChanged: _search,
             ),
           ),
-          if (_pinned.isNotEmpty)
+          if (pinned.isNotEmpty)
             SizedBox(
               height: 40,
               child: ListView(
                 scrollDirection: Axis.horizontal,
-                children: _pinned
+                children: pinned
                     .map(
                       (s) => Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 4.0),
@@ -120,10 +124,10 @@ class _TransitPageState extends State<TransitPage> {
                       (s) => ListTile(
                         title: Text(s.name),
                         trailing: IconButton(
-                          icon: Icon(_pinned.any((p) => p.id == s.id)
+                          icon: Icon(pinned.any((p) => p.id == s.id)
                               ? Icons.star
                               : Icons.star_border),
-                          onPressed: () => _togglePin(s),
+                          onPressed: () => _togglePin(s, pinned),
                         ),
                         onTap: () => _selectStop(s),
                       ),

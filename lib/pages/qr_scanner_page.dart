@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+
+import '../providers/qr_providers.dart';
 import '../services/qr_service.dart';
 
-class QrScannerPage extends StatefulWidget {
+class QrScannerPage extends ConsumerStatefulWidget {
   final QrService? service;
   const QrScannerPage({super.key, this.service});
 
   @override
-  State<QrScannerPage> createState() => _QrScannerPageState();
+  ConsumerState<QrScannerPage> createState() => _QrScannerPageState();
 }
 
-class _QrScannerPageState extends State<QrScannerPage> {
+class _QrScannerPageState extends ConsumerState<QrScannerPage> {
   bool _handled = false;
 
   Future<void> _onDetect(BarcodeCapture capture) async {
@@ -20,8 +23,9 @@ class _QrScannerPageState extends State<QrScannerPage> {
     final id = int.tryParse(code.substring(6));
     if (id == null) return;
     _handled = true;
+    final QrService service = widget.service ?? ref.read(qrServiceProvider);
     try {
-      await (widget.service ?? QrService()).checkIn(id);
+      await service.checkIn(id);
       if (mounted) Navigator.pop(context, true);
     } catch (e) {
       if (!mounted) return;

@@ -1,37 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/models.dart';
+import '../providers/clubs_providers.dart';
 import '../services/club_service.dart';
-import '../services/chat_service.dart';
 import '../utils/user_helpers.dart';
-import 'group_chat_page.dart';
 import 'documents_page.dart';
+import 'group_chat_page.dart';
 
-class ClubDetailPage extends StatefulWidget {
+class ClubDetailPage extends ConsumerStatefulWidget {
   final Club club;
   final ClubService? service;
   const ClubDetailPage({super.key, required this.club, this.service});
 
   @override
-  State<ClubDetailPage> createState() => _ClubDetailPageState();
+  ConsumerState<ClubDetailPage> createState() => _ClubDetailPageState();
 }
 
-class _ClubDetailPageState extends State<ClubDetailPage> {
-  late Club _club;
-  late final ClubService _service;
-  final ChatService _chat = ChatService();
+class _ClubDetailPageState extends ConsumerState<ClubDetailPage> {
+  late Club _club = widget.club;
 
-  @override
-  void initState() {
-    super.initState();
-    _club = widget.club;
-    _service = widget.service ?? ClubService();
+  ClubService _resolveService() {
+    final ClubService service = widget.service ?? ref.read(clubServiceProvider);
+    return service;
   }
 
   Future<void> _joinAndChat() async {
     if (_club.id == null || _club.channelId == null) return;
-    final updated = await _service.joinClub(_club.id!);
-    if (mounted) setState(() => _club = updated);
+    final updated = await _resolveService().joinClub(_club.id!);
+    if (mounted) {
+      setState(() => _club = updated);
+      ref.invalidate(clubsProvider);
+    }
     if (!mounted) return;
     Navigator.push(
       context,
