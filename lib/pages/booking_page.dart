@@ -1,71 +1,53 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:table_calendar/table_calendar.dart';
+
+import '../providers/booking_providers.dart';
 import '../services/booking_service.dart';
 
-class BookingPage extends StatefulWidget {
+class BookingPage extends StatelessWidget {
+  /// Optional service override. Mainly used by widget tests; production
+  /// callers rely on the top-level [ProviderScope] in main.dart.
   final BookingService? service;
   const BookingPage({super.key, this.service});
 
   @override
-  State<BookingPage> createState() => _BookingPageState();
+  Widget build(BuildContext context) {
+    if (service == null) {
+      return const _BookingBody();
+    }
+    return ProviderScope(
+      overrides: [bookingServiceProvider.overrideWithValue(service!)],
+      child: const _BookingBody(),
+    );
+  }
 }
 
-class _BookingPageState extends State<BookingPage> {
-  late final BookingService _service;
-  final Map<DateTime, List<DateTime>> _slots = {};
-  List<Map<String, dynamic>> _bookings = [];
-  DateTime _focusedDay = DateTime.now();
-  DateTime _selectedDay = DateTime.now();
+class _BookingBody extends ConsumerStatefulWidget {
+  const _BookingBody();
 
   @override
-  void initState() {
-    super.initState();
-    _service = widget.service ?? BookingService();
-    _loadSlots();
-    _loadBookings();
-  }
+  ConsumerState<_BookingBody> createState() => _BookingBodyState();
+}
 
-  Future<void> _loadSlots() async {
-    try {
-      final slots = await _service.fetchAvailableTimes();
-      if (!mounted) return;
-      setState(() {
-        _slots.clear();
-        for (final s in slots) {
-          final key = DateTime(s.year, s.month, s.day);
-          _slots.putIfAbsent(key, () => []).add(s);
-        }
-      });
-    } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to load slots')),
-      );
-    }
-  }
-
-  Future<void> _loadBookings() async {
-    try {
-      final list = await _service.fetchMyBookings();
-      if (!mounted) return;
-      setState(() => _bookings = list);
-    } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to load bookings')),
-      );
-    }
-  }
-
-  List<DateTime> _getSlotsForDay(DateTime day) {
-    return _slots[DateTime(day.year, day.month, day.day)] ?? [];
-  }
+class _BookingBodyState extends ConsumerState<_BookingBody> {
+  DateTime _focusedDay = DateTime.now();
+  DateTime _selectedDay = DateTime.now();
 
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
     setState(() {
       _selectedDay = selectedDay;
       _focusedDay = focusedDay;
     });
+  }
+
+  Map<DateTime, List<DateTime>> _groupByDay(List<DateTime> slots) {
+    final map = <DateTime, List<DateTime>>{};
+    for (final s in slots) {
+      final key = DateTime(s.year, s.month, s.day);
+      map.putIfAbsent(key, () => []).add(s);
+    }
+    return map;
   }
 
   Future<void> _book(DateTime slot) async {
@@ -90,36 +72,29 @@ class _BookingPageState extends State<BookingPage> {
         ],
       ),
     );
-    if (confirm == true) {
-      try {
-        await _service.createBooking(slot, controller.text);
-        if (!mounted) return;
-        setState(() {
-          final key = DateTime(slot.year, slot.month, slot.day);
-          _slots[key]?.remove(slot);
-        });
-        await _loadBookings();
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Booking confirmed')),
-        );
-      } catch (_) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to create booking')),
-        );
-      }
+    if (confirm != true) return;
+    try {
+      await ref.read(bookingServiceProvider).createBooking(slot, controller.text);
+      if (!mounted) return;
+      ref.invalidate(availableSlotsProvider);
+      ref.invalidate(myBookingsProvider);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Booking confirmed')),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to create booking')),
+      );
     }
   }
 
   Future<void> _cancel(String id) async {
     try {
-      await _service.cancelBooking(id);
+      await ref.read(bookingServiceProvider).cancelBooking(id);
       if (!mounted) return;
-      setState(() {
-        _bookings.removeWhere((b) => b['_id'] == id);
-      });
-      _loadSlots();
+      ref.invalidate(myBookingsProvider);
+      ref.invalidate(availableSlotsProvider);
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -130,8 +105,36 @@ class _BookingPageState extends State<BookingPage> {
 
   @override
   Widget build(BuildContext context) {
-    final slots = _getSlotsForDay(_selectedDay);
+    // Surface load errors via snackbars, matching the prior behavior.
+    ref.listen<AsyncValue<List<DateTime>>>(availableSlotsProvider, (prev, next) {
+      if (next.hasError && !next.isLoading) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to load slots')),
+        );
+      }
+    });
+    ref.listen<AsyncValue<List<Map<String, dynamic>>>>(myBookingsProvider,
+        (prev, next) {
+      if (next.hasError && !next.isLoading) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to load bookings')),
+        );
+      }
+    });
+
+    final allSlots = ref.watch(availableSlotsProvider).valueOrNull ??
+        const <DateTime>[];
+    final bookings = ref.watch(myBookingsProvider).valueOrNull ??
+        const <Map<String, dynamic>>[];
+    final slotsByDay = _groupByDay(allSlots);
+    final slots = slotsByDay[DateTime(
+          _selectedDay.year,
+          _selectedDay.month,
+          _selectedDay.day,
+        )] ??
+        const <DateTime>[];
     final cs = Theme.of(context).colorScheme;
+
     return Scaffold(
       body: Column(
         children: [
@@ -172,10 +175,10 @@ class _BookingPageState extends State<BookingPage> {
                   child: Text('My Bookings',
                       style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
-                if (_bookings.isEmpty)
+                if (bookings.isEmpty)
                   const ListTile(title: Text('No bookings yet.'))
                 else
-                  ..._bookings.map((b) {
+                  ...bookings.map((b) {
                     final time = b['time'] as DateTime;
                     final label =
                         '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
