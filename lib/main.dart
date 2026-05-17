@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'pages/login_page.dart';
 import 'pages/main_page.dart';
 import 'pages/register_page.dart';
@@ -55,7 +56,7 @@ void main() async {
     }
   }
 
-  runApp(const OlyApp());
+  runApp(const ProviderScope(child: OlyApp()));
 }
 
 class OlyApp extends StatefulWidget {
