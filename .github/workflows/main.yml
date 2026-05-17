@@ -1,18 +1,19 @@
-name: Flutter CI
+name: CI
 
 on:
   pull_request:
     branches: [ main ]
+  push:
+    branches: [ main ]
 
 jobs:
-  build:
+  flutter:
+    name: Flutter
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      # ─────────── Set up & cache Flutter SDK ───────────
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -23,9 +24,8 @@ jobs:
           cache-path: '${{ runner.tool_cache }}/flutter/:channel:-:version:-:arch:'
           architecture: x64
 
-      # ─────────── Cache Flutter (pub) dependencies ───────────
-      - name: Cache Flutter pub‐cache
-        uses: actions/cache@v3
+      - name: Cache Flutter pub-cache
+        uses: actions/cache@v4
         with:
           path: ~/.pub-cache
           key: ${{ runner.os }}-flutter-pub-${{ hashFiles('**/pubspec.yaml') }}
@@ -35,21 +35,25 @@ jobs:
       - name: Install Flutter dependencies
         run: flutter pub get
 
-      # ─────────── Run Flutter tests ───────────
       - name: Run Flutter tests
         run: flutter test
- 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'
 
-      # ─────────── Cache npm dependencies ───────────
+  server:
+    name: Server
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: Cache npm dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.npm
-          # Make sure this path matches where your package.json lives:
           key: ${{ runner.os }}-node-${{ hashFiles('server/package.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
@@ -60,4 +64,6 @@ jobs:
 
       - name: Run npm tests
         working-directory: server
+        env:
+          JWT_SECRET: ci-only-secret-do-not-use-in-prod
         run: npm test

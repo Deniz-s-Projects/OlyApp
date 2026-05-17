@@ -35,10 +35,22 @@ class FakeItemService extends ItemService {
   Future<List<Item>> fetchItems() async => items;
 }
 
+// CalendarPage hosts TableCalendar + filter row + Expanded(ListView). Default
+// test viewport (~484px tall in Scaffold body) is shorter than the fixed
+// children, so navigating to the calendar tab overflows by ~12px. Real devices
+// are >600px and unaffected; tests that exercise the calendar tab use a taller
+// surface.
+void _useTallSurface(WidgetTester tester) {
+  tester.view.physicalSize = const Size(800, 1200);
+  tester.view.devicePixelRatio = 1.0;
+  addTearDown(tester.view.reset);
+}
+
 void main() {
   testWidgets('Bottom navigation changes pages and FAB visibility', (
     tester,
   ) async {
+    _useTallSurface(tester);
     final fakeEventService = FakeEventService();
     final fakeMaintenanceService = FakeMaintenanceService();
 
@@ -100,6 +112,7 @@ void main() {
   });
 
   testWidgets('FAB on calendar tab opens add event dialog', (tester) async {
+    _useTallSurface(tester);
     final fakeEventService = FakeEventService();
 
     await tester.pumpWidget(
