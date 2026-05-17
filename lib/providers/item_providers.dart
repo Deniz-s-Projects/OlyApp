@@ -135,12 +135,10 @@ final filteredItemsProvider = Provider<List<Item>>(
       case 'priceAsc':
         results.sort((a, b) =>
             (a.price ?? double.infinity).compareTo(b.price ?? double.infinity));
-        break;
       case 'priceDesc':
         results.sort((a, b) =>
             (b.price ?? -double.infinity)
                 .compareTo(a.price ?? -double.infinity));
-        break;
       default:
         results.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     }

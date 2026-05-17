@@ -6,6 +6,7 @@ import 'package:oly_app/pages/main_page.dart';
 import 'package:oly_app/pages/maintenance_page.dart';
 import 'package:oly_app/pages/item_exchange_page.dart';
 import 'package:oly_app/models/models.dart';
+import 'package:oly_app/providers/calendar_providers.dart';
 import 'package:oly_app/services/event_service.dart';
 import 'package:oly_app/services/maintenance_service.dart';
 import 'package:oly_app/pages/post_item_page.dart';
@@ -56,11 +57,13 @@ void main() {
     final fakeMaintenanceService = FakeMaintenanceService();
 
     await tester.pumpWidget(
-      MaterialApp(
-        home: MainPage(
-          calendarPage: CalendarPage(service: fakeEventService),
-          maintenancePage: MaintenancePage(service: fakeMaintenanceService),
-          onLogout: () {},
+      ProviderScope(
+        child: MaterialApp(
+          home: MainPage(
+            calendarPage: CalendarPage(service: fakeEventService),
+            maintenancePage: MaintenancePage(service: fakeMaintenanceService),
+            onLogout: () {},
+          ),
         ),
       ),
     );
@@ -95,8 +98,10 @@ void main() {
 
   testWidgets('Admin card visible for admins', (tester) async {
     await tester.pumpWidget(
-      const MaterialApp(
-        home: MainPage(isAdmin: true, onLogout: null),
+      const ProviderScope(
+        child: MaterialApp(
+          home: MainPage(isAdmin: true, onLogout: null),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -106,7 +111,9 @@ void main() {
 
   testWidgets('Admin card hidden for regular user', (tester) async {
     await tester.pumpWidget(
-      const MaterialApp(home: MainPage(onLogout: null)),
+      const ProviderScope(
+        child: MaterialApp(home: MainPage(onLogout: null)),
+      ),
     );
     await tester.pumpAndSettle();
     expect(find.text('Admin'), findsNothing);
@@ -117,11 +124,16 @@ void main() {
     final fakeEventService = FakeEventService();
 
     await tester.pumpWidget(
-      MaterialApp(
-        home: MainPage(
-          calendarPage: CalendarPage(service: fakeEventService),
-          isAdmin: true,
-          onLogout: () {},
+      ProviderScope(
+        overrides: [
+          eventServiceProvider.overrideWithValue(fakeEventService),
+        ],
+        child: MaterialApp(
+          home: MainPage(
+            calendarPage: CalendarPage(service: fakeEventService),
+            isAdmin: true,
+            onLogout: () {},
+          ),
         ),
       ),
     );

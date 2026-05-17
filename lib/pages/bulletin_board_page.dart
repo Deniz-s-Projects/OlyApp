@@ -150,32 +150,44 @@ class _BulletinBoardPageState extends ConsumerState<BulletinBoardPage> {
         ],
       ),
     );
-    if (result != null && result.isNotEmpty) {
-      // NOTE: the previous implementation only mutated local state here;
-      // there is no BulletinService.updateComment endpoint. Preserved as-is
-      // — fixing the comment-mutation API is its own follow-up.
+    if (result == null || result.isEmpty || comment.id == null) return;
+    try {
+      final updated = await _resolveService().updateComment(
+        BulletinComment(
+          id: comment.id,
+          postId: postId,
+          userId: comment.userId,
+          content: result,
+          date: comment.date,
+        ),
+      );
+      if (!mounted) return;
       setState(() {
         final list = _comments[postId];
         final idx = list?.indexWhere((c) => c.id == comment.id) ?? -1;
-        if (idx != -1) {
-          list![idx] = BulletinComment(
-            id: comment.id,
-            postId: postId,
-            userId: comment.userId,
-            content: result,
-            date: comment.date,
-          );
-        }
+        if (idx != -1) list![idx] = updated;
       });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update comment: $e')),
+      );
     }
   }
 
-  void _deleteComment(int postId, int id) {
-    // NOTE: server-side comment deletion is also missing; we only drop the
-    // local entry. Same caveat as _editComment.
-    setState(() {
-      _comments[postId]?.removeWhere((c) => c.id == id);
-    });
+  Future<void> _deleteComment(int postId, int id) async {
+    try {
+      await _resolveService().deleteComment(postId, id);
+      if (!mounted) return;
+      setState(() {
+        _comments[postId]?.removeWhere((c) => c.id == id);
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to delete comment: $e')),
+      );
+    }
   }
 
   @override

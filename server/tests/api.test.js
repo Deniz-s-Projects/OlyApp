@@ -418,6 +418,82 @@ describe('Bulletin API', () => {
     const posts = await BulletinPost.find();
     expect(posts).toHaveLength(0);
   });
+
+  test('PUT /bulletin/:id rejects non-author', async () => {
+    await BulletinPost.create({ id: 1, userId: 1, content: 'old' });
+    const token = getToken(2);
+    const res = await request(app)
+      .put('/api/bulletin/1')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ content: 'tampered' });
+    expect(res.status).toBe(403);
+    const post = await BulletinPost.findOne({ id: 1 });
+    expect(post.content).toBe('old');
+  });
+
+  test('PUT /bulletin/:postId/comments/:commentId updates comment', async () => {
+    await BulletinPost.create({ id: 1, userId: 1, content: 'p' });
+    await BulletinComment.create({ id: 1, postId: 1, userId: 1, content: 'old' });
+    const token = getToken();
+    const res = await request(app)
+      .put('/api/bulletin/1/comments/1')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ content: 'new' });
+    expect(res.status).toBe(200);
+    expect(res.body.data.content).toBe('new');
+  });
+
+  test('PUT /bulletin/:postId/comments/:commentId rejects non-author', async () => {
+    await BulletinPost.create({ id: 1, userId: 1, content: 'p' });
+    await BulletinComment.create({ id: 1, postId: 1, userId: 1, content: 'old' });
+    const token = getToken(2);
+    const res = await request(app)
+      .put('/api/bulletin/1/comments/1')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ content: 'tampered' });
+    expect(res.status).toBe(403);
+    const comment = await BulletinComment.findOne({ id: 1 });
+    expect(comment.content).toBe('old');
+  });
+
+  test('DELETE /bulletin/:postId/comments/:commentId removes comment', async () => {
+    await BulletinPost.create({ id: 1, userId: 1, content: 'p' });
+    await BulletinComment.create({ id: 1, postId: 1, userId: 1, content: 'c' });
+    const token = getToken();
+    const res = await request(app)
+      .delete('/api/bulletin/1/comments/1')
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    const comments = await BulletinComment.find();
+    expect(comments).toHaveLength(0);
+  });
+
+  test('DELETE /bulletin/:postId/comments/:commentId rejects non-author', async () => {
+    await BulletinPost.create({ id: 1, userId: 1, content: 'p' });
+    await BulletinComment.create({ id: 1, postId: 1, userId: 1, content: 'c' });
+    const token = getToken(2);
+    const res = await request(app)
+      .delete('/api/bulletin/1/comments/1')
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(403);
+    const comments = await BulletinComment.find();
+    expect(comments).toHaveLength(1);
+  });
+
+  test('DELETE /bulletin/:postId/comments/:commentId allows admin', async () => {
+    await BulletinPost.create({ id: 1, userId: 1, content: 'p' });
+    await BulletinComment.create({ id: 1, postId: 1, userId: 1, content: 'c' });
+    const admin = await User.create({
+      name: 'mod', email: 'm@b.c', passwordHash: 'x', isAdmin: true,
+    });
+    const token = jwt.sign({ userId: admin._id }, SECRET);
+    const res = await request(app)
+      .delete('/api/bulletin/1/comments/1')
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    const comments = await BulletinComment.find();
+    expect(comments).toHaveLength(0);
+  });
 });
 
 describe('Notifications API', () => {
