@@ -1,39 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../models/models.dart';
+import '../providers/emergency_contacts_providers.dart';
 import '../services/emergency_contact_service.dart';
 
-class EmergencyContactsPage extends StatefulWidget {
+class EmergencyContactsPage extends StatelessWidget {
   final EmergencyContactService? service;
   const EmergencyContactsPage({super.key, this.service});
 
   @override
-  State<EmergencyContactsPage> createState() => _EmergencyContactsPageState();
+  Widget build(BuildContext context) {
+    if (service == null) {
+      return const _EmergencyContactsBody();
+    }
+    return ProviderScope(
+      overrides: [
+        emergencyContactServiceProvider.overrideWithValue(service!),
+      ],
+      child: const _EmergencyContactsBody(),
+    );
+  }
 }
 
-class _EmergencyContactsPageState extends State<EmergencyContactsPage> {
-  late final EmergencyContactService _service;
-  List<EmergencyContact> _contacts = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _service = widget.service ?? EmergencyContactService();
-    _load();
-  }
-
-  Future<void> _load() async {
-    try {
-      final list = await _service.fetchContacts();
-      if (mounted) setState(() => _contacts = list);
-    } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Failed to load contacts')));
-    }
-  }
+class _EmergencyContactsBody extends ConsumerWidget {
+  const _EmergencyContactsBody();
 
   Future<void> _call(String phone) async {
     final uri = Uri.parse('tel:$phone');
@@ -43,15 +35,26 @@ class _EmergencyContactsPageState extends State<EmergencyContactsPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen<AsyncValue<List<EmergencyContact>>>(emergencyContactsProvider,
+        (prev, next) {
+      if (next.hasError && !next.isLoading) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to load contacts')),
+        );
+      }
+    });
+    final contacts =
+        ref.watch(emergencyContactsProvider).valueOrNull ??
+            const <EmergencyContact>[];
     return Scaffold(
       appBar: AppBar(title: const Text('Emergency Contacts')),
       body: RefreshIndicator(
-        onRefresh: _load,
+        onRefresh: () async => ref.invalidate(emergencyContactsProvider),
         child: ListView.builder(
-          itemCount: _contacts.length,
+          itemCount: contacts.length,
           itemBuilder: (context, index) {
-            final c = _contacts[index];
+            final c = contacts[index];
             return Card(
               margin: const EdgeInsets.all(12),
               child: ListTile(
