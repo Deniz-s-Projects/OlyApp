@@ -17,6 +17,13 @@ class FakeUserService extends UserService {
   }
 }
 
+class FailingUserService extends UserService {
+  @override
+  Future<User> updateProfile(User user) async {
+    throw Exception('save failed');
+  }
+}
+
 void main() {
   late Directory dir;
 
@@ -122,6 +129,36 @@ void main() {
         );
         expect(reloadedNameEditable.controller.text, 'New Name');
         expect(reloadedEmailEditable.controller.text, 'new@example.com');
+      });
+    });
+  });
+
+  testWidgets('Save shows error SnackBar on service failure', (tester) async {
+    await mockNetworkImagesFor(() async {
+      await tester.runAsync(() async {
+        final box = Hive.box<User>('userBox');
+        await box.put(
+          'currentUser',
+          User(name: 'Old', email: 'old@test.com', isListed: false),
+        );
+
+        await tester.pumpWidget(
+          ProviderScope(
+            child: MaterialApp(home: ProfilePage(service: FailingUserService())),
+          ),
+        );
+        await tester.pump(const Duration(milliseconds: 300));
+
+        await tester.scrollUntilVisible(
+          find.text('Save'),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await tester.tap(find.text('Save'));
+        await tester.pump(const Duration(milliseconds: 300));
+
+        expect(find.byType(SnackBar), findsOneWidget);
+        expect(find.textContaining('Failed'), findsOneWidget);
       });
     });
   });

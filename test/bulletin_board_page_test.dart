@@ -79,6 +79,20 @@ class FakeBulletinService extends BulletinService {
   }
 }
 
+class _ThrowingBulletinService extends FakeBulletinService {
+  _ThrowingBulletinService(super.posts, super.comments);
+
+  @override
+  Future<BulletinComment> updateComment(BulletinComment comment) async {
+    throw Exception('server down');
+  }
+
+  @override
+  Future<void> deleteComment(int postId, int commentId) async {
+    throw Exception('server down');
+  }
+}
+
 void main() {
   testWidgets('Existing posts are shown', (tester) async {
     final service = FakeBulletinService(
@@ -201,6 +215,67 @@ void main() {
 
     expect(service.updatedComment?.content, 'new');
     expect(service.updatedComment?.id, 7);
+  });
+
+  testWidgets('Edit comment shows error on service failure', (tester) async {
+    final service = _ThrowingBulletinService(
+      [BulletinPost(id: 1, userId: '1', content: 'p', date: DateTime.now())],
+      {
+        1: [
+          BulletinComment(
+            id: 4,
+            postId: 1,
+            userId: '2',
+            content: 'old',
+            date: DateTime.now(),
+          ),
+        ],
+      },
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(home: BulletinBoardPage(service: service)),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('editComment_1_4')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).last, 'new');
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(SnackBar), findsOneWidget);
+    expect(find.textContaining('Failed to update comment'), findsOneWidget);
+  });
+
+  testWidgets('Delete comment shows error on service failure', (tester) async {
+    final service = _ThrowingBulletinService(
+      [BulletinPost(id: 1, userId: '1', content: 'p', date: DateTime.now())],
+      {
+        1: [
+          BulletinComment(
+            id: 5,
+            postId: 1,
+            userId: '2',
+            content: 'c',
+            date: DateTime.now(),
+          ),
+        ],
+      },
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(home: BulletinBoardPage(service: service)),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('deleteComment_1_5')));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(SnackBar), findsOneWidget);
+    expect(find.textContaining('Failed to delete comment'), findsOneWidget);
   });
 
   testWidgets('Delete comment icon calls deleteComment', (tester) async {
