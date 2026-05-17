@@ -1,30 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/models.dart';
+import '../providers/tutoring_providers.dart';
 import '../services/tutoring_service.dart';
 import '../utils/user_helpers.dart';
 
-class PostTutoringPage extends StatefulWidget {
+class PostTutoringPage extends ConsumerStatefulWidget {
   final TutoringService? service;
   const PostTutoringPage({super.key, this.service});
 
   @override
-  State<PostTutoringPage> createState() => _PostTutoringPageState();
+  ConsumerState<PostTutoringPage> createState() => _PostTutoringPageState();
 }
 
-class _PostTutoringPageState extends State<PostTutoringPage> {
+class _PostTutoringPageState extends ConsumerState<PostTutoringPage> {
   final _formKey = GlobalKey<FormState>();
-  late final TutoringService _service;
   final _subjectCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
   bool _isOffering = true;
   bool _submitting = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _service = widget.service ?? TutoringService();
-  }
 
   @override
   void dispose() {
@@ -44,8 +39,11 @@ class _PostTutoringPageState extends State<PostTutoringPage> {
         isOffering: _isOffering,
         contactUserId: currentUserId(),
       );
-      await _service.createPost(post);
+      final TutoringService service =
+          widget.service ?? ref.read(tutoringServiceProvider);
+      await service.createPost(post);
       if (mounted) {
+        ref.invalidate(tutoringPostsProvider);
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text('Posted!')));
