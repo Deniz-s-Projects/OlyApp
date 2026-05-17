@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../models/models.dart';
-import '../services/chat_service.dart';
+import '../providers/chat_providers.dart';
 
-class CreateChannelPage extends StatefulWidget {
+class CreateChannelPage extends ConsumerStatefulWidget {
   const CreateChannelPage({super.key});
 
   @override
-  State<CreateChannelPage> createState() => _CreateChannelPageState();
+  ConsumerState<CreateChannelPage> createState() => _CreateChannelPageState();
 }
 
-class _CreateChannelPageState extends State<CreateChannelPage> {
+class _CreateChannelPageState extends ConsumerState<CreateChannelPage> {
   final TextEditingController _nameCtrl = TextEditingController();
-  final ChatService _service = ChatService();
   bool _creating = false;
 
   Future<void> _create() async {
@@ -20,7 +19,7 @@ class _CreateChannelPageState extends State<CreateChannelPage> {
     if (name.isEmpty) return;
     setState(() => _creating = true);
     try {
-      final channel = await _service.createChannel(name);
+      final channel = await ref.read(chatServiceProvider).createChannel(name);
       if (!mounted) return;
       Navigator.pop(context, channel);
     } catch (e) {
