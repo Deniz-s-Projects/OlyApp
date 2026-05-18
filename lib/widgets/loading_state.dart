@@ -14,19 +14,25 @@ class LoadingState extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const CircularProgressIndicator(),
-          if (hint != null) ...[
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              hint!,
-              style: text.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
-            ),
+    // SingleChildScrollView so the indicator + hint never overflow a tight
+    // Expanded (e.g. beneath a TableCalendar in test viewports).
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CircularProgressIndicator(),
+            if (hint != null) ...[
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                hint!,
+                textAlign: TextAlign.center,
+                style: text.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }

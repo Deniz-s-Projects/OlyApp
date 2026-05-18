@@ -21,14 +21,17 @@ class EmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
-    return Center(
+    // Wrapped in SingleChildScrollView so the panel doesn't overflow when
+    // dropped into tight constraints (e.g. an Expanded beneath a tall
+    // TableCalendar). Inner content stays centered horizontally.
+    return SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 64, color: scheme.outline),
-            const SizedBox(height: AppSpacing.lg),
+            Icon(icon, size: 56, color: scheme.outline),
+            const SizedBox(height: AppSpacing.md),
             Text(
               title,
               textAlign: TextAlign.center,

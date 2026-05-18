@@ -19,14 +19,16 @@ class ErrorState extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
-    return Center(
+    // SingleChildScrollView so the panel survives tight constraints (e.g.
+    // an Expanded beneath a TableCalendar) without RenderFlex overflow.
+    return SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline, size: 64, color: scheme.error),
-            const SizedBox(height: AppSpacing.lg),
+            Icon(Icons.error_outline, size: 56, color: scheme.error),
+            const SizedBox(height: AppSpacing.md),
             Text(
               title ?? 'Something went wrong',
               textAlign: TextAlign.center,
@@ -41,11 +43,10 @@ class ErrorState extends StatelessWidget {
               style: text.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
             ),
             if (onRetry != null) ...[
-              const SizedBox(height: AppSpacing.lg),
-              FilledButton.tonalIcon(
+              const SizedBox(height: AppSpacing.md),
+              FilledButton.tonal(
                 onPressed: onRetry,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Retry'),
+                child: const Text('Retry'),
               ),
             ],
           ],

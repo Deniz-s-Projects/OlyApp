@@ -69,9 +69,14 @@ class DashboardPage extends ConsumerWidget {
             ref.read(maintenanceRequestsProvider.future),
           ]);
         },
-        child: ListView(
+        // SingleChildScrollView (not ListView) so every section is eagerly
+        // realized — keeps widget-tests able to find off-screen tiles via
+        // find.text without needing scrollUntilVisible.
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSpacing.lg),
-          children: [
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             _Greeting(firstName: firstName),
             const SizedBox(height: AppSpacing.lg),
             _StatusRow(
@@ -209,7 +214,8 @@ class DashboardPage extends ConsumerWidget {
                 ],
               ),
             const SizedBox(height: AppSpacing.lg),
-          ],
+            ],
+          ),
         ),
       ),
     );
