@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
 
@@ -7,13 +9,33 @@ import '../services/user_service.dart';
 final userServiceProvider = Provider<UserService>((ref) => UserService());
 
 /// The user currently signed in, or `null` if no session is active.
-/// Sourced from the Hive `userBox` populated by the login flow in
-/// `lib/main.dart`. Invalidate after login/logout for the UI to refresh.
-final currentUserProvider = Provider<User?>((ref) {
-  if (!Hive.isBoxOpen('userBox')) return null;
-  final box = Hive.box<User>('userBox');
-  return box.get('currentUser');
-});
+///
+/// Backed by the Hive `userBox` populated by the login / register / profile
+/// flows in `lib/main.dart`, `login_page.dart`, etc. Subscribes to
+/// `Box.watch(key: 'currentUser')` so the value auto-refreshes when any of
+/// those flows writes to the box — consumers (e.g. the dashboard greeting)
+/// don't need to invalidate manually.
+class CurrentUserNotifier extends Notifier<User?> {
+  StreamSubscription<BoxEvent>? _sub;
+
+  @override
+  User? build() {
+    _sub?.cancel();
+    if (!Hive.isBoxOpen('userBox')) {
+      return null;
+    }
+    final box = Hive.box<User>('userBox');
+    _sub = box.watch(key: 'currentUser').listen((event) {
+      state = event.deleted ? null : event.value as User?;
+    });
+    ref.onDispose(() => _sub?.cancel());
+    return box.get('currentUser');
+  }
+}
+
+final currentUserProvider = NotifierProvider<CurrentUserNotifier, User?>(
+  CurrentUserNotifier.new,
+);
 
 /// Short display name for greetings: the first whitespace-delimited token of
 /// the user's name, or `null` if no user is signed in.

@@ -419,8 +419,12 @@ class _MaintenanceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Mirror the admin page's open/closed split — see
+    // `maintenance_admin_page.dart` which only ever transitions between
+    // 'open' and 'closed'. If a new status is ever introduced, update
+    // both sites together.
     final openCount = async.maybeWhen(
-      data: (list) => list.where((r) => r.status != 'closed' && r.status != 'resolved').length,
+      data: (list) => list.where((r) => r.status != 'closed').length,
       orElse: () => null,
     );
 

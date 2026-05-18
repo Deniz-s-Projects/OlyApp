@@ -7,6 +7,11 @@ import '../services/bulletin_service.dart';
 import '../utils/user_helpers.dart';
 import '../widgets/empty_state.dart';
 
+/// Bulletin board surface. Designed to be hosted as a [MainPage] destination
+/// (the bulletin tab) — it intentionally does **not** render its own
+/// [AppBar] because [MainPage] already provides one. If you ever need to
+/// push this page directly (deep link, standalone screen, etc.), wrap it
+/// in a [Scaffold] + [AppBar] of your own.
 class BulletinBoardPage extends ConsumerStatefulWidget {
   final BulletinService? service;
   const BulletinBoardPage({super.key, this.service});
