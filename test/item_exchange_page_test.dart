@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:oly_app/models/models.dart';
@@ -61,7 +62,7 @@ void main() {
   testWidgets('Shows progress indicator while loading', (tester) async {
     final service = DelayedItemService([]);
     await tester.pumpWidget(
-      MaterialApp(home: ItemExchangePage(service: service)),
+      MaterialApp(localizationsDelegates: AppLocalizations.localizationsDelegates, supportedLocales: AppLocalizations.supportedLocales, locale: const Locale('en'), home:ItemExchangePage(service: service)),
     );
     await tester.pump();
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
@@ -77,7 +78,7 @@ void main() {
       ]);
 
       await tester.pumpWidget(
-        MaterialApp(home: ItemExchangePage(service: service)),
+        MaterialApp(localizationsDelegates: AppLocalizations.localizationsDelegates, supportedLocales: AppLocalizations.supportedLocales, locale: const Locale('en'), home:ItemExchangePage(service: service)),
       );
       await tester.pumpAndSettle();
 
@@ -97,7 +98,7 @@ void main() {
       final item = Item(id: 5, ownerId: '2', title: 'Chair');
 
       await tester.pumpWidget(
-        ProviderScope(child: MaterialApp(home: ItemDetailPage(item: item))),
+        ProviderScope(child: MaterialApp(localizationsDelegates: AppLocalizations.localizationsDelegates, supportedLocales: AppLocalizations.supportedLocales, locale: const Locale('en'), home:ItemDetailPage(item: item))),
       );
       await tester.pumpAndSettle();
 
@@ -115,7 +116,7 @@ void main() {
     ]);
 
     await tester.pumpWidget(
-      MaterialApp(home: ItemExchangePage(service: service)),
+      MaterialApp(localizationsDelegates: AppLocalizations.localizationsDelegates, supportedLocales: AppLocalizations.supportedLocales, locale: const Locale('en'), home:ItemExchangePage(service: service)),
     );
     await tester.pumpAndSettle();
 
@@ -144,7 +145,7 @@ void main() {
     ]);
 
     await tester.pumpWidget(
-      MaterialApp(home: ItemExchangePage(service: service)),
+      MaterialApp(localizationsDelegates: AppLocalizations.localizationsDelegates, supportedLocales: AppLocalizations.supportedLocales, locale: const Locale('en'), home:ItemExchangePage(service: service)),
     );
     await tester.pumpAndSettle();
 
@@ -164,7 +165,7 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        child: MaterialApp(home: ItemExchangePage(service: service)),
+        child: MaterialApp(localizationsDelegates: AppLocalizations.localizationsDelegates, supportedLocales: AppLocalizations.supportedLocales, locale: const Locale('en'), home:ItemExchangePage(service: service)),
       ),
     );
     await tester.pumpAndSettle();
@@ -182,7 +183,7 @@ void main() {
     ]);
 
     await tester.pumpWidget(
-      MaterialApp(home: ItemExchangePage(service: service)),
+      MaterialApp(localizationsDelegates: AppLocalizations.localizationsDelegates, supportedLocales: AppLocalizations.supportedLocales, locale: const Locale('en'), home:ItemExchangePage(service: service)),
     );
     await tester.pumpAndSettle();
 
@@ -224,6 +225,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('en'),
             home: ItemDetailPage(item: item, service: service),
           ),
         ),
@@ -269,6 +273,9 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('en'),
             home: ItemDetailPage(item: item, service: service),
           ),
         ),

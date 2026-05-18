@@ -1,8 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/models.dart';
 import '../providers/calendar_providers.dart';
+import '../providers/route_request_provider.dart';
+import '../services/notification_service.dart';
 import 'booking_page.dart';
 import 'bulletin_board_page.dart';
 import 'calendar_page.dart';
@@ -42,6 +47,28 @@ class MainPage extends ConsumerStatefulWidget {
 
 class _MainPageState extends ConsumerState<MainPage> {
   NavTarget _current = NavTarget.home;
+  StreamSubscription<RouteRequest>? _routeSub;
+
+  @override
+  void initState() {
+    super.initState();
+    // Subscribe once per MainPage mount. Tests that don't initialise
+    // Firebase will throw on the first `getInitialMessage()` call inside
+    // routeRequests; swallow that so the widget can still render.
+    _routeSub = NotificationService().routeRequests.listen(
+      (req) {
+        if (!mounted) return;
+        ref.read(routeRequestProvider.notifier).state = req;
+      },
+      onError: (_) {},
+    );
+  }
+
+  @override
+  void dispose() {
+    _routeSub?.cancel();
+    super.dispose();
+  }
 
   late final Map<NavTarget, Widget> _pages = {
     NavTarget.home: DashboardPage(
@@ -59,13 +86,16 @@ class _MainPageState extends ConsumerState<MainPage> {
     NavTarget.profile: const ProfilePage(),
   };
 
-  String _title(NavTarget t) => switch (t) {
-        NavTarget.home => 'Dashboard',
-        NavTarget.map => 'Map',
-        NavTarget.calendar => 'Calendar',
-        NavTarget.bulletin => 'Bulletin',
-        NavTarget.profile => 'Profile',
-      };
+  String _title(BuildContext context, NavTarget t) {
+    final l = AppLocalizations.of(context);
+    return switch (t) {
+      NavTarget.home => l.navHome,
+      NavTarget.map => l.navMap,
+      NavTarget.calendar => l.navCalendar,
+      NavTarget.bulletin => l.navBulletin,
+      NavTarget.profile => l.navProfile,
+    };
+  }
 
   IconData _icon(NavTarget t) => switch (t) {
         NavTarget.home => Icons.home_outlined,
@@ -85,9 +115,19 @@ class _MainPageState extends ConsumerState<MainPage> {
 
   @override
   Widget build(BuildContext context) {
+    // React to push-notification taps: when a new RouteRequest arrives,
+    // jump to that tab and clear the provider so re-mounts of MainPage
+    // don't re-trigger it.
+    ref.listen<RouteRequest?>(routeRequestProvider, (_, next) {
+      if (next == null) return;
+      setState(() => _current = next.target);
+      ref.read(routeRequestProvider.notifier).state = null;
+    });
+
+    final l = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(_title(_current)),
+        title: Text(_title(context, _current)),
         actions: [
           PopupMenuButton<String>(
             onSelected: (val) async {
@@ -101,9 +141,9 @@ class _MainPageState extends ConsumerState<MainPage> {
               }
             },
             itemBuilder: (context) => [
-              const PopupMenuItem(value: 'settings', child: Text('Settings')),
+              PopupMenuItem(value: 'settings', child: Text(l.appBarSettings)),
               if (widget.onLogout != null)
-                const PopupMenuItem(value: 'logout', child: Text('Logout')),
+                PopupMenuItem(value: 'logout', child: Text(l.appBarLogout)),
             ],
           ),
         ],
@@ -119,7 +159,7 @@ class _MainPageState extends ConsumerState<MainPage> {
             NavigationDestination(
               icon: Icon(_icon(t)),
               selectedIcon: Icon(_selectedIcon(t)),
-              label: _title(t),
+              label: _title(context, t),
             ),
         ],
       ),

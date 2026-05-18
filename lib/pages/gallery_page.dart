@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/models.dart';
@@ -38,13 +39,13 @@ class _GalleryBody extends ConsumerWidget {
       ),
       body: AsyncStateView<List<GalleryImage>>(
         value: imagesAsync,
-        errorTitle: 'Failed to load gallery',
+        errorTitle: AppLocalizations.of(context).errorGallery,
         onRetry: () => ref.invalidate(galleryImagesProvider),
         isEmpty: (images) => images.isEmpty,
-        empty: const EmptyState(
+        empty: EmptyState(
           icon: Icons.photo_library_outlined,
-          title: 'No photos yet',
-          subtitle: 'Be the first to share something from Olydorf.',
+          title: AppLocalizations.of(context).emptyGallery,
+          subtitle: AppLocalizations.of(context).emptyGallerySubtitle,
         ),
         data: (images) => GridView.builder(
           padding: const EdgeInsets.all(8),

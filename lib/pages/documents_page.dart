@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/models.dart';
@@ -71,13 +72,13 @@ class _DocumentsBody extends ConsumerWidget {
       ),
       body: AsyncStateView<List<Document>>(
         value: docsAsync,
-        errorTitle: 'Failed to load documents',
+        errorTitle: AppLocalizations.of(context).errorDocuments,
         onRetry: () => ref.invalidate(documentsProvider),
         isEmpty: (documents) => documents.isEmpty,
-        empty: const EmptyState(
+        empty: EmptyState(
           icon: Icons.description_outlined,
-          title: 'No documents',
-          subtitle: 'Upload one with the button below.',
+          title: AppLocalizations.of(context).emptyDocuments,
+          subtitle: AppLocalizations.of(context).emptyDocumentsSubtitle,
         ),
         data: (documents) => ListView.separated(
           itemCount: documents.length,

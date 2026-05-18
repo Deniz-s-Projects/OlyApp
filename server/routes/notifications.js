@@ -19,7 +19,7 @@ router.post('/register', async (req, res) => {
 });
 
 router.post('/send', async (req, res) => {
-  const { tokens, notification } = req.body;
+  const { tokens, notification, data } = req.body;
   if (!Array.isArray(tokens) || tokens.length === 0) {
     return res.status(400).json({ error: 'Tokens required' });
   }
@@ -27,6 +27,9 @@ router.post('/send', async (req, res) => {
     const response = await admin.messaging().sendEachForMulticast({
       tokens,
       notification,
+      // FCM requires data values to be strings. Coerce here so callers can
+      // pass numbers/booleans without surprise; reject objects.
+      data: sanitizeData(data),
     });
     res.json({ successCount: response.successCount });
   } catch (err) {
@@ -36,7 +39,7 @@ router.post('/send', async (req, res) => {
 
 // POST /notifications/broadcast - send an emergency alert to all registered tokens (admin only)
 router.post('/broadcast', requireAdmin, async (req, res) => {
-  const { title, body } = req.body;
+  const { title, body, data } = req.body;
   if (!title || !body) {
     return res.status(400).json({ error: 'title and body required' });
   }
@@ -45,6 +48,7 @@ router.post('/broadcast', requireAdmin, async (req, res) => {
     const tokens = Array.from(new Set(
       users.flatMap((u) => u.deviceTokens)
     ));
+    const cleanData = sanitizeData(data);
     let successCount = 0;
     const chunkSize = 500;
     for (let i = 0; i < tokens.length; i += chunkSize) {
@@ -53,6 +57,7 @@ router.post('/broadcast', requireAdmin, async (req, res) => {
       const resp = await admin.messaging().sendEachForMulticast({
         tokens: batch,
         notification: { title, body },
+        data: cleanData,
       });
       successCount += resp.successCount;
     }
@@ -61,5 +66,19 @@ router.post('/broadcast', requireAdmin, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// FCM data payloads must be `{ [key: string]: string }`. Coerce primitives,
+// drop anything else, and return undefined for empty/falsey input so we
+// don't send an empty data object.
+function sanitizeData(data) {
+  if (!data || typeof data !== 'object') return undefined;
+  const out = {};
+  for (const [k, v] of Object.entries(data)) {
+    if (v == null) continue;
+    if (typeof v === 'string') out[k] = v;
+    else if (typeof v === 'number' || typeof v === 'boolean') out[k] = String(v);
+  }
+  return Object.keys(out).length ? out : undefined;
+}
 
 module.exports = router;

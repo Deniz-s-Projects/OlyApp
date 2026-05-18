@@ -1,10 +1,12 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 
 import '../main.dart';
 import '../models/models.dart';
+import '../providers/locale_provider.dart';
+import '../providers/storage_providers.dart';
 import '../providers/user_providers.dart';
 import '../services/notification_service.dart';
 import '../services/user_service.dart';
@@ -35,8 +37,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   @override
   void initState() {
     super.initState();
-    final settingsBox = Hive.box('settingsBox');
-    final stored = settingsBox.get('themeMode', defaultValue: 'system') as String;
+    final settingsBox = ref.read(settingsStorageProvider);
+    final stored =
+        settingsBox.get('themeMode', defaultValue: 'system') as String;
     _themeMode = ThemeMode.values.firstWhere(
       (m) => m.name == stored,
       orElse: () => ThemeMode.system,
@@ -46,8 +49,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     _announcementNotif =
         settingsBox.get('announcementNotifications', defaultValue: true)
             as bool;
-    final userBox = Hive.box<User>('userBox');
-    _user = userBox.get('currentUser')!;
+    _user = ref.read(userStorageProvider).get('currentUser')!;
     _listed = _user.isListed;
   }
 
@@ -65,7 +67,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     );
     try {
       final user = await _resolveService().updateProfile(updated);
-      await Hive.box<User>('userBox').put('currentUser', user);
+      await ref.read(userStorageProvider).put('currentUser', user);
       if (mounted) setState(() => _user = user);
     } catch (e) {
       if (!mounted) return;
@@ -84,12 +86,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final currentLocale = ref.watch(localeProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(title: Text(l.appBarSettings)),
       body: ListView(
         children: [
           ListTile(
-            title: const Text('Theme'),
+            title: Text(l.settingsTheme),
             trailing: DropdownButton<ThemeMode>(
               value: _themeMode,
               onChanged: (mode) {
@@ -97,49 +101,76 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 setState(() => _themeMode = mode);
                 OlyApp.of(context)?.updateThemeMode(mode);
               },
-              items: const [
+              items: [
                 DropdownMenuItem(
                   value: ThemeMode.system,
-                  child: Text('System'),
+                  child: Text(l.settingsThemeSystem),
                 ),
                 DropdownMenuItem(
                   value: ThemeMode.light,
-                  child: Text('Light'),
+                  child: Text(l.settingsThemeLight),
                 ),
                 DropdownMenuItem(
                   value: ThemeMode.dark,
-                  child: Text('Dark'),
+                  child: Text(l.settingsThemeDark),
+                ),
+              ],
+            ),
+          ),
+          ListTile(
+            title: Text(l.settingsLanguage),
+            trailing: DropdownButton<String>(
+              value: currentLocale?.languageCode ?? 'system',
+              onChanged: (val) {
+                if (val == null) return;
+                final next = val == 'system' ? null : Locale(val);
+                ref.read(localeProvider.notifier).set(next);
+              },
+              items: [
+                DropdownMenuItem(
+                  value: 'system',
+                  child: Text(l.settingsLanguageSystem),
+                ),
+                DropdownMenuItem(
+                  value: 'en',
+                  child: Text(l.settingsLanguageEnglish),
+                ),
+                DropdownMenuItem(
+                  value: 'de',
+                  child: Text(l.settingsLanguageGerman),
                 ),
               ],
             ),
           ),
           SwitchListTile(
-            title: const Text('Appear in Directory'),
+            title: Text(l.settingsAppearInDirectory),
             value: _listed,
             onChanged: _updateListed,
           ),
           SwitchListTile(
-            title: const Text('Event Reminders'),
+            title: Text(l.settingsEventReminders),
             value: _eventNotif,
             onChanged: (val) async {
               setState(() => _eventNotif = val);
-              await Hive.box('settingsBox').put('eventNotifications', val);
+              await ref
+                  .read(settingsStorageProvider)
+                  .put('eventNotifications', val);
               if (val) await _registerTokenIfNeeded();
             },
           ),
           SwitchListTile(
-            title: const Text('Announcements'),
+            title: Text(l.settingsAnnouncements),
             value: _announcementNotif,
             onChanged: (val) async {
               setState(() => _announcementNotif = val);
-              await Hive.box(
-                'settingsBox',
-              ).put('announcementNotifications', val);
+              await ref
+                  .read(settingsStorageProvider)
+                  .put('announcementNotifications', val);
               if (val) await _registerTokenIfNeeded();
             },
           ),
           ListTile(
-            title: const Text('Emergency Contacts'),
+            title: Text(l.settingsEmergencyContacts),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               Navigator.push(
@@ -151,7 +182,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             },
           ),
           ListTile(
-            title: const Text('Suggestion Box'),
+            title: Text(l.settingsSuggestionBox),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               Navigator.push(

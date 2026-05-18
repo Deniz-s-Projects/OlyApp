@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:network_image_mock/network_image_mock.dart';
@@ -65,7 +66,7 @@ void main() {
         // 2) Pump ProfilePage:
         await tester.pumpWidget(
           ProviderScope(
-            child: MaterialApp(home: ProfilePage(service: service)),
+            child: MaterialApp(localizationsDelegates: AppLocalizations.localizationsDelegates, supportedLocales: AppLocalizations.supportedLocales, locale: const Locale('en'), home:ProfilePage(service: service)),
           ),
         );
         // Give 300ms for any images/animations to complete (instead of pumpAndSettle):
@@ -117,7 +118,7 @@ void main() {
         // 8) Re‐pump the ProfilePage and give it time to rebuild:
         await tester.pumpWidget(
           ProviderScope(
-            child: MaterialApp(home: ProfilePage(service: service)),
+            child: MaterialApp(localizationsDelegates: AppLocalizations.localizationsDelegates, supportedLocales: AppLocalizations.supportedLocales, locale: const Locale('en'), home:ProfilePage(service: service)),
           ),
         );
         await tester.pump(const Duration(milliseconds: 300));
@@ -146,7 +147,7 @@ void main() {
 
         await tester.pumpWidget(
           ProviderScope(
-            child: MaterialApp(home: ProfilePage(service: FailingUserService())),
+            child: MaterialApp(localizationsDelegates: AppLocalizations.localizationsDelegates, supportedLocales: AppLocalizations.supportedLocales, locale: const Locale('en'), home:ProfilePage(service: FailingUserService())),
           ),
         );
         await tester.pump(const Duration(milliseconds: 300));

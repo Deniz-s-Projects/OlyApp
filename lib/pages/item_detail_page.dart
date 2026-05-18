@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 
 import '../models/models.dart';
 import '../providers/item_providers.dart';
+import '../providers/user_providers.dart';
 import '../services/item_service.dart';
 import 'item_chat_page.dart';
 import 'post_item_page.dart';
@@ -51,10 +51,7 @@ class _ItemDetailPageState extends ConsumerState<ItemDetailPage> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    User? user;
-    if (Hive.isBoxOpen('userBox')) {
-      user = Hive.box<User>('userBox').get('currentUser');
-    }
+    final user = ref.watch(currentUserProvider);
     final isOwner = user != null && user.id == _item.ownerId;
     final favorites = ref.watch(favoritesProvider);
     return Scaffold(

@@ -1,24 +1,53 @@
+import 'dart:async';
+import 'dart:io';
+import 'dart:ui';
+
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:intl/date_symbol_data_local.dart';
+
+import 'models/models.dart';
+import 'pages/auth_home_page.dart';
+import 'pages/forgot_password_page.dart';
 import 'pages/login_page.dart';
 import 'pages/main_page.dart';
-import 'pages/register_page.dart';
-import 'pages/forgot_password_page.dart';
-import 'pages/reset_password_page.dart';
 import 'pages/onboarding_page.dart';
-import 'pages/auth_home_page.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
-import 'dart:io';
-import 'models/models.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
+import 'pages/register_page.dart';
+import 'pages/reset_password_page.dart';
+import 'providers/locale_provider.dart';
 import 'services/notification_service.dart';
 import 'theme.dart';
 
-void main() async {
+void main() {
+  // Top-level zone catches async errors that escape the framework
+  // (e.g. unhandled Futures). Report them to Crashlytics when available
+  // and never let init failures break startup.
+  runZonedGuarded<Future<void>>(_bootstrap, (error, stack) {
+    if (_crashlyticsReady) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: false);
+    } else {
+      debugPrint('Uncaught zone error: $error\n$stack');
+    }
+  });
+}
+
+bool _crashlyticsReady = false;
+
+Future<void> _bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await _initFirebaseAndCrashlytics();
+
+  // intl needs locale-specific symbol data before `DateFormat(locale)` can
+  // format anything outside the default (en_US). `null` loads all available
+  // bundled locales, which is fine for our small set.
+  await initializeDateFormatting();
 
   // Initialize Hive
   await Hive.initFlutter();
@@ -59,17 +88,46 @@ void main() async {
   runApp(const ProviderScope(child: OlyApp()));
 }
 
-class OlyApp extends StatefulWidget {
+/// Initialise Firebase, then wire Crashlytics into Flutter's two global
+/// error sinks. Defensive: any failure here logs to the debug console and
+/// returns — the app must still launch even if telemetry is unavailable.
+Future<void> _initFirebaseAndCrashlytics() async {
+  try {
+    await Firebase.initializeApp();
+  } catch (e, st) {
+    debugPrint('Firebase.initializeApp failed: $e\n$st');
+    return;
+  }
+  try {
+    final crashlytics = FirebaseCrashlytics.instance;
+    // Disable collection in debug builds and under flutter test so that
+    // test runs and dev iterations don't spam the dashboard. Real devices
+    // in release mode still report.
+    final shouldCollect = !kDebugMode &&
+        !Platform.environment.containsKey('FLUTTER_TEST');
+    await crashlytics.setCrashlyticsCollectionEnabled(shouldCollect);
+    FlutterError.onError = crashlytics.recordFlutterFatalError;
+    PlatformDispatcher.instance.onError = (error, stack) {
+      crashlytics.recordError(error, stack, fatal: true);
+      return true;
+    };
+    _crashlyticsReady = true;
+  } catch (e, st) {
+    debugPrint('Crashlytics init failed: $e\n$st');
+  }
+}
+
+class OlyApp extends ConsumerStatefulWidget {
   const OlyApp({super.key});
 
   static OlyAppState? of(BuildContext context) =>
       context.findAncestorStateOfType<OlyAppState>();
 
   @override
-  State<OlyApp> createState() => OlyAppState();
+  ConsumerState<OlyApp> createState() => OlyAppState();
 }
 
-class OlyAppState extends State<OlyApp> {
+class OlyAppState extends ConsumerState<OlyApp> {
   bool _loggedIn = false;
   bool _isAdmin = false;
   ThemeMode _themeMode = ThemeMode.system;
@@ -152,12 +210,15 @@ class OlyAppState extends State<OlyApp> {
 
   @override
   Widget build(BuildContext context) {
+    final locale = ref.watch(localeProvider);
     return MaterialApp(
       title: 'OlyApp',
       theme: OlyTheme.light(),
       darkTheme: OlyTheme.dark(),
       themeMode: _themeMode,
-
+      locale: locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       routes: {
         '/login': (_) => LoginPage(onLoginSuccess: _handleLogin),
         '/register': (_) => RegisterPage(onRegistered: _handleLogin),

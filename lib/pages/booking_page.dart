@@ -105,26 +105,14 @@ class _BookingBodyState extends ConsumerState<_BookingBody> {
 
   @override
   Widget build(BuildContext context) {
-    // Surface load errors via snackbars, matching the prior behavior.
-    ref.listen<AsyncValue<List<DateTime>>>(availableSlotsProvider, (prev, next) {
-      if (next.hasError && !next.isLoading) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to load slots')),
-        );
-      }
-    });
-    ref.listen<AsyncValue<List<Map<String, dynamic>>>>(myBookingsProvider,
-        (prev, next) {
-      if (next.hasError && !next.isLoading) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to load bookings')),
-        );
-      }
-    });
-
-    final allSlots = ref.watch(availableSlotsProvider).valueOrNull ??
-        const <DateTime>[];
-    final bookings = ref.watch(myBookingsProvider).valueOrNull ??
+    // Two independent async sources (slots + bookings) interleaved with
+    // a calendar widget — doesn't map cleanly to AsyncStateView. We
+    // surface load errors as inline list rows instead of transient
+    // SnackBars, which the user might miss.
+    final slotsAsync = ref.watch(availableSlotsProvider);
+    final bookingsAsync = ref.watch(myBookingsProvider);
+    final allSlots = slotsAsync.valueOrNull ?? const <DateTime>[];
+    final bookings = bookingsAsync.valueOrNull ??
         const <Map<String, dynamic>>[];
     final slotsByDay = _groupByDay(allSlots);
     final slots = slotsByDay[DateTime(
@@ -175,7 +163,25 @@ class _BookingBodyState extends ConsumerState<_BookingBody> {
                   child: Text('My Bookings',
                       style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
-                if (bookings.isEmpty)
+                if (bookingsAsync.hasError)
+                  ListTile(
+                    leading: const Icon(Icons.error_outline),
+                    title: const Text('Could not load your bookings'),
+                    trailing: TextButton(
+                      onPressed: () => ref.invalidate(myBookingsProvider),
+                      child: const Text('Retry'),
+                    ),
+                  )
+                else if (bookingsAsync.isLoading && bookings.isEmpty)
+                  const ListTile(
+                    leading: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                    title: Text('Loading bookings…'),
+                  )
+                else if (bookings.isEmpty)
                   const ListTile(title: Text('No bookings yet.'))
                 else
                   ...bookings.map((b) {
@@ -196,7 +202,25 @@ class _BookingBodyState extends ConsumerState<_BookingBody> {
                   child: Text('Available Slots',
                       style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
-                if (slots.isEmpty)
+                if (slotsAsync.hasError)
+                  ListTile(
+                    leading: const Icon(Icons.error_outline),
+                    title: const Text('Could not load slots'),
+                    trailing: TextButton(
+                      onPressed: () => ref.invalidate(availableSlotsProvider),
+                      child: const Text('Retry'),
+                    ),
+                  )
+                else if (slotsAsync.isLoading && allSlots.isEmpty)
+                  const ListTile(
+                    leading: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                    title: Text('Loading slots…'),
+                  )
+                else if (slots.isEmpty)
                   const ListTile(title: Text('No slots available.'))
                 else
                   ...slots.map((slot) {

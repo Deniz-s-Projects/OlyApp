@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -160,13 +161,13 @@ class _MaintenanceBodyState extends ConsumerState<_MaintenanceBody> {
     final ticketsAsync = ref.watch(maintenanceRequestsProvider);
     return AsyncStateView<List<MaintenanceRequest>>(
       value: ticketsAsync,
-      errorTitle: 'Failed to load tickets',
+      errorTitle: AppLocalizations.of(context).errorMaintenance,
       onRetry: () => ref.invalidate(maintenanceRequestsProvider),
       isEmpty: (tickets) => tickets.isEmpty,
-      empty: const EmptyState(
+      empty: EmptyState(
         icon: Icons.handyman_outlined,
-        title: 'No open tickets',
-        subtitle: 'Submit a new request from the other tab.',
+        title: AppLocalizations.of(context).emptyMaintenance,
+        subtitle: AppLocalizations.of(context).emptyMaintenanceSubtitle,
       ),
       data: (tickets) => ListView.separated(
         itemCount: tickets.length,
