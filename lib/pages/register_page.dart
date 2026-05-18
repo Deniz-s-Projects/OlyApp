@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:oly_app/l10n/generated/app_localizations.dart';
 
 import '../models/models.dart';
 import '../providers/auth_providers.dart';
+import '../providers/storage_providers.dart';
 import '../utils/validators.dart';
 
 class RegisterPage extends ConsumerStatefulWidget {
@@ -34,9 +35,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
+    final l = AppLocalizations.of(context);
     if (_confirmPasswordCtrl.text != _passwordCtrl.text) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Passwords do not match')),
+        SnackBar(content: Text(l.authPasswordsDoNotMatch)),
       );
       return;
     }
@@ -50,8 +52,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       final token = res['token'] as String;
       final userMap = res['user'] as Map<String, dynamic>;
       final user = User.fromMap(userMap);
-      await Hive.box('authBox').put('token', token);
-      await Hive.box<User>('userBox').put('currentUser', user);
+      await ref.read(authStorageProvider).put('token', token);
+      await ref.read(userStorageProvider).put('currentUser', user);
       widget.onRegistered?.call();
       if (widget.onRegistered == null && mounted) {
         Navigator.pop(context);
@@ -59,7 +61,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Registration failed: $e')),
+        SnackBar(content: Text(l.authRegistrationFailed(e.toString()))),
       );
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -69,8 +71,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final l = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Register')),
+      appBar: AppBar(title: Text(l.authRegister)),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -83,19 +86,19 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 TextFormField(
                   controller: _nameCtrl,
                   decoration: InputDecoration(
-                    labelText: 'Name',
+                    labelText: l.authName,
                     filled: true,
                     fillColor: cs.surfaceContainerHighest,
                     prefixIcon: const Icon(Icons.person),
                   ),
                   validator: (v) =>
-                      v == null || v.trim().isEmpty ? 'Name is required' : null,
+                      v == null || v.trim().isEmpty ? l.authName : null,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _emailCtrl,
                   decoration: InputDecoration(
-                    labelText: 'Email',
+                    labelText: l.authEmail,
                     filled: true,
                     fillColor: cs.surfaceContainerHighest,
                     prefixIcon: const Icon(Icons.email),
@@ -107,7 +110,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 TextFormField(
                   controller: _passwordCtrl,
                   decoration: InputDecoration(
-                    labelText: 'Password',
+                    labelText: l.authPassword,
                     filled: true,
                     fillColor: cs.surfaceContainerHighest,
                     prefixIcon: const Icon(Icons.lock),
@@ -117,6 +120,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                             ? Icons.visibility
                             : Icons.visibility_off,
                       ),
+                      tooltip: _passwordVisible
+                          ? l.a11yHidePassword
+                          : l.a11yShowPassword,
                       onPressed: () => setState(
                         () => _passwordVisible = !_passwordVisible,
                       ),
@@ -129,7 +135,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 TextFormField(
                   controller: _confirmPasswordCtrl,
                   decoration: InputDecoration(
-                    labelText: 'Confirm password',
+                    labelText: l.authConfirmPassword,
                     filled: true,
                     fillColor: cs.surfaceContainerHighest,
                     prefixIcon: const Icon(Icons.lock),
@@ -149,7 +155,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                             width: 16,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Text('Register'),
+                        : Text(l.authRegister),
                   ),
                 ),
               ],

@@ -8,6 +8,7 @@ final clubServiceProvider =
 
 final clubsProvider = FutureProvider<List<Club>>(
   (ref) async {
+    ref.keepAlive();
     final service = ref.watch(clubServiceProvider);
     return service.fetchClubs();
   },

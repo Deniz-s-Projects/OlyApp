@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:oly_app/l10n/generated/app_localizations.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import '../models/models.dart';
 import '../providers/auth_providers.dart';
+import '../providers/storage_providers.dart';
 import '../services/auth_service.dart';
 import '../utils/validators.dart';
 
@@ -80,8 +81,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         bio: userMap['bio'] as String?,
         room: userMap['room'] as String?,
       );
-      final userBox = Hive.box<User>('userBox');
-      await userBox.put('currentUser', user);
+      await ref.read(userStorageProvider).put('currentUser', user);
 
       widget.onLoginSuccess();
     } catch (e) {
@@ -111,8 +111,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       isListed: false,
     );
 
-    final authBox = Hive.box('authBox');
-    await authBox.put('token', auth.idToken ?? auth.accessToken);
+    await ref
+        .read(authStorageProvider)
+        .put('token', auth.idToken ?? auth.accessToken);
 
     return user;
   }
@@ -141,8 +142,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       isListed: false,
     );
 
-    final authBox = Hive.box('authBox');
-    await authBox.put('token', credential.identityToken);
+    await ref
+        .read(authStorageProvider)
+        .put('token', credential.identityToken);
 
     return user;
   }
@@ -161,8 +163,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final l = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
+      appBar: AppBar(title: Text(l.authLogin)),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -175,7 +178,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 TextFormField(
                   controller: _emailController,
                   decoration: InputDecoration(
-                    labelText: 'Email',
+                    labelText: l.authEmail,
                     filled: true,
                     fillColor: cs.surfaceContainerHighest,
                     prefixIcon: const Icon(Icons.email),
@@ -189,7 +192,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 TextFormField(
                   controller: _passwordController,
                   decoration: InputDecoration(
-                    labelText: 'Password',
+                    labelText: l.authPassword,
                     filled: true,
                     fillColor: cs.surfaceContainerHighest,
                     prefixIcon: const Icon(Icons.lock),
@@ -199,6 +202,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             ? Icons.visibility
                             : Icons.visibility_off,
                       ),
+                      tooltip: _passwordVisible
+                          ? l.a11yHidePassword
+                          : l.a11yShowPassword,
                       onPressed:
                           () => setState(
                             () => _passwordVisible = !_passwordVisible,
@@ -223,11 +229,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                               width: 16,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                            : const Text('Login'),
+                            : Text(l.authLogin),
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text('Or sign in with'),
+                Text(l.authOrSignInWith),
                 const SizedBox(height: 12),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -242,8 +248,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                   final user = await _handleGoogleSignIn();
                                   if (!context.mounted) return;
                                   if (user != null) {
-                                    final userBox = Hive.box<User>('userBox');
-                                    await userBox.put('currentUser', user);
+                                    await ref
+                                        .read(userStorageProvider)
+                                        .put('currentUser', user);
                                     widget.onLoginSuccess();
                                   }
                                 } catch (e) {
@@ -251,7 +258,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                       content: Text(
-                                        'Google sign-in failed: $e',
+                                        l.authGoogleSignInFailed(e.toString()),
                                       ),
                                     ),
                                   );
@@ -262,7 +269,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                 }
                               },
                       icon: const Icon(Icons.login),
-                      label: const Text('Google'),
+                      label: Text(l.authGoogle),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: cs.primaryContainer,
                         foregroundColor: cs.onPrimaryContainer,
@@ -279,15 +286,18 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                   final user = await _handleAppleSignIn();
                                   if (!context.mounted) return;
                                   if (user != null) {
-                                    final userBox = Hive.box<User>('userBox');
-                                    await userBox.put('currentUser', user);
+                                    await ref
+                                        .read(userStorageProvider)
+                                        .put('currentUser', user);
                                     widget.onLoginSuccess();
                                   }
                                 } catch (e) {
                                   if (!context.mounted) return;
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: Text('Apple sign-in failed: $e'),
+                                      content: Text(
+                                        l.authAppleSignInFailed(e.toString()),
+                                      ),
                                     ),
                                   );
                                 } finally {
@@ -297,7 +307,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                 }
                               },
                       icon: const Icon(Icons.apple),
-                      label: const Text('Apple'),
+                      label: Text(l.authApple),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: cs.primaryContainer,
                         foregroundColor: cs.onPrimaryContainer,
@@ -311,14 +321,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       _isLoading
                           ? null
                           : () => Navigator.pushNamed(context, '/register'),
-                  child: const Text('Create an account'),
+                  child: Text(l.authCreateAccount),
                 ),
                 TextButton(
                   onPressed:
                       _isLoading
                           ? null
                           : () => Navigator.pushNamed(context, '/forgot'),
-                  child: const Text('Forgot password?'),
+                  child: Text(l.authForgotPassword),
                 ),
               ],
             ),

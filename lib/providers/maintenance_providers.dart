@@ -15,6 +15,7 @@ final maintenanceServiceProvider =
 /// overrides of [maintenanceServiceProvider] flow through correctly.
 final maintenanceRequestsProvider = FutureProvider<List<MaintenanceRequest>>(
   (ref) async {
+    ref.keepAlive();
     final service = ref.watch(maintenanceServiceProvider);
     return service.fetchRequests();
   },

@@ -12,6 +12,10 @@ final eventServiceProvider =
 /// overrides of [eventServiceProvider] flow through correctly.
 final eventsProvider = FutureProvider<List<CalendarEvent>>(
   (ref) async {
+    // Cache survives back-navigation so returning to Calendar is instant
+    // instead of triggering a refetch. Pull-to-refresh and `ref.invalidate`
+    // (used after writes) still bust the cache when needed.
+    ref.keepAlive();
     final service = ref.watch(eventServiceProvider);
     return service.fetchEvents();
   },

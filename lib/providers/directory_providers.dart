@@ -22,6 +22,7 @@ final directorySearchProvider =
 /// Loads users for the current [directorySearchProvider] value.
 final directoryUsersProvider = FutureProvider<List<User>>(
   (ref) async {
+    ref.keepAlive();
     final search = ref.watch(directorySearchProvider);
     final service = ref.watch(directoryServiceProvider);
     return service.fetchUsers(search: search);

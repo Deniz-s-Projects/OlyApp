@@ -171,6 +171,7 @@ class _MainPageState extends ConsumerState<MainPage> {
       case NavTarget.home:
         return FloatingActionButton(
           heroTag: 'homeFab',
+          tooltip: AppLocalizations.of(context).a11yViewNotifications,
           onPressed: () => Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const NotificationsPage()),
@@ -181,6 +182,7 @@ class _MainPageState extends ConsumerState<MainPage> {
         if (!widget.isAdmin) return null;
         return FloatingActionButton(
           heroTag: 'calendarFab',
+          tooltip: AppLocalizations.of(context).a11yAddEvent,
           onPressed: () async {
             await showAddEventDialog(context, (
               title,

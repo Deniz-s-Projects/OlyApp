@@ -8,6 +8,7 @@ final bulletinServiceProvider =
 
 final bulletinPostsProvider = FutureProvider<List<BulletinPost>>(
   (ref) async {
+    ref.keepAlive();
     final service = ref.watch(bulletinServiceProvider);
     return service.fetchPosts();
   },

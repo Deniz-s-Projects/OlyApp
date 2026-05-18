@@ -103,5 +103,76 @@
   "commonDelete": "Delete",
   "commonOk": "OK",
   "commonAdd": "Add",
-  "commonConfirm": "Confirm"
+  "commonConfirm": "Confirm",
+  "commonOpen": "Open",
+
+  "authWelcome": "Welcome",
+  "authLogin": "Login",
+  "authRegister": "Register",
+  "authEmail": "Email",
+  "authPassword": "Password",
+  "authConfirmPassword": "Confirm password",
+  "authName": "Name",
+  "authCreateAccount": "Create an account",
+  "authForgotPassword": "Forgot password?",
+  "authOrSignInWith": "Or sign in with",
+  "authGoogle": "Google",
+  "authApple": "Apple",
+  "authPasswordsDoNotMatch": "Passwords do not match",
+  "authRegistrationFailed": "Registration failed: {error}",
+  "@authRegistrationFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "authGoogleSignInFailed": "Google sign-in failed: {error}",
+  "@authGoogleSignInFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "authAppleSignInFailed": "Apple sign-in failed: {error}",
+  "@authAppleSignInFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+
+  "authForgotTitle": "Forgot Password",
+  "authSendResetEmail": "Send reset email",
+  "authResetEmailSent": "Reset email sent",
+  "authResetRequestFailed": "Request failed: {error}",
+  "@authResetRequestFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "authResetTitle": "Set New Password",
+  "authResetToken": "Reset token",
+  "authNewPassword": "New password",
+  "authSetPassword": "Set password",
+  "authPasswordUpdated": "Password updated",
+  "authResetFailed": "Reset failed: {error}",
+  "@authResetFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+
+  "onboardingSkip": "Skip",
+  "onboardingNext": "Next",
+  "onboardingDone": "Done",
+  "onboardingTitle1": "Stay Organized",
+  "onboardingBody1": "Manage events and deadlines in the calendar.",
+  "onboardingTitle2": "Exchange Items",
+  "onboardingBody2": "Buy, sell or trade with your neighbors.",
+  "onboardingTitle3": "Request Maintenance",
+  "onboardingBody3": "Report issues in your room and track tickets.",
+
+  "a11yRefresh": "Refresh",
+  "a11yAddEvent": "Add event",
+  "a11yPostItem": "Post a new listing",
+  "a11yToggleFavorite": "Toggle favorite",
+  "a11yEditPost": "Edit post",
+  "a11yDeletePost": "Delete post",
+  "a11yEditComment": "Edit comment",
+  "a11yDeleteComment": "Delete comment",
+  "a11ySendComment": "Send comment",
+  "a11ySendMessage": "Send message",
+  "a11yViewNotifications": "View notifications",
+  "a11yOpenSettings": "Open settings",
+  "a11yShowPassword": "Show password",
+  "a11yHidePassword": "Hide password",
+  "a11yCallContact": "Call contact",
+  "a11yUploadDocument": "Upload document"
 }

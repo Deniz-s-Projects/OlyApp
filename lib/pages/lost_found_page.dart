@@ -101,6 +101,7 @@ class _LostFoundBodyState extends ConsumerState<_LostFoundBody> {
                     hintText: 'Search…',
                     suffixIcon: IconButton(
                       icon: const Icon(Icons.refresh),
+                      tooltip: AppLocalizations.of(context).a11yRefresh,
                       onPressed: () =>
                           ref.invalidate(lostFoundItemsProvider),
                     ),

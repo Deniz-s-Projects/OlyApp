@@ -7,6 +7,7 @@ final pollServiceProvider = Provider<PollService>((ref) => PollService());
 
 final pollsProvider = FutureProvider<List<Poll>>(
   (ref) async {
+    ref.keepAlive();
     final service = ref.watch(pollServiceProvider);
     return service.fetchPolls();
   },
