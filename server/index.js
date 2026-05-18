@@ -5,7 +5,6 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const { createLogger, format, transports } = require('winston');
 const morgan = require('morgan');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const admin = require('firebase-admin');
@@ -16,16 +15,9 @@ const apiRouter = require('./api');
 const Event = require('./models/Event');
 const websocket = require('./socket');
 const errorHandler = require('./middleware/errorHandler');
+const requestId = require('./middleware/requestId');
+const logger = require('./logger');
 const { corsOrigins } = require('./config');
-
-const logger = createLogger({
-  level: 'info',
-  format: format.combine(
-    format.timestamp(),
-    format.printf(({ timestamp, level, message }) => `${timestamp} ${level}: ${message}`)
-  ),
-  transports: [new transports.Console()],
-});
 
 const app = express();
 
@@ -47,13 +39,22 @@ const corsOptions =
           if (corsOrigins.includes(origin)) return cb(null, true);
           const err = new Error(`Origin ${origin} not allowed by CORS`);
           err.status = 403;
+          err.code = 'cors_blocked';
           return cb(err);
         },
       };
+app.use(requestId);
 app.use(cors(corsOptions));
 app.use(helmet());
-app.use(express.json());
-app.use(morgan('tiny', { stream: { write: (msg) => logger.info(msg.trim()) } }));
+// Cap body size so an attacker can't OOM us with a giant JSON blob; legit
+// requests stay well under 2MB (uploads go through Multer, not here).
+app.use(express.json({ limit: '2mb' }));
+morgan.token('id', (req) => req.id);
+app.use(
+  morgan(':id :method :url :status :res[content-length] - :response-time ms', {
+    stream: { write: (msg) => logger.info(msg.trim()) },
+  }),
+);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 admin.initializeApp();
@@ -122,6 +123,11 @@ cron.schedule('* * * * *', async () => {
           notification: {
             title: `Upcoming event: ${event.title}`,
             body: 'Starts in 15 minutes',
+          },
+          // Tapping the reminder deep-links to the calendar tab.
+          data: {
+            route: 'calendar',
+            id: String(event._id),
           },
         });
         event.reminderSent = true;

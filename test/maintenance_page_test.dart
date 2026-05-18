@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oly_app/l10n/generated/app_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:oly_app/models/models.dart';
 import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
@@ -56,7 +57,7 @@ void main() {
   ) async {
     final service = FakeMaintenanceService();
     await tester.pumpWidget(
-      MaterialApp(home: MaintenancePage(service: service)),
+      MaterialApp(localizationsDelegates: AppLocalizations.localizationsDelegates, supportedLocales: AppLocalizations.supportedLocales, locale: const Locale('en'), home:MaintenancePage(service: service)),
     );
     await tester.pumpAndSettle();
 
@@ -71,7 +72,7 @@ void main() {
 
   testWidgets('Shows inline error when ticket load fails', (tester) async {
     await tester.pumpWidget(
-      MaterialApp(home: MaintenancePage(service: ErrorMaintenanceService())),
+      MaterialApp(localizationsDelegates: AppLocalizations.localizationsDelegates, supportedLocales: AppLocalizations.supportedLocales, locale: const Locale('en'), home:MaintenancePage(service: ErrorMaintenanceService())),
     );
     // Switch to conversations to reach the AsyncStateView.
     await tester.pumpAndSettle();
@@ -85,7 +86,7 @@ void main() {
     TestWidgetsFlutterBinding.ensureInitialized();
     ImagePickerPlatform.instance = FakeImagePicker();
     await tester.pumpWidget(
-      MaterialApp(home: MaintenancePage(service: FakeMaintenanceService())),
+      MaterialApp(localizationsDelegates: AppLocalizations.localizationsDelegates, supportedLocales: AppLocalizations.supportedLocales, locale: const Locale('en'), home:MaintenancePage(service: FakeMaintenanceService())),
     );
     await tester.pumpAndSettle();
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oly_app/l10n/generated/app_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:oly_app/models/models.dart';
 import 'package:oly_app/pages/calendar_page.dart';
@@ -70,7 +71,7 @@ void main() {
   testWidgets('Add event displays in list', (tester) async {
     final service = FakeEventService();
     await tester.pumpWidget(
-      MaterialApp(home: CalendarPage(service: service, isAdmin: true)),
+      MaterialApp(localizationsDelegates: AppLocalizations.localizationsDelegates, supportedLocales: AppLocalizations.supportedLocales, locale: const Locale('en'), home:CalendarPage(service: service, isAdmin: true)),
     );
     await tester.pump();
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
@@ -92,7 +93,7 @@ void main() {
 
   testWidgets('Shows snackbar on load error', (tester) async {
     await tester.pumpWidget(
-      MaterialApp(home: CalendarPage(service: ErrorEventService())),
+      MaterialApp(localizationsDelegates: AppLocalizations.localizationsDelegates, supportedLocales: AppLocalizations.supportedLocales, locale: const Locale('en'), home:CalendarPage(service: ErrorEventService())),
     );
     await tester.pump();
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
@@ -106,7 +107,7 @@ void main() {
     service.events.add(
       CalendarEvent(id: 1, title: 'Party', date: DateTime.now()),
     );
-    await tester.pumpWidget(MaterialApp(home: CalendarPage(service: service)));
+    await tester.pumpWidget(MaterialApp(localizationsDelegates: AppLocalizations.localizationsDelegates, supportedLocales: AppLocalizations.supportedLocales, locale: const Locale('en'), home:CalendarPage(service: service)));
     await tester.pump();
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
     await tester.pumpAndSettle();
@@ -149,7 +150,7 @@ void main() {
       );
     });
 
-    await tester.pumpWidget(MaterialApp(home: CalendarPage(service: service)));
+    await tester.pumpWidget(MaterialApp(localizationsDelegates: AppLocalizations.localizationsDelegates, supportedLocales: AppLocalizations.supportedLocales, locale: const Locale('en'), home:CalendarPage(service: service)));
     await tester.pump();
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
     await tester.pumpAndSettle();

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oly_app/l10n/generated/app_localizations.dart';
 
 import '../theme/tokens.dart';
 
@@ -19,6 +20,7 @@ class ErrorState extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
+    final l = AppLocalizations.of(context);
     // SingleChildScrollView so the panel survives tight constraints (e.g.
     // an Expanded beneath a TableCalendar) without RenderFlex overflow.
     return SingleChildScrollView(
@@ -30,7 +32,7 @@ class ErrorState extends StatelessWidget {
             Icon(Icons.error_outline, size: 56, color: scheme.error),
             const SizedBox(height: AppSpacing.md),
             Text(
-              title ?? 'Something went wrong',
+              title ?? l.errorGeneric,
               textAlign: TextAlign.center,
               style: text.titleMedium?.copyWith(color: scheme.onSurface),
             ),
@@ -46,7 +48,7 @@ class ErrorState extends StatelessWidget {
               const SizedBox(height: AppSpacing.md),
               FilledButton.tonal(
                 onPressed: onRetry,
-                child: const Text('Retry'),
+                child: Text(l.errorRetry),
               ),
             ],
           ],

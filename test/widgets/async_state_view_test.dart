@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:oly_app/l10n/generated/app_localizations.dart';
 import 'package:oly_app/widgets/async_state_view.dart';
 
 Future<void> _wrap(WidgetTester tester, Widget child) {
-  return tester.pumpWidget(MaterialApp(home: Scaffold(body: child)));
+  return tester.pumpWidget(
+    MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: const Locale('en'),
+      home: Scaffold(body: child),
+    ),
+  );
 }
 
 void main() {

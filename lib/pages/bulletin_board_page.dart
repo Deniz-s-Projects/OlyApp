@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oly_app/l10n/generated/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/models.dart';
@@ -213,10 +214,11 @@ class _BulletinBoardPageState extends ConsumerState<BulletinBoardPage> {
           Expanded(
             child:
                 _posts.isEmpty
-                    ? const EmptyState(
+                    ? EmptyState(
                       icon: Icons.campaign_outlined,
-                      title: 'Bulletin is empty',
-                      subtitle: 'Be the first to post something.',
+                      title: AppLocalizations.of(context).emptyBulletin,
+                      subtitle:
+                          AppLocalizations.of(context).emptyBulletinSubtitle,
                     )
                     : ListView.separated(
                       itemCount: _posts.length,

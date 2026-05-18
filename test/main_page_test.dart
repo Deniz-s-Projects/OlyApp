@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oly_app/l10n/generated/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:oly_app/models/models.dart';
@@ -27,13 +28,25 @@ void _useTallSurface(WidgetTester tester) {
   addTearDown(tester.view.reset);
 }
 
+// Builds a MaterialApp wired with the generated AppLocalizations delegates
+// so pages can call `AppLocalizations.of(context)` without crashing. Locale
+// pinned to English so existing string-match assertions stay valid.
+MaterialApp _app({required Widget home}) {
+  return MaterialApp(
+    locale: const Locale('en'),
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: home,
+  );
+}
+
 void main() {
   testWidgets('Bottom nav exposes the five primary destinations',
       (tester) async {
     _useTallSurface(tester);
     await tester.pumpWidget(
-      const ProviderScope(
-        child: MaterialApp(home: MainPage(onLogout: null)),
+      ProviderScope(
+        child: _app(home: const MainPage(onLogout: null)),
       ),
     );
     await tester.pumpAndSettle();
@@ -58,7 +71,7 @@ void main() {
         overrides: [
           eventServiceProvider.overrideWithValue(fakeEventService),
         ],
-        child: MaterialApp(
+        child: _app(
           home: MainPage(
             calendarPage: CalendarPage(service: fakeEventService),
             onLogout: () {},
@@ -84,8 +97,8 @@ void main() {
   testWidgets('Admin tile visible on dashboard for admins', (tester) async {
     _useTallSurface(tester);
     await tester.pumpWidget(
-      const ProviderScope(
-        child: MaterialApp(home: MainPage(isAdmin: true, onLogout: null)),
+      ProviderScope(
+        child: _app(home: const MainPage(isAdmin: true, onLogout: null)),
       ),
     );
     await tester.pumpAndSettle();
@@ -97,8 +110,8 @@ void main() {
       (tester) async {
     _useTallSurface(tester);
     await tester.pumpWidget(
-      const ProviderScope(
-        child: MaterialApp(home: MainPage(onLogout: null)),
+      ProviderScope(
+        child: _app(home: const MainPage(onLogout: null)),
       ),
     );
     await tester.pumpAndSettle();
@@ -115,7 +128,7 @@ void main() {
         overrides: [
           eventServiceProvider.overrideWithValue(fakeEventService),
         ],
-        child: MaterialApp(
+        child: _app(
           home: MainPage(
             calendarPage: CalendarPage(service: fakeEventService),
             isAdmin: true,

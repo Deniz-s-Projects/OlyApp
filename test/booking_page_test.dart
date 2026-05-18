@@ -56,12 +56,14 @@ void main() {
     expect(find.text('Booking confirmed'), findsOneWidget);
   });
 
-  testWidgets('Shows snackbar on load error', (tester) async {
+  testWidgets('Shows inline error row on load error', (tester) async {
     await tester.pumpWidget(
       MaterialApp(home: BookingPage(service: ErrorBookingService())),
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Failed to load slots'), findsOneWidget);
+    // booking_page now shows an inline ListTile + retry button instead
+    // of a SnackBar (the SnackBar listener was dropped when migrating).
+    expect(find.text('Could not load slots'), findsOneWidget);
   });
 }

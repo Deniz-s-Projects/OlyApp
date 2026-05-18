@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:oly_app/l10n/generated/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -154,13 +155,13 @@ class _LostFoundBodyState extends ConsumerState<_LostFoundBody> {
           Expanded(
             child: AsyncStateView<List<LostItem>>(
               value: itemsAsync,
-              errorTitle: 'Failed to load lost & found',
+              errorTitle: AppLocalizations.of(context).errorLostFound,
               onRetry: () => ref.invalidate(lostFoundItemsProvider),
               isEmpty: (items) => items.isEmpty,
-              empty: const EmptyState(
+              empty: EmptyState(
                 icon: Icons.help_outline,
-                title: 'Nothing reported',
-                subtitle: 'Be the first to post a lost or found item below.',
+                title: AppLocalizations.of(context).emptyLostFound,
+                subtitle: AppLocalizations.of(context).emptyLostFoundSubtitle,
               ),
               data: (items) => ListView.separated(
                 itemCount: items.length,

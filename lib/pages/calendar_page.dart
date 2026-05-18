@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:oly_app/l10n/generated/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:path_provider/path_provider.dart';
@@ -319,12 +320,12 @@ class _CalendarBodyState extends ConsumerState<_CalendarBody> {
           Expanded(
             child: AsyncStateView<List<CalendarEvent>>(
               value: eventsAsync,
-              errorTitle: 'Failed to load events',
+              errorTitle: AppLocalizations.of(context).errorEvents,
               onRetry: () => ref.invalidate(eventsProvider),
               isEmpty: (_) => _eventsForDay(_selectedDay).isEmpty,
-              empty: const EmptyState(
+              empty: EmptyState(
                 icon: Icons.event_busy,
-                title: 'No events for this day',
+                title: AppLocalizations.of(context).emptyEvents,
               ),
               data: (_) {
                 final selectedEvents = _eventsForDay(_selectedDay);

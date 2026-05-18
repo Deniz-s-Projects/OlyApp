@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oly_app/l10n/generated/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/models.dart';
@@ -34,12 +35,12 @@ class _ClubsBody extends ConsumerWidget {
     return Scaffold(
       body: AsyncStateView<List<Club>>(
         value: clubsAsync,
-        errorTitle: 'Failed to load clubs',
+        errorTitle: AppLocalizations.of(context).errorClubs,
         onRetry: () => ref.invalidate(clubsProvider),
         isEmpty: (clubs) => clubs.isEmpty,
-        empty: const EmptyState(
+        empty: EmptyState(
           icon: Icons.groups_outlined,
-          title: 'No clubs yet',
+          title: AppLocalizations.of(context).emptyClubs,
         ),
         data: (clubs) => ListView.builder(
           itemCount: clubs.length,

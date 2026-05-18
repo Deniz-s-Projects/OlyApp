@@ -2,11 +2,11 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../main.dart';
 import '../models/models.dart';
+import '../providers/storage_providers.dart';
 import '../providers/user_providers.dart';
 import '../services/user_service.dart';
 
@@ -24,7 +24,6 @@ class ProfilePage extends ConsumerStatefulWidget {
 }
 
 class _ProfilePageState extends ConsumerState<ProfilePage> {
-  late final Box<User> _userBox;
   late User _user;
 
   final _formKey = GlobalKey<FormState>();
@@ -44,8 +43,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   @override
   void initState() {
     super.initState();
-    _userBox = Hive.box<User>('userBox');
-    _user = _userBox.get('currentUser')!;
+    _user = ref.read(userStorageProvider).get('currentUser')!;
     _nameCtrl = TextEditingController(text: _user.name);
     _emailCtrl = TextEditingController(text: _user.email);
     _avatarCtrl = TextEditingController(text: _user.avatarUrl ?? '');
@@ -101,7 +99,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     );
     try {
       final user = await service.updateProfile(updated);
-      await _userBox.put('currentUser', user);
+      await ref.read(userStorageProvider).put('currentUser', user);
       if (mounted) {
         setState(() => _user = user);
         ScaffoldMessenger.of(

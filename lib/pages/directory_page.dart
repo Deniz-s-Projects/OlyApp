@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oly_app/l10n/generated/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/models.dart';
@@ -66,12 +67,12 @@ class _DirectoryBodyState extends ConsumerState<_DirectoryBody> {
             Expanded(
               child: AsyncStateView<List<User>>(
                 value: usersAsync,
-                errorTitle: 'Failed to load users',
+                errorTitle: AppLocalizations.of(context).errorDirectory,
                 onRetry: () => ref.invalidate(directoryUsersProvider),
                 isEmpty: (users) => users.isEmpty,
-                empty: const EmptyState(
+                empty: EmptyState(
                   icon: Icons.people_outline,
-                  title: 'No residents found',
+                  title: AppLocalizations.of(context).emptyDirectory,
                 ),
                 data: (users) => ListView.builder(
                   itemCount: users.length,

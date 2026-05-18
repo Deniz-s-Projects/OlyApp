@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oly_app/l10n/generated/app_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:oly_app/models/models.dart';
 import 'package:oly_app/pages/directory_page.dart';
@@ -15,7 +16,7 @@ class FakeDirectoryService extends DirectoryService {
 void main() {
   testWidgets('Displays empty message when no users', (tester) async {
     await tester.pumpWidget(
-      MaterialApp(home: DirectoryPage(service: FakeDirectoryService())),
+      MaterialApp(localizationsDelegates: AppLocalizations.localizationsDelegates, supportedLocales: AppLocalizations.supportedLocales, locale: const Locale('en'), home:DirectoryPage(service: FakeDirectoryService())),
     );
     await tester.pumpAndSettle();
 

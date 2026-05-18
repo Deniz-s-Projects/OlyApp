@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oly_app/l10n/generated/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/models.dart';
@@ -47,12 +48,12 @@ class _PollsBody extends ConsumerWidget {
       onRefresh: () async => ref.invalidate(pollsProvider),
       child: AsyncStateView<List<Poll>>(
         value: pollsAsync,
-        errorTitle: 'Failed to load polls',
+        errorTitle: AppLocalizations.of(context).errorPolls,
         onRetry: () => ref.invalidate(pollsProvider),
         isEmpty: (polls) => polls.isEmpty,
-        empty: const EmptyState(
+        empty: EmptyState(
           icon: Icons.poll_outlined,
-          title: 'No active polls',
+          title: AppLocalizations.of(context).emptyPolls,
         ),
         data: (polls) => ListView.builder(
           itemCount: polls.length,

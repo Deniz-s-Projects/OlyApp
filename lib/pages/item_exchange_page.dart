@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oly_app/l10n/generated/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/models.dart';
@@ -190,13 +191,14 @@ class _ItemExchangeBodyState extends ConsumerState<_ItemExchangeBody> {
                 onRefresh: () async => ref.invalidate(itemsProvider),
                 child: AsyncStateView<List<Item>>(
                   value: itemsAsync,
-                  errorTitle: 'Could not load items',
+                  errorTitle: AppLocalizations.of(context).errorExchange,
                   onRetry: () => ref.invalidate(itemsProvider),
                   isEmpty: (_) => ref.read(filteredItemsProvider).isEmpty,
-                  empty: const EmptyState(
+                  empty: EmptyState(
                     icon: Icons.inventory_2_outlined,
-                    title: 'Nothing on offer',
-                    subtitle: 'Try clearing your filters or check back later.',
+                    title: AppLocalizations.of(context).emptyExchange,
+                    subtitle:
+                        AppLocalizations.of(context).emptyExchangeSubtitle,
                   ),
                   data: (_) {
                     final filteredItems = ref.watch(filteredItemsProvider);

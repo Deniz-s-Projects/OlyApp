@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oly_app/l10n/generated/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:oly_app/pages/bulletin_board_page.dart';
@@ -103,7 +104,7 @@ void main() {
     );
     await tester.pumpWidget(
       ProviderScope(
-        child: MaterialApp(home: BulletinBoardPage(service: service)),
+        child: MaterialApp(localizationsDelegates: AppLocalizations.localizationsDelegates, supportedLocales: AppLocalizations.supportedLocales, locale: const Locale('en'), home:BulletinBoardPage(service: service)),
       ),
     );
     await tester.pumpAndSettle();
@@ -115,7 +116,7 @@ void main() {
     final service = FakeBulletinService([], {});
     await tester.pumpWidget(
       ProviderScope(
-        child: MaterialApp(home: BulletinBoardPage(service: service)),
+        child: MaterialApp(localizationsDelegates: AppLocalizations.localizationsDelegates, supportedLocales: AppLocalizations.supportedLocales, locale: const Locale('en'), home:BulletinBoardPage(service: service)),
       ),
     );
     await tester.pumpAndSettle();
@@ -134,7 +135,7 @@ void main() {
     );
     await tester.pumpWidget(
       ProviderScope(
-        child: MaterialApp(home: BulletinBoardPage(service: service)),
+        child: MaterialApp(localizationsDelegates: AppLocalizations.localizationsDelegates, supportedLocales: AppLocalizations.supportedLocales, locale: const Locale('en'), home:BulletinBoardPage(service: service)),
       ),
     );
     await tester.pumpAndSettle();
@@ -153,7 +154,7 @@ void main() {
     );
     await tester.pumpWidget(
       ProviderScope(
-        child: MaterialApp(home: BulletinBoardPage(service: service)),
+        child: MaterialApp(localizationsDelegates: AppLocalizations.localizationsDelegates, supportedLocales: AppLocalizations.supportedLocales, locale: const Locale('en'), home:BulletinBoardPage(service: service)),
       ),
     );
     await tester.pumpAndSettle();
@@ -174,7 +175,7 @@ void main() {
     );
     await tester.pumpWidget(
       ProviderScope(
-        child: MaterialApp(home: BulletinBoardPage(service: service)),
+        child: MaterialApp(localizationsDelegates: AppLocalizations.localizationsDelegates, supportedLocales: AppLocalizations.supportedLocales, locale: const Locale('en'), home:BulletinBoardPage(service: service)),
       ),
     );
     await tester.pumpAndSettle();
@@ -202,7 +203,7 @@ void main() {
     );
     await tester.pumpWidget(
       ProviderScope(
-        child: MaterialApp(home: BulletinBoardPage(service: service)),
+        child: MaterialApp(localizationsDelegates: AppLocalizations.localizationsDelegates, supportedLocales: AppLocalizations.supportedLocales, locale: const Locale('en'), home:BulletinBoardPage(service: service)),
       ),
     );
     await tester.pumpAndSettle();
@@ -234,7 +235,7 @@ void main() {
     );
     await tester.pumpWidget(
       ProviderScope(
-        child: MaterialApp(home: BulletinBoardPage(service: service)),
+        child: MaterialApp(localizationsDelegates: AppLocalizations.localizationsDelegates, supportedLocales: AppLocalizations.supportedLocales, locale: const Locale('en'), home:BulletinBoardPage(service: service)),
       ),
     );
     await tester.pumpAndSettle();
@@ -266,7 +267,7 @@ void main() {
     );
     await tester.pumpWidget(
       ProviderScope(
-        child: MaterialApp(home: BulletinBoardPage(service: service)),
+        child: MaterialApp(localizationsDelegates: AppLocalizations.localizationsDelegates, supportedLocales: AppLocalizations.supportedLocales, locale: const Locale('en'), home:BulletinBoardPage(service: service)),
       ),
     );
     await tester.pumpAndSettle();
@@ -295,7 +296,7 @@ void main() {
     );
     await tester.pumpWidget(
       ProviderScope(
-        child: MaterialApp(home: BulletinBoardPage(service: service)),
+        child: MaterialApp(localizationsDelegates: AppLocalizations.localizationsDelegates, supportedLocales: AppLocalizations.supportedLocales, locale: const Locale('en'), home:BulletinBoardPage(service: service)),
       ),
     );
     await tester.pumpAndSettle();

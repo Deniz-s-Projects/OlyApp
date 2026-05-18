@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oly_app/l10n/generated/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
@@ -58,6 +59,7 @@ class DashboardPage extends ConsumerWidget {
     final firstName = ref.watch(currentUserFirstNameProvider);
     final eventsAsync = ref.watch(eventsProvider);
     final maintenanceAsync = ref.watch(maintenanceRequestsProvider);
+    final l = AppLocalizations.of(context);
 
     return SafeArea(
       child: RefreshIndicator(
@@ -89,46 +91,46 @@ class DashboardPage extends ConsumerWidget {
               ),
             ),
             _DashboardSection(
-              title: 'Community',
+              title: l.sectionCommunity,
               tiles: [
                 _Tile(
                   icon: Icons.campaign,
-                  label: 'Bulletin',
+                  label: l.tileBulletin,
                   onTap: () => onNavigate(NavTarget.bulletin),
                 ),
                 _Tile(
                   icon: Icons.people,
-                  label: 'Directory',
+                  label: l.tileDirectory,
                   onTap: () => _push(context, const DirectoryPage()),
                 ),
                 _Tile(
                   icon: Icons.group,
-                  label: 'Clubs',
+                  label: l.tileClubs,
                   onTap: () => _push(context, const ClubsPage()),
                 ),
                 _Tile(
                   icon: Icons.forum,
-                  label: 'Channels',
+                  label: l.tileChannels,
                   onTap: () => _openCreateChannel(context),
                 ),
                 _Tile(
                   icon: Icons.poll,
-                  label: 'Polls',
+                  label: l.tilePolls,
                   onTap: () => _push(context, const PollsPage()),
                 ),
                 _Tile(
                   icon: Icons.photo_library,
-                  label: 'Gallery',
+                  label: l.tileGallery,
                   onTap: () => _push(context, const GalleryPage()),
                 ),
               ],
             ),
             _DashboardSection(
-              title: 'Marketplace & Help',
+              title: l.sectionMarketplace,
               tiles: [
                 _Tile(
                   icon: Icons.swap_horiz,
-                  label: 'Exchange',
+                  label: l.tileExchange,
                   onTap: () => _push(
                     context,
                     injectedItemExchangePage ?? const ItemExchangePage(),
@@ -136,37 +138,37 @@ class DashboardPage extends ConsumerWidget {
                 ),
                 _Tile(
                   icon: Icons.help_outline,
-                  label: 'Lost & Found',
+                  label: l.tileLostFound,
                   onTap: () => _push(context, const LostFoundPage()),
                 ),
                 _Tile(
                   icon: Icons.work_outline,
-                  label: 'Jobs',
+                  label: l.tileJobs,
                   onTap: () => _push(context, const JobPostsPage()),
                 ),
                 _Tile(
                   icon: Icons.menu_book_outlined,
-                  label: 'Tutoring',
+                  label: l.tileTutoring,
                   onTap: () => _push(context, const TutoringPage()),
                 ),
                 _Tile(
                   icon: Icons.miscellaneous_services,
-                  label: 'Services',
+                  label: l.tileServices,
                   onTap: () => _push(context, const ServicesPage()),
                 ),
                 _Tile(
                   icon: Icons.school,
-                  label: 'Study Groups',
+                  label: l.tileStudyGroups,
                   onTap: () => _push(context, const StudyGroupsPage()),
                 ),
               ],
             ),
             _DashboardSection(
-              title: 'Daily',
+              title: l.sectionDaily,
               tiles: [
                 _Tile(
                   icon: Icons.build,
-                  label: 'Maintenance',
+                  label: l.tileMaintenance,
                   onTap: () => _push(
                     context,
                     injectedMaintenancePage ?? const MaintenancePage(),
@@ -174,7 +176,7 @@ class DashboardPage extends ConsumerWidget {
                 ),
                 _Tile(
                   icon: Icons.schedule,
-                  label: 'Booking',
+                  label: l.tileBooking,
                   onTap: () => _push(
                     context,
                     injectedBookingPage ?? const BookingPage(),
@@ -182,33 +184,33 @@ class DashboardPage extends ConsumerWidget {
                 ),
                 _Tile(
                   icon: Icons.directions_bus,
-                  label: 'Transit',
+                  label: l.tileTransit,
                   onTap: () => _push(context, const TransitPage()),
                 ),
                 _Tile(
                   icon: Icons.cloud_outlined,
-                  label: 'Weather',
+                  label: l.tileWeather,
                   onTap: () => _push(context, const WeatherPage()),
                 ),
                 _Tile(
                   icon: Icons.description_outlined,
-                  label: 'Documents',
+                  label: l.tileDocuments,
                   onTap: () => _push(context, const DocumentsPage()),
                 ),
                 _Tile(
                   icon: Icons.menu_book,
-                  label: 'Wiki',
+                  label: l.tileWiki,
                   onTap: () => _push(context, const WikiPage()),
                 ),
               ],
             ),
             if (isAdmin)
               _DashboardSection(
-                title: 'Administration',
+                title: l.sectionAdmin,
                 tiles: [
                   _Tile(
                     icon: Icons.admin_panel_settings,
-                    label: 'Admin',
+                    label: l.tileAdmin,
                     onTap: () => _push(context, const AdminHomePage()),
                   ),
                 ],
@@ -250,9 +252,9 @@ class _Greeting extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final scheme = Theme.of(context).colorScheme;
-    final greeting = firstName == null
-        ? 'Welcome back'
-        : 'Hi, $firstName';
+    final l = AppLocalizations.of(context);
+    final greeting =
+        firstName == null ? l.greetingFallback : l.greetingNamed(firstName!);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -262,7 +264,7 @@ class _Greeting extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.xs),
         Text(
-          'Olydorf at a glance.',
+          l.greetingSubtitle,
           style: text.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
         ),
       ],
@@ -395,16 +397,19 @@ class _NextEventCard extends StatelessWidget {
       orElse: () => null,
     );
 
+    final l = AppLocalizations.of(context);
     final value = async.isLoading
         ? '…'
-        : next?.title ?? 'Nothing upcoming';
+        : next?.title ?? l.statusNothingUpcoming;
     final subtitle = next == null
         ? null
-        : DateFormat.MMMd().add_jm().format(next.date);
+        : DateFormat.MMMd(Localizations.localeOf(context).toLanguageTag())
+            .add_jm()
+            .format(next.date);
 
     return _StatusCardShell(
       icon: Icons.event,
-      label: 'Next event',
+      label: l.statusNextEvent,
       value: value,
       subtitle: subtitle,
       onTap: onTap,
@@ -428,6 +433,7 @@ class _MaintenanceCard extends StatelessWidget {
       orElse: () => null,
     );
 
+    final l = AppLocalizations.of(context);
     final value = async.isLoading
         ? '…'
         : openCount == null
@@ -435,11 +441,11 @@ class _MaintenanceCard extends StatelessWidget {
             : '$openCount';
     final subtitle = openCount == null
         ? null
-        : openCount == 1 ? 'open ticket' : 'open tickets';
+        : openCount == 1 ? l.statusOpenTicket : l.statusOpenTicketsPlural;
 
     return _StatusCardShell(
       icon: Icons.build,
-      label: 'Maintenance',
+      label: l.statusMaintenance,
       value: value,
       subtitle: subtitle,
       onTap: onTap,
