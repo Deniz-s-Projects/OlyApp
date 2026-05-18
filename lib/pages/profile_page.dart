@@ -10,6 +10,11 @@ import '../models/models.dart';
 import '../providers/user_providers.dart';
 import '../services/user_service.dart';
 
+/// Profile surface. Designed to be hosted as a [MainPage] destination
+/// (the profile tab) — it intentionally does **not** render its own
+/// [AppBar] because [MainPage] already provides one. If you ever need to
+/// push this page directly (deep link, standalone screen, etc.), wrap it
+/// in a [Scaffold] + [AppBar] of your own.
 class ProfilePage extends ConsumerStatefulWidget {
   final UserService? service;
   const ProfilePage({super.key, this.service});
@@ -147,7 +152,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   Widget build(BuildContext context) {
     final avatarUrl = _avatarCtrl.text.trim();
     return Scaffold(
-      appBar: AppBar(title: const Text('Profile')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(

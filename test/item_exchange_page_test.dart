@@ -151,7 +151,7 @@ void main() {
     await tester.enterText(find.byType(TextField).first, 'nomatch');
     await tester.pumpAndSettle();
 
-    expect(find.text('No items found.'), findsOneWidget);
+    expect(find.text('Nothing on offer'), findsOneWidget);
   });
 
   testWidgets('Tapping item opens detail page', (tester) async {

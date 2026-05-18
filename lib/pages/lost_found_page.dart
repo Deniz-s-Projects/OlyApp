@@ -8,6 +8,8 @@ import '../models/models.dart';
 import '../providers/lost_found_providers.dart';
 import '../services/lost_found_service.dart';
 import '../utils/user_helpers.dart';
+import '../widgets/async_state_view.dart';
+import '../widgets/empty_state.dart';
 import 'lost_found_detail_page.dart';
 
 class LostFoundPage extends StatelessWidget {
@@ -79,7 +81,6 @@ class _LostFoundBodyState extends ConsumerState<_LostFoundBody> {
     final filters = ref.watch(lostFoundFiltersProvider);
     final filtersNotifier = ref.read(lostFoundFiltersProvider.notifier);
     final itemsAsync = ref.watch(lostFoundItemsProvider);
-    final items = itemsAsync.valueOrNull ?? const <LostItem>[];
     return Scaffold(
       appBar: AppBar(
         title: const Text('Lost & Found'),
@@ -151,37 +152,45 @@ class _LostFoundBodyState extends ConsumerState<_LostFoundBody> {
             ),
           ),
           Expanded(
-            child: items.isEmpty
-                ? const Center(child: Text('No posts yet.'))
-                : ListView.separated(
-                    itemCount: items.length,
-                    separatorBuilder: (_, __) => const Divider(height: 1),
-                    itemBuilder: (_, i) {
-                      final item = items[i];
-                      return ListTile(
-                        title: Text(item.title),
-                        subtitle: item.description != null
-                            ? Text(item.description!)
-                            : null,
-                        trailing: const Icon(Icons.chevron_right),
-                        onTap: () async {
-                          final changed = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => LostFoundDetailPage(
-                                item: item,
-                                service:
-                                    ref.read(lostFoundServiceProvider),
-                              ),
-                            ),
-                          );
-                          if (changed == true) {
-                            ref.invalidate(lostFoundItemsProvider);
-                          }
-                        },
+            child: AsyncStateView<List<LostItem>>(
+              value: itemsAsync,
+              errorTitle: 'Failed to load lost & found',
+              onRetry: () => ref.invalidate(lostFoundItemsProvider),
+              isEmpty: (items) => items.isEmpty,
+              empty: const EmptyState(
+                icon: Icons.help_outline,
+                title: 'Nothing reported',
+                subtitle: 'Be the first to post a lost or found item below.',
+              ),
+              data: (items) => ListView.separated(
+                itemCount: items.length,
+                separatorBuilder: (_, __) => const Divider(height: 1),
+                itemBuilder: (_, i) {
+                  final item = items[i];
+                  return ListTile(
+                    title: Text(item.title),
+                    subtitle: item.description != null
+                        ? Text(item.description!)
+                        : null,
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () async {
+                      final changed = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => LostFoundDetailPage(
+                            item: item,
+                            service: ref.read(lostFoundServiceProvider),
+                          ),
+                        ),
                       );
+                      if (changed == true) {
+                        ref.invalidate(lostFoundItemsProvider);
+                      }
                     },
-                  ),
+                  );
+                },
+              ),
+            ),
           ),
           Padding(
             padding: const EdgeInsets.all(8),

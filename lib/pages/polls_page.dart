@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/models.dart';
 import '../providers/polls_providers.dart';
 import '../services/poll_service.dart';
+import '../widgets/async_state_view.dart';
+import '../widgets/empty_state.dart';
 
 class PollsPage extends StatelessWidget {
   final PollService? service;
@@ -40,47 +42,50 @@ class _PollsBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen<AsyncValue<List<Poll>>>(pollsProvider, (prev, next) {
-      if (next.hasError && !next.isLoading) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to load polls')),
-        );
-      }
-    });
-    final polls = ref.watch(pollsProvider).valueOrNull ?? const <Poll>[];
+    final pollsAsync = ref.watch(pollsProvider);
     return RefreshIndicator(
       onRefresh: () async => ref.invalidate(pollsProvider),
-      child: ListView.builder(
-        itemCount: polls.length,
-        itemBuilder: (context, index) {
-          final poll = polls[index];
-          return Card(
-            margin: const EdgeInsets.all(12),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    poll.question,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 12),
-                  for (var i = 0; i < poll.options.length; i++)
-                    ListTile(
-                      title: Text(
-                        '${poll.options[i]} (${poll.counts.length > i ? poll.counts[i] : 0})',
-                      ),
-                      trailing: ElevatedButton(
-                        onPressed: () => _vote(ref, context, poll, i),
-                        child: const Text('Vote'),
-                      ),
+      child: AsyncStateView<List<Poll>>(
+        value: pollsAsync,
+        errorTitle: 'Failed to load polls',
+        onRetry: () => ref.invalidate(pollsProvider),
+        isEmpty: (polls) => polls.isEmpty,
+        empty: const EmptyState(
+          icon: Icons.poll_outlined,
+          title: 'No active polls',
+        ),
+        data: (polls) => ListView.builder(
+          itemCount: polls.length,
+          itemBuilder: (context, index) {
+            final poll = polls[index];
+            return Card(
+              margin: const EdgeInsets.all(12),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      poll.question,
+                      style: Theme.of(context).textTheme.titleMedium,
                     ),
-                ],
+                    const SizedBox(height: 12),
+                    for (var i = 0; i < poll.options.length; i++)
+                      ListTile(
+                        title: Text(
+                          '${poll.options[i]} (${poll.counts.length > i ? poll.counts[i] : 0})',
+                        ),
+                        trailing: ElevatedButton(
+                          onPressed: () => _vote(ref, context, poll, i),
+                          child: const Text('Vote'),
+                        ),
+                      ),
+                  ],
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }

@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/models.dart';
 import '../providers/directory_providers.dart';
 import '../services/directory_service.dart';
+import '../widgets/async_state_view.dart';
+import '../widgets/empty_state.dart';
 import 'user_chat_page.dart';
 
 class DirectoryPage extends StatelessWidget {
@@ -40,20 +42,7 @@ class _DirectoryBodyState extends ConsumerState<_DirectoryBody> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<AsyncValue<List<User>>>(directoryUsersProvider, (prev, next) {
-      // Only surface errors when no users are shown (matches prior behavior).
-      if (next.hasError && !next.isLoading) {
-        final fallback = (prev?.valueOrNull ?? const <User>[]);
-        if (fallback.isEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to load users')),
-          );
-        }
-      }
-    });
-
     final usersAsync = ref.watch(directoryUsersProvider);
-    final users = usersAsync.valueOrNull ?? const <User>[];
 
     return Scaffold(
       body: Padding(
@@ -75,37 +64,41 @@ class _DirectoryBodyState extends ConsumerState<_DirectoryBody> {
             ),
             const SizedBox(height: 12),
             Expanded(
-              child: usersAsync.isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : users.isEmpty
-                      ? const Center(child: Text('No residents found.'))
-                      : ListView.builder(
-                          itemCount: users.length,
-                          itemBuilder: (context, index) {
-                            final user = users[index];
-                            return ListTile(
-                              leading: user.avatarUrl != null
-                                  ? CircleAvatar(
-                                      backgroundImage:
-                                          NetworkImage(user.avatarUrl!),
-                                    )
-                                  : const CircleAvatar(
-                                      child: Icon(Icons.person)),
-                              title: Text(user.name),
-                              subtitle: Text(user.email),
-                              onTap: () {
-                                if (user.id == null) return;
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) =>
-                                        UserChatPage(user: user),
-                                  ),
-                                );
-                              },
-                            );
-                          },
-                        ),
+              child: AsyncStateView<List<User>>(
+                value: usersAsync,
+                errorTitle: 'Failed to load users',
+                onRetry: () => ref.invalidate(directoryUsersProvider),
+                isEmpty: (users) => users.isEmpty,
+                empty: const EmptyState(
+                  icon: Icons.people_outline,
+                  title: 'No residents found',
+                ),
+                data: (users) => ListView.builder(
+                  itemCount: users.length,
+                  itemBuilder: (context, index) {
+                    final user = users[index];
+                    return ListTile(
+                      leading: user.avatarUrl != null
+                          ? CircleAvatar(
+                              backgroundImage:
+                                  NetworkImage(user.avatarUrl!),
+                            )
+                          : const CircleAvatar(child: Icon(Icons.person)),
+                      title: Text(user.name),
+                      subtitle: Text(user.email),
+                      onTap: () {
+                        if (user.id == null) return;
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => UserChatPage(user: user),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
             ),
           ],
         ),

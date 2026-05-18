@@ -5,7 +5,13 @@ import '../models/models.dart';
 import '../providers/bulletin_providers.dart';
 import '../services/bulletin_service.dart';
 import '../utils/user_helpers.dart';
+import '../widgets/empty_state.dart';
 
+/// Bulletin board surface. Designed to be hosted as a [MainPage] destination
+/// (the bulletin tab) — it intentionally does **not** render its own
+/// [AppBar] because [MainPage] already provides one. If you ever need to
+/// push this page directly (deep link, standalone screen, etc.), wrap it
+/// in a [Scaffold] + [AppBar] of your own.
 class BulletinBoardPage extends ConsumerStatefulWidget {
   final BulletinService? service;
   const BulletinBoardPage({super.key, this.service});
@@ -201,19 +207,17 @@ class _BulletinBoardPageState extends ConsumerState<BulletinBoardPage> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Bulletin Board'),
-        backgroundColor: cs.primaryContainer,
-        foregroundColor: cs.onPrimaryContainer,
-      ),
       body: Column(
         children: [
           Expanded(
             child:
                 _posts.isEmpty
-                    ? const Center(child: Text('No posts yet.'))
+                    ? const EmptyState(
+                      icon: Icons.campaign_outlined,
+                      title: 'Bulletin is empty',
+                      subtitle: 'Be the first to post something.',
+                    )
                     : ListView.separated(
                       itemCount: _posts.length,
                       separatorBuilder: (_, __) => const Divider(height: 1),
