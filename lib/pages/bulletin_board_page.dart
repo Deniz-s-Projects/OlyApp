@@ -5,6 +5,7 @@ import '../models/models.dart';
 import '../providers/bulletin_providers.dart';
 import '../services/bulletin_service.dart';
 import '../utils/user_helpers.dart';
+import '../widgets/empty_state.dart';
 
 class BulletinBoardPage extends ConsumerStatefulWidget {
   final BulletinService? service;
@@ -201,19 +202,17 @@ class _BulletinBoardPageState extends ConsumerState<BulletinBoardPage> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Bulletin Board'),
-        backgroundColor: cs.primaryContainer,
-        foregroundColor: cs.onPrimaryContainer,
-      ),
       body: Column(
         children: [
           Expanded(
             child:
                 _posts.isEmpty
-                    ? const Center(child: Text('No posts yet.'))
+                    ? const EmptyState(
+                      icon: Icons.campaign_outlined,
+                      title: 'Bulletin is empty',
+                      subtitle: 'Be the first to post something.',
+                    )
                     : ListView.separated(
                       itemCount: _posts.length,
                       separatorBuilder: (_, __) => const Divider(height: 1),

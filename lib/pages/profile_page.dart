@@ -147,7 +147,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   Widget build(BuildContext context) {
     final avatarUrl = _avatarCtrl.text.trim();
     return Scaffold(
-      appBar: AppBar(title: const Text('Profile')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(

@@ -15,6 +15,8 @@ import '../services/event_service.dart';
 import '../services/map_service.dart';
 import '../services/qr_service.dart';
 import '../utils/ics_generator.dart';
+import '../widgets/async_state_view.dart';
+import '../widgets/empty_state.dart';
 import 'map_page.dart';
 import 'qr_scanner_page.dart';
 
@@ -247,19 +249,10 @@ class _CalendarBodyState extends ConsumerState<_CalendarBody> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<AsyncValue<List<CalendarEvent>>>(eventsProvider, (prev, next) {
-      if (next.hasError && !next.isLoading) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to load events')),
-        );
-      }
-    });
-
     final cs = Theme.of(context).colorScheme;
     final eventsAsync = ref.watch(eventsProvider);
     final categories = ref.watch(calendarCategoriesProvider);
     final selectedCategory = ref.watch(calendarCategoryProvider);
-    final selectedEvents = _eventsForDay(_selectedDay);
 
     return Scaffold(
       body: Column(
@@ -324,27 +317,36 @@ class _CalendarBodyState extends ConsumerState<_CalendarBody> {
             ),
           ),
           Expanded(
-            child: eventsAsync.isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : selectedEvents.isEmpty
-                    ? const Center(child: Text('No events for this day.'))
-                    : ListView.builder(
-                        itemCount: selectedEvents.length,
-                        itemBuilder: (ctx, idx) {
-                          final event = selectedEvents[idx];
-                          return ListTile(
-                            leading: const Icon(Icons.event_note),
-                            title: Text(event.title),
-                            subtitle: Text(
-                                'Attendees: ${event.attendees.length}'),
-                            trailing: TextButton(
-                              onPressed: () => _rsvp(event),
-                              child: const Text('RSVP'),
-                            ),
-                            onTap: () => _showEventDetails(event),
-                          );
-                        },
+            child: AsyncStateView<List<CalendarEvent>>(
+              value: eventsAsync,
+              errorTitle: 'Failed to load events',
+              onRetry: () => ref.invalidate(eventsProvider),
+              isEmpty: (_) => _eventsForDay(_selectedDay).isEmpty,
+              empty: const EmptyState(
+                icon: Icons.event_busy,
+                title: 'No events for this day',
+              ),
+              data: (_) {
+                final selectedEvents = _eventsForDay(_selectedDay);
+                return ListView.builder(
+                  itemCount: selectedEvents.length,
+                  itemBuilder: (ctx, idx) {
+                    final event = selectedEvents[idx];
+                    return ListTile(
+                      leading: const Icon(Icons.event_note),
+                      title: Text(event.title),
+                      subtitle:
+                          Text('Attendees: ${event.attendees.length}'),
+                      trailing: TextButton(
+                        onPressed: () => _rsvp(event),
+                        child: const Text('RSVP'),
                       ),
+                      onTap: () => _showEventDetails(event),
+                    );
+                  },
+                );
+              },
+            ),
           ),
         ],
       ),

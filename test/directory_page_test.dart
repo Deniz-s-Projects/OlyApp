@@ -19,6 +19,6 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('No residents found.'), findsOneWidget);
+    expect(find.text('No residents found'), findsOneWidget);
   });
 }

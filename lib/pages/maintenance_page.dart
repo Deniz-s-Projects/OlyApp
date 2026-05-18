@@ -8,6 +8,8 @@ import '../models/models.dart';
 import '../providers/maintenance_providers.dart';
 import '../services/maintenance_service.dart';
 import '../utils/user_helpers.dart';
+import '../widgets/async_state_view.dart';
+import '../widgets/empty_state.dart';
 import 'maintenance_chat_page.dart';
 
 class MaintenancePage extends StatelessWidget {
@@ -58,18 +60,6 @@ class _MaintenanceBodyState extends ConsumerState<_MaintenanceBody> {
 
   @override
   Widget build(BuildContext context) {
-    // Surface load errors via a snackbar, matching the prior behavior.
-    ref.listen<AsyncValue<List<MaintenanceRequest>>>(
-      maintenanceRequestsProvider,
-      (previous, next) {
-        if (next.hasError && !next.isLoading) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to load tickets')),
-          );
-        }
-      },
-    );
-
     return Scaffold(
       body: Column(
         children: [
@@ -168,32 +158,36 @@ class _MaintenanceBodyState extends ConsumerState<_MaintenanceBody> {
 
   Widget _buildConversations() {
     final ticketsAsync = ref.watch(maintenanceRequestsProvider);
-    if (ticketsAsync.isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    final tickets = ticketsAsync.valueOrNull ?? const <MaintenanceRequest>[];
-    if (tickets.isEmpty) {
-      return const Center(child: Text('No conversations yet.'));
-    }
-    return ListView.separated(
-      itemCount: tickets.length,
-      separatorBuilder: (_, __) => const Divider(height: 1),
-      itemBuilder: (context, index) {
-        final ticket = tickets[index];
-        return ListTile(
-          title: Text(ticket.subject),
-          subtitle: Text('Status: ${ticket.status}'),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => MaintenanceChatPage(request: ticket),
-              ),
-            );
-          },
-        );
-      },
+    return AsyncStateView<List<MaintenanceRequest>>(
+      value: ticketsAsync,
+      errorTitle: 'Failed to load tickets',
+      onRetry: () => ref.invalidate(maintenanceRequestsProvider),
+      isEmpty: (tickets) => tickets.isEmpty,
+      empty: const EmptyState(
+        icon: Icons.handyman_outlined,
+        title: 'No open tickets',
+        subtitle: 'Submit a new request from the other tab.',
+      ),
+      data: (tickets) => ListView.separated(
+        itemCount: tickets.length,
+        separatorBuilder: (_, __) => const Divider(height: 1),
+        itemBuilder: (context, index) {
+          final ticket = tickets[index];
+          return ListTile(
+            title: Text(ticket.subject),
+            subtitle: Text('Status: ${ticket.status}'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => MaintenanceChatPage(request: ticket),
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }

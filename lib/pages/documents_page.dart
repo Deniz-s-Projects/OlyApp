@@ -7,6 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/models.dart';
 import '../providers/documents_providers.dart';
 import '../services/document_service.dart';
+import '../widgets/async_state_view.dart';
+import '../widgets/empty_state.dart';
 
 class DocumentsPage extends StatelessWidget {
   final DocumentService? service;
@@ -59,39 +61,39 @@ class _DocumentsBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen<AsyncValue<List<Document>>>(documentsProvider, (prev, next) {
-      if (next.hasError && !next.isLoading) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Failed to load: ${next.error}')));
-      }
-    });
     final cs = Theme.of(context).colorScheme;
     final docsAsync = ref.watch(documentsProvider);
-    final documents = docsAsync.valueOrNull ?? const <Document>[];
     return Scaffold(
       appBar: AppBar(
         title: const Text('Documents'),
         backgroundColor: cs.primaryContainer,
         foregroundColor: cs.onPrimaryContainer,
       ),
-      body: docsAsync.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : documents.isEmpty
-              ? const Center(child: Text('No documents uploaded.'))
-              : ListView.separated(
-                  itemCount: documents.length,
-                  separatorBuilder: (_, __) => const Divider(height: 1),
-                  itemBuilder: (_, i) {
-                    final doc = documents[i];
-                    return ListTile(
-                      title: Text(doc.fileName),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.download),
-                        onPressed: () => _download(context, ref, doc),
-                      ),
-                    );
-                  },
-                ),
+      body: AsyncStateView<List<Document>>(
+        value: docsAsync,
+        errorTitle: 'Failed to load documents',
+        onRetry: () => ref.invalidate(documentsProvider),
+        isEmpty: (documents) => documents.isEmpty,
+        empty: const EmptyState(
+          icon: Icons.description_outlined,
+          title: 'No documents',
+          subtitle: 'Upload one with the button below.',
+        ),
+        data: (documents) => ListView.separated(
+          itemCount: documents.length,
+          separatorBuilder: (_, __) => const Divider(height: 1),
+          itemBuilder: (_, i) {
+            final doc = documents[i];
+            return ListTile(
+              title: Text(doc.fileName),
+              trailing: IconButton(
+                icon: const Icon(Icons.download),
+                onPressed: () => _download(context, ref, doc),
+              ),
+            );
+          },
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _pickAndUpload(context, ref),
         child: const Icon(Icons.upload_file),

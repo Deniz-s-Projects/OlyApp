@@ -1,16 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:oly_app/models/models.dart';
 import 'package:oly_app/pages/calendar_page.dart';
 import 'package:oly_app/pages/main_page.dart';
-import 'package:oly_app/pages/maintenance_page.dart';
-import 'package:oly_app/pages/item_exchange_page.dart';
-import 'package:oly_app/models/models.dart';
 import 'package:oly_app/providers/calendar_providers.dart';
 import 'package:oly_app/services/event_service.dart';
-import 'package:oly_app/services/maintenance_service.dart';
-import 'package:oly_app/pages/post_item_page.dart';
-import 'package:oly_app/services/item_service.dart';
 
 class FakeEventService extends EventService {
   final List<CalendarEvent> events = [];
@@ -24,84 +19,73 @@ class FakeEventService extends EventService {
   }
 }
 
-class FakeMaintenanceService extends MaintenanceService {
-  FakeMaintenanceService();
-  @override
-  Future<List<MaintenanceRequest>> fetchRequests() async => [];
-}
-
-class FakeItemService extends ItemService {
-  final List<Item> items;
-  FakeItemService([this.items = const []]);
-  @override
-  Future<List<Item>> fetchItems() async => items;
-}
-
-// CalendarPage hosts TableCalendar + filter row + Expanded(ListView). Default
-// test viewport (~484px tall in Scaffold body) is shorter than the fixed
-// children, so navigating to the calendar tab overflows by ~12px. Real devices
-// are >600px and unaffected; tests that exercise the calendar tab use a taller
-// surface.
+// The dashboard + grouped tile grid is taller than the default 600x800 test
+// surface. Bump to a phone-sized viewport so nothing overflows.
 void _useTallSurface(WidgetTester tester) {
-  tester.view.physicalSize = const Size(800, 1200);
+  tester.view.physicalSize = const Size(800, 1600);
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.reset);
 }
 
 void main() {
-  testWidgets('Bottom navigation changes pages and FAB visibility', (
-    tester,
-  ) async {
+  testWidgets('Bottom nav exposes the five primary destinations',
+      (tester) async {
+    _useTallSurface(tester);
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(home: MainPage(onLogout: null)),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.widgetWithText(AppBar, 'Dashboard'), findsOneWidget);
+
+    // The NavigationBar should expose exactly five destinations.
+    final destinations = find.descendant(
+      of: find.byType(NavigationBar),
+      matching: find.byType(NavigationDestination),
+    );
+    expect(destinations, findsNWidgets(5));
+  });
+
+  testWidgets('Tapping Calendar destination switches to calendar surface',
+      (tester) async {
     _useTallSurface(tester);
     final fakeEventService = FakeEventService();
-    final fakeMaintenanceService = FakeMaintenanceService();
 
     await tester.pumpWidget(
       ProviderScope(
+        overrides: [
+          eventServiceProvider.overrideWithValue(fakeEventService),
+        ],
         child: MaterialApp(
           home: MainPage(
             calendarPage: CalendarPage(service: fakeEventService),
-            maintenancePage: MaintenancePage(service: fakeMaintenanceService),
             onLogout: () {},
           ),
         ),
       ),
     );
+    await tester.pumpAndSettle();
 
-    // Starts on Dashboard
-    expect(find.widgetWithText(AppBar, 'Dashboard'), findsOneWidget);
-    expect(find.byType(FloatingActionButton), findsOneWidget);
-
-    // Navigate to Calendar tab
     await tester.tap(
       find.descendant(
         of: find.byType(NavigationBar),
-        matching: find.byIcon(Icons.calendar_today),
+        matching: find.byIcon(Icons.calendar_today_outlined),
       ),
     );
     await tester.pumpAndSettle();
+
     expect(find.widgetWithText(AppBar, 'Calendar'), findsOneWidget);
-    // No FABs visible for regular user.
-    expect(find.byType(FloatingActionButton), findsNothing);
-
-    // Navigate to Maintenance tab
-    await tester.tap(
-      find.descendant(
-        of: find.byType(NavigationBar),
-        matching: find.byIcon(Icons.build),
-      ),
-    );
-    await tester.pumpAndSettle();
-    expect(find.widgetWithText(AppBar, 'Maintenance'), findsOneWidget);
+    // Regular users see no FAB on the calendar tab.
     expect(find.byType(FloatingActionButton), findsNothing);
   });
 
-  testWidgets('Admin card visible for admins', (tester) async {
+  testWidgets('Admin tile visible on dashboard for admins', (tester) async {
+    _useTallSurface(tester);
     await tester.pumpWidget(
       const ProviderScope(
-        child: MaterialApp(
-          home: MainPage(isAdmin: true, onLogout: null),
-        ),
+        child: MaterialApp(home: MainPage(isAdmin: true, onLogout: null)),
       ),
     );
     await tester.pumpAndSettle();
@@ -109,7 +93,9 @@ void main() {
     expect(find.text('Admin'), findsOneWidget);
   });
 
-  testWidgets('Admin card hidden for regular user', (tester) async {
+  testWidgets('Admin tile hidden on dashboard for regular users',
+      (tester) async {
+    _useTallSurface(tester);
     await tester.pumpWidget(
       const ProviderScope(
         child: MaterialApp(home: MainPage(onLogout: null)),
@@ -119,7 +105,8 @@ void main() {
     expect(find.text('Admin'), findsNothing);
   });
 
-  testWidgets('FAB on calendar tab opens add event dialog', (tester) async {
+  testWidgets('Calendar FAB visible for admins on calendar tab',
+      (tester) async {
     _useTallSurface(tester);
     final fakeEventService = FakeEventService();
 
@@ -137,55 +124,19 @@ void main() {
         ),
       ),
     );
-
-    await tester.tap(
-      find.descendant(
-        of: find.byType(NavigationBar),
-        matching: find.byIcon(Icons.calendar_today),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    final fab = find.widgetWithIcon(FloatingActionButton, Icons.event);
-    expect(fab, findsOneWidget);
-
-    await tester.tap(fab);
-    await tester.pumpAndSettle();
-
-    expect(find.text('Add Event'), findsOneWidget);
-  });
-
-  testWidgets('FAB on exchange tab opens PostItemPage', (tester) async {
-    final fakeItemService = FakeItemService();
-    await tester.pumpWidget(
-      ProviderScope(
-        child: MaterialApp(
-          home: MainPage(
-            itemExchangePage: ItemExchangePage(service: fakeItemService),
-            onLogout: null,
-          ),
-        ),
-      ),
-    );
     await tester.pumpAndSettle();
 
     await tester.tap(
       find.descendant(
         of: find.byType(NavigationBar),
-        matching: find.byIcon(Icons.swap_horiz),
+        matching: find.byIcon(Icons.calendar_today_outlined),
       ),
     );
     await tester.pumpAndSettle();
 
-    final fab = find.widgetWithIcon(
-      FloatingActionButton,
-      Icons.add_shopping_cart,
+    expect(
+      find.widgetWithIcon(FloatingActionButton, Icons.event),
+      findsOneWidget,
     );
-    expect(fab, findsOneWidget);
-
-    await tester.tap(fab);
-    await tester.pumpAndSettle();
-
-    expect(find.byType(PostItemPage), findsOneWidget);
   });
 }

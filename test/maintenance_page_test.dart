@@ -66,13 +66,16 @@ void main() {
     // Switch to conversations
     await tester.tap(find.text('Conversations'));
     await tester.pumpAndSettle();
-    expect(find.text('No conversations yet.'), findsOneWidget);
+    expect(find.text('No open tickets'), findsOneWidget);
   });
 
-  testWidgets('Shows snackbar on ticket load error', (tester) async {
+  testWidgets('Shows inline error when ticket load fails', (tester) async {
     await tester.pumpWidget(
       MaterialApp(home: MaintenancePage(service: ErrorMaintenanceService())),
     );
+    // Switch to conversations to reach the AsyncStateView.
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Conversations'));
     await tester.pumpAndSettle();
 
     expect(find.text('Failed to load tickets'), findsOneWidget);

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../models/models.dart';
 import '../providers/item_providers.dart';
 import '../services/item_service.dart';
+import '../widgets/async_state_view.dart';
+import '../widgets/empty_state.dart';
 import '../widgets/item_card.dart';
 import 'item_detail_page.dart';
 import 'post_item_page.dart';
@@ -59,7 +62,6 @@ class _ItemExchangeBodyState extends ConsumerState<_ItemExchangeBody> {
   Widget build(BuildContext context) {
     final itemsAsync = ref.watch(itemsProvider);
     final filters = ref.watch(itemFiltersProvider);
-    final filteredItems = ref.watch(filteredItemsProvider);
     final favorites = ref.watch(favoritesProvider);
     final filtersNotifier = ref.read(itemFiltersProvider.notifier);
 
@@ -186,64 +188,74 @@ class _ItemExchangeBodyState extends ConsumerState<_ItemExchangeBody> {
             Expanded(
               child: RefreshIndicator(
                 onRefresh: () async => ref.invalidate(itemsProvider),
-                child: itemsAsync.isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : filteredItems.isEmpty
-                        ? const Center(child: Text('No items found.'))
-                        : GridView.builder(
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              mainAxisSpacing: 12,
-                              crossAxisSpacing: 12,
-                              childAspectRatio: 0.8,
-                            ),
-                            itemCount: filteredItems.length,
-                            itemBuilder: (ctx, idx) {
-                              final item = filteredItems[idx];
-                              final isFav =
-                                  item.id != null && favorites.contains(item.id);
-                              return Stack(
-                                children: [
-                                  InkWell(
-                                    borderRadius: BorderRadius.circular(12),
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) =>
-                                              ItemDetailPage(item: item),
-                                        ),
-                                      );
-                                    },
-                                    child: ItemCard(
-                                      title: item.title,
-                                      averageRating: item.ratings.isNotEmpty
-                                          ? item.averageRating
-                                          : null,
-                                    ),
+                child: AsyncStateView<List<Item>>(
+                  value: itemsAsync,
+                  errorTitle: 'Could not load items',
+                  onRetry: () => ref.invalidate(itemsProvider),
+                  isEmpty: (_) => ref.read(filteredItemsProvider).isEmpty,
+                  empty: const EmptyState(
+                    icon: Icons.inventory_2_outlined,
+                    title: 'Nothing on offer',
+                    subtitle: 'Try clearing your filters or check back later.',
+                  ),
+                  data: (_) {
+                    final filteredItems = ref.watch(filteredItemsProvider);
+                    return GridView.builder(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 12,
+                        crossAxisSpacing: 12,
+                        childAspectRatio: 0.8,
+                      ),
+                      itemCount: filteredItems.length,
+                      itemBuilder: (ctx, idx) {
+                        final item = filteredItems[idx];
+                        final isFav =
+                            item.id != null && favorites.contains(item.id);
+                        return Stack(
+                          children: [
+                            InkWell(
+                              borderRadius: BorderRadius.circular(12),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        ItemDetailPage(item: item),
                                   ),
-                                  if (item.id != null)
-                                    Positioned(
-                                      top: 0,
-                                      right: 0,
-                                      child: IconButton(
-                                        key: Key('toggleFavorite_${item.id}'),
-                                        icon: Icon(
-                                          isFav
-                                              ? Icons.star
-                                              : Icons.star_border,
-                                          color: Colors.amber,
-                                        ),
-                                        onPressed: () => ref
-                                            .read(favoritesProvider.notifier)
-                                            .toggle(item.id as int),
-                                      ),
-                                    ),
-                                ],
-                              );
-                            },
-                          ),
+                                );
+                              },
+                              child: ItemCard(
+                                title: item.title,
+                                averageRating: item.ratings.isNotEmpty
+                                    ? item.averageRating
+                                    : null,
+                              ),
+                            ),
+                            if (item.id != null)
+                              Positioned(
+                                top: 0,
+                                right: 0,
+                                child: IconButton(
+                                  key: Key('toggleFavorite_${item.id}'),
+                                  icon: Icon(
+                                    isFav
+                                        ? Icons.star
+                                        : Icons.star_border,
+                                    color: Colors.amber,
+                                  ),
+                                  onPressed: () => ref
+                                      .read(favoritesProvider.notifier)
+                                      .toggle(item.id as int),
+                                ),
+                              ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                ),
               ),
             ),
           ],

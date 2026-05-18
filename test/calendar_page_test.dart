@@ -76,7 +76,7 @@ void main() {
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
     await tester.pumpAndSettle();
 
-    expect(find.text('No events for this day.'), findsOneWidget);
+    expect(find.text('No events for this day'), findsOneWidget);
 
     await tester.tap(find.byType(FloatingActionButton));
     await tester.pumpAndSettle();
