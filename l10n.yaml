@@ -1,8 +1,9 @@
 arb-dir: lib/l10n
 template-arb-file: app_en.arb
 output-localization-file: app_localizations.dart
-# Use the synthetic flutter_gen package so generated localization sources
-# don't have to be committed. Flutter 3.27+ flipped this default to false,
-# but the synthetic flow is still supported and is the simplest path here.
-synthetic-package: true
+output-dir: lib/l10n/generated
+# Flutter 3.27+ removed synthetic-package support. Generated sources are
+# written into the package and imported via `package:oly_app/...`. They're
+# emitted by `flutter pub get` (or `flutter gen-l10n`); see .gitignore.
+synthetic-package: false
 nullable-getter: false
