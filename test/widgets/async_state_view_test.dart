@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:oly_app/widgets/async_state_view.dart';
 
-void _wrap(WidgetTester tester, Widget child) {
+Future<void> _wrap(WidgetTester tester, Widget child) {
   return tester.pumpWidget(MaterialApp(home: Scaffold(body: child)));
 }
 
