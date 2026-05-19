@@ -8,7 +8,6 @@ final documentServiceProvider =
 
 final documentsProvider = FutureProvider<List<Document>>(
   (ref) async {
-    ref.keepAlive();
     final service = ref.watch(documentServiceProvider);
     return service.fetchDocuments();
   },

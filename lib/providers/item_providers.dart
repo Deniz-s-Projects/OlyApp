@@ -18,7 +18,6 @@ final itemServiceProvider = Provider<ItemService>((ref) => ItemService());
 /// would re-use the outer scope's instance and ignore the override.
 final itemsProvider = FutureProvider<List<Item>>(
   (ref) async {
-    ref.keepAlive();
     final service = ref.watch(itemServiceProvider);
     return service.fetchItems();
   },

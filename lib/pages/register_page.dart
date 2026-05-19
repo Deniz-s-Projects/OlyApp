@@ -92,7 +92,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     prefixIcon: const Icon(Icons.person),
                   ),
                   validator: (v) =>
-                      v == null || v.trim().isEmpty ? l.authName : null,
+                      v == null || v.trim().isEmpty ? l.authNameRequired : null,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(

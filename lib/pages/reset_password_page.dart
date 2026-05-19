@@ -74,7 +74,7 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage> {
                     fillColor: cs.surfaceContainerHighest,
                   ),
                   validator: (v) =>
-                      v == null || v.isEmpty ? l.authResetToken : null,
+                      v == null || v.trim().isEmpty ? l.authResetTokenRequired : null,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(

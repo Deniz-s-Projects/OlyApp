@@ -133,6 +133,7 @@ class OlyAppState extends ConsumerState<OlyApp> {
   ThemeMode _themeMode = ThemeMode.system;
   bool _seenOnboarding = true;
   final List<Map<String, String?>> _notifications = [];
+  StreamSubscription<ForegroundMessage>? _foregroundMessageSub;
 
   @override
   void initState() {
@@ -158,7 +159,8 @@ class OlyAppState extends ConsumerState<OlyApp> {
     for (final n in notifBox.values.cast<NotificationRecord>()) {
       _notifications.add({'title': n.title, 'body': n.body});
     }
-    NotificationService().foregroundMessages.listen((msg) {
+    _foregroundMessageSub =
+        NotificationService().foregroundMessages.listen((msg) {
       if (!mounted) return;
       setState(() {
         _notifications.add({'title': msg.title, 'body': msg.body});
@@ -184,6 +186,12 @@ class OlyAppState extends ConsumerState<OlyApp> {
         ),
       );
     });
+  }
+
+  @override
+  void dispose() {
+    _foregroundMessageSub?.cancel();
+    super.dispose();
   }
 
   Future<void> _handleLogin() async {

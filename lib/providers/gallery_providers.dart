@@ -8,7 +8,6 @@ final galleryServiceProvider =
 
 final galleryImagesProvider = FutureProvider<List<GalleryImage>>(
   (ref) async {
-    ref.keepAlive();
     final service = ref.watch(galleryServiceProvider);
     return service.fetchImages();
   },

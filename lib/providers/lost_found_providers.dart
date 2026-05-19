@@ -43,7 +43,6 @@ final lostFoundFiltersProvider =
 
 final lostFoundItemsProvider = FutureProvider<List<LostItem>>(
   (ref) async {
-    ref.keepAlive();
     final filters = ref.watch(lostFoundFiltersProvider);
     final service = ref.watch(lostFoundServiceProvider);
     return service.fetchItems(
