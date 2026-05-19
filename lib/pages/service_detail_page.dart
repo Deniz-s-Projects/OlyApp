@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:oly_app/l10n/generated/app_localizations.dart';
 
 import '../models/models.dart';
 import '../providers/service_listings_providers.dart';
@@ -43,6 +44,7 @@ class _ServiceDetailPageState extends ConsumerState<ServiceDetailPage> {
 
   Future<void> _submitRating() async {
     if (_listing.id == null) return;
+    final l = AppLocalizations.of(context);
     final rating = int.tryParse(_ratingCtrl.text) ?? 0;
     await _resolveService().submitRating(
       _listing.id!,
@@ -53,7 +55,7 @@ class _ServiceDetailPageState extends ConsumerState<ServiceDetailPage> {
     _ratingCtrl.clear();
     _reviewCtrl.clear();
     ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('Rating submitted')));
+        .showSnackBar(SnackBar(content: Text(l.detailRatingSubmitted)));
     await _loadRatings();
     if (mounted) ref.invalidate(serviceListingsProvider);
   }
@@ -67,6 +69,7 @@ class _ServiceDetailPageState extends ConsumerState<ServiceDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     final isOwner = currentUserId() == _listing.userId;
     return Scaffold(
       appBar: AppBar(title: Text(_listing.title)),
@@ -80,7 +83,7 @@ class _ServiceDetailPageState extends ConsumerState<ServiceDetailPage> {
             if (_listing.contact != null)
               Row(
                 children: [
-                  const Text('Contact: '),
+                  Text(l.serviceContact),
                   Text(_listing.contact!),
                 ],
               ),
@@ -94,23 +97,23 @@ class _ServiceDetailPageState extends ConsumerState<ServiceDetailPage> {
                 ],
               )
             else
-              const Text('No ratings yet'),
+              Text(l.serviceNoRatings),
             if (!isOwner) ...[
               const SizedBox(height: 24),
               TextField(
                 controller: _ratingCtrl,
-                decoration: const InputDecoration(labelText: 'Rating (1-5)'),
+                decoration: InputDecoration(labelText: l.detailRatingHint),
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: false),
               ),
               TextField(
                 controller: _reviewCtrl,
-                decoration: const InputDecoration(labelText: 'Review'),
+                decoration: InputDecoration(labelText: l.detailReviewHint),
               ),
               const SizedBox(height: 8),
               ElevatedButton(
                 onPressed: _submitRating,
-                child: const Text('Submit Rating'),
+                child: Text(l.detailSubmitRating),
               ),
             ],
           ],

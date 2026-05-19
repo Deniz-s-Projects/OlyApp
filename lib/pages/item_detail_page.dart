@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:oly_app/l10n/generated/app_localizations.dart';
 
 import '../models/models.dart';
 import '../providers/item_providers.dart';
@@ -31,13 +32,16 @@ class _ItemDetailPageState extends ConsumerState<ItemDetailPage> {
 
   Future<void> _requestItem(BuildContext context) async {
     if (_item.id == null) return;
+    final l = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
     try {
       await _resolveService().requestItem(_item.id!);
-      messenger.showSnackBar(const SnackBar(content: Text('Request sent!')));
+      messenger.showSnackBar(SnackBar(content: Text(l.detailRequestSent)));
       if (mounted) ref.invalidate(itemsProvider);
     } catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text('Failed: $e')));
+      messenger.showSnackBar(
+        SnackBar(content: Text(l.detailRequestFailed(e.toString()))),
+      );
     }
   }
 
@@ -51,6 +55,7 @@ class _ItemDetailPageState extends ConsumerState<ItemDetailPage> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final l = AppLocalizations.of(context);
     final user = ref.watch(currentUserProvider);
     final isOwner = user != null && user.id == _item.ownerId;
     final favorites = ref.watch(favoritesProvider);
@@ -95,18 +100,16 @@ class _ItemDetailPageState extends ConsumerState<ItemDetailPage> {
                 final confirm = await showDialog<bool>(
                   context: context,
                   builder: (ctx) => AlertDialog(
-                    title: const Text('Delete Item'),
-                    content: const Text(
-                      'Are you sure you want to delete this item?',
-                    ),
+                    title: Text(l.detailDeleteItem),
+                    content: Text(l.detailDeleteItemConfirm),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(ctx, false),
-                        child: const Text('Cancel'),
+                        child: Text(l.commonCancel),
                       ),
                       TextButton(
                         onPressed: () => Navigator.pop(ctx, true),
-                        child: const Text('Delete'),
+                        child: Text(l.commonDelete),
                       ),
                     ],
                   ),
@@ -179,7 +182,7 @@ class _ItemDetailPageState extends ConsumerState<ItemDetailPage> {
                   const SizedBox(height: 8),
                   if (_item.isFree)
                     Chip(
-                      label: const Text('Free'),
+                      label: Text(l.detailFree),
                       backgroundColor: colorScheme.primary,
                       labelStyle: TextStyle(color: colorScheme.onPrimary),
                     )
@@ -193,14 +196,14 @@ class _ItemDetailPageState extends ConsumerState<ItemDetailPage> {
 
                   // Description Section
                   Text(
-                    'Description',
+                    l.detailDescription,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       color: colorScheme.secondary,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    _item.description ?? 'No description provided.',
+                    _item.description ?? l.detailNoDescription,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
 
@@ -212,7 +215,7 @@ class _ItemDetailPageState extends ConsumerState<ItemDetailPage> {
                       Expanded(
                         child: OutlinedButton.icon(
                           icon: const Icon(Icons.chat),
-                          label: const Text('Chat Owner'),
+                          label: Text(l.detailChatOwner),
                           onPressed: () {
                             if (_item.id == null) return;
                             Navigator.push(
@@ -231,7 +234,7 @@ class _ItemDetailPageState extends ConsumerState<ItemDetailPage> {
                       Expanded(
                         child: ElevatedButton.icon(
                           icon: const Icon(Icons.shopping_cart),
-                          label: const Text('Request'),
+                          label: Text(l.detailRequest),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: colorScheme.primary,
                             foregroundColor: colorScheme.onPrimary,
@@ -247,16 +250,14 @@ class _ItemDetailPageState extends ConsumerState<ItemDetailPage> {
                     const SizedBox(height: 16),
                     TextField(
                       controller: _ratingCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'Rating (1-5)',
-                      ),
+                      decoration: InputDecoration(labelText: l.detailRatingHint),
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: false,
                       ),
                     ),
                     TextField(
                       controller: _reviewCtrl,
-                      decoration: const InputDecoration(labelText: 'Review'),
+                      decoration: InputDecoration(labelText: l.detailReviewHint),
                     ),
                     const SizedBox(height: 8),
                     ElevatedButton(
@@ -271,11 +272,11 @@ class _ItemDetailPageState extends ConsumerState<ItemDetailPage> {
                         if (context.mounted) {
                           ref.invalidate(itemsProvider);
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Rating submitted')),
+                            SnackBar(content: Text(l.detailRatingSubmitted)),
                           );
                         }
                       },
-                      child: const Text('Submit Rating'),
+                      child: Text(l.detailSubmitRating),
                     ),
                   ],
                 ],

@@ -140,6 +140,31 @@
   "onboardingTitle3": "Reparaturen melden",
   "onboardingBody3": "Melde Probleme in deinem Zimmer und verfolge den Status.",
 
+  "detailDeleteItem": "Eintrag löschen",
+  "detailDeleteItemConfirm": "Möchtest du diesen Eintrag wirklich löschen?",
+  "detailFree": "Gratis",
+  "detailDescription": "Beschreibung",
+  "detailNoDescription": "Keine Beschreibung vorhanden.",
+  "detailChatOwner": "Mit Anbieter chatten",
+  "detailRequest": "Anfragen",
+  "detailRequestSent": "Anfrage gesendet!",
+  "detailRequestFailed": "Fehlgeschlagen: {error}",
+  "detailRatingHint": "Bewertung (1-5)",
+  "detailReviewHint": "Rezension",
+  "detailSubmitRating": "Bewertung absenden",
+  "detailRatingSubmitted": "Bewertung abgegeben",
+
+  "clubMembers": "Mitglieder: {count}",
+  "clubOpenChat": "Chat öffnen",
+  "clubJoinAndChat": "Beitreten & Chatten",
+  "clubDocuments": "Dokumente",
+
+  "serviceContact": "Kontakt: ",
+  "serviceNoRatings": "Noch keine Bewertungen",
+
+  "chatTypeMessage": "Nachricht schreiben",
+  "chatOnlineCount": "{count} online",
+
   "a11yRefresh": "Aktualisieren",
   "a11yAddEvent": "Event hinzufügen",
   "a11yPostItem": "Neuen Eintrag erstellen",

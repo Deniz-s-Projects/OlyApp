@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:oly_app/l10n/generated/app_localizations.dart';
 import 'package:oly_app/models/models.dart';
 import 'package:oly_app/pages/item_detail_page.dart';
 import 'package:oly_app/services/item_service.dart';
@@ -38,7 +39,12 @@ void main() {
     final item = Item(id: 1, ownerId: '1', title: 'Chair');
     await tester.pumpWidget(
       ProviderScope(
-        child: MaterialApp(home: ItemDetailPage(item: item, service: service)),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('en'),
+          home: ItemDetailPage(item: item, service: service),
+        ),
       ),
     );
 
