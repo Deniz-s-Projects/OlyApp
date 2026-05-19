@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:oly_app/l10n/generated/app_localizations.dart';
 import 'package:oly_app/models/models.dart';
 import 'package:oly_app/pages/item_detail_page.dart';
 import 'package:oly_app/pages/item_chat_page.dart';
@@ -36,6 +37,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('en'),
           home: ItemDetailPage(item: item, service: FakeItemService()),
         ),
       ),
