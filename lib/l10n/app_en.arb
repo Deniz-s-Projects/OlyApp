@@ -161,6 +161,40 @@
   "onboardingTitle3": "Request Maintenance",
   "onboardingBody3": "Report issues in your room and track tickets.",
 
+  "detailDeleteItem": "Delete Item",
+  "detailDeleteItemConfirm": "Are you sure you want to delete this item?",
+  "detailFree": "Free",
+  "detailDescription": "Description",
+  "detailNoDescription": "No description provided.",
+  "detailChatOwner": "Chat Owner",
+  "detailRequest": "Request",
+  "detailRequestSent": "Request sent!",
+  "detailRequestFailed": "Failed: {error}",
+  "@detailRequestFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "detailRatingHint": "Rating (1-5)",
+  "detailReviewHint": "Review",
+  "detailSubmitRating": "Submit Rating",
+  "detailRatingSubmitted": "Rating submitted",
+
+  "clubMembers": "Members: {count}",
+  "@clubMembers": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "clubOpenChat": "Open Chat",
+  "clubJoinAndChat": "Join & Chat",
+  "clubDocuments": "Documents",
+
+  "serviceContact": "Contact: ",
+  "serviceNoRatings": "No ratings yet",
+
+  "chatTypeMessage": "Type a message",
+  "chatOnlineCount": "{count} online",
+  "@chatOnlineCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
   "a11yRefresh": "Refresh",
   "a11yAddEvent": "Add event",
   "a11yPostItem": "Post a new listing",

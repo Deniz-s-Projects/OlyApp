@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:oly_app/l10n/generated/app_localizations.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../models/models.dart';
@@ -134,8 +135,8 @@ class _MaintenanceChatPageState extends ConsumerState<MaintenanceChatPage> {
                 Expanded(
                   child: TextField(
                     controller: _messageCtrl,
-                    decoration: const InputDecoration(
-                      hintText: 'Type a message',
+                    decoration: InputDecoration(
+                      hintText: AppLocalizations.of(context).chatTypeMessage,
                     ),
                   ),
                 ),

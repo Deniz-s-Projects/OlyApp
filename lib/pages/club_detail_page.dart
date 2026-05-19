@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:oly_app/l10n/generated/app_localizations.dart';
 
 import '../models/models.dart';
 import '../providers/clubs_providers.dart';
@@ -57,6 +58,7 @@ class _ClubDetailPageState extends ConsumerState<ClubDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     final isMember = _club.members.contains(currentUserId());
     return Scaffold(
       appBar: AppBar(title: Text(_club.name)),
@@ -67,13 +69,13 @@ class _ClubDetailPageState extends ConsumerState<ClubDetailPage> {
           children: [
             if (_club.description != null) Text(_club.description!),
             const SizedBox(height: 12),
-            Text('Members: ${_club.members.length}'),
+            Text(l.clubMembers(_club.members.length)),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _club.channelId == null
                   ? null
                   : (isMember ? _openChat : _joinAndChat),
-              child: Text(isMember ? 'Open Chat' : 'Join & Chat'),
+              child: Text(isMember ? l.clubOpenChat : l.clubJoinAndChat),
             ),
             const SizedBox(height: 12),
             ElevatedButton(
@@ -81,7 +83,7 @@ class _ClubDetailPageState extends ConsumerState<ClubDetailPage> {
                 context,
                 MaterialPageRoute(builder: (_) => const DocumentsPage()),
               ),
-              child: const Text('Documents'),
+              child: Text(l.clubDocuments),
             ),
           ],
         ),

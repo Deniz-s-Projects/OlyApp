@@ -22,6 +22,7 @@ import 'pages/register_page.dart';
 import 'pages/reset_password_page.dart';
 import 'providers/locale_provider.dart';
 import 'providers/route_request_provider.dart';
+import 'services/api_service.dart';
 import 'services/notification_service.dart';
 import 'theme.dart';
 
@@ -159,6 +160,13 @@ class OlyAppState extends ConsumerState<OlyApp> {
     for (final n in notifBox.values.cast<NotificationRecord>()) {
       _notifications.add({'title': n.title, 'body': n.body});
     }
+    // Token expired or invalidated server-side: clear the session and drop
+    // back to AuthHomePage. Guarded by `mounted` so a late 401 racing
+    // app teardown doesn't setState on a disposed element.
+    ApiService.onUnauthorized = () {
+      if (!mounted) return;
+      _logout();
+    };
     _foregroundMessageSub =
         NotificationService().foregroundMessages.listen((msg) {
       if (!mounted) return;
@@ -191,6 +199,7 @@ class OlyAppState extends ConsumerState<OlyApp> {
   @override
   void dispose() {
     _foregroundMessageSub?.cancel();
+    ApiService.onUnauthorized = null;
     super.dispose();
   }
 
