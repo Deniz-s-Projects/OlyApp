@@ -57,6 +57,7 @@ class _DirectoryBodyState extends ConsumerState<_DirectoryBody> {
                 hintText: 'Search residents…',
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.refresh),
+                  tooltip: AppLocalizations.of(context).a11yRefresh,
                   onPressed: () => ref.invalidate(directoryUsersProvider),
                 ),
               ),

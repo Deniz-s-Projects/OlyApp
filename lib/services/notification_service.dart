@@ -4,6 +4,16 @@ import 'package:hive/hive.dart';
 import '../providers/route_request_provider.dart';
 import 'api_service.dart';
 
+/// A push notification received while the app is in the foreground. The
+/// title/body drive the SnackBar text; the optional [route] enables a
+/// "go there" action button.
+class ForegroundMessage {
+  final String? title;
+  final String? body;
+  final RouteRequest? route;
+  const ForegroundMessage({this.title, this.body, this.route});
+}
+
 class NotificationService extends ApiService {
   NotificationService({super.client});
 
@@ -45,10 +55,16 @@ class NotificationService extends ApiService {
   }
 
   /// Stream of notifications received while the app is in the foreground.
-  Stream<Map<String, String?>> get foregroundMessages =>
+  /// Includes any parsed [RouteRequest] from `data.route` so the UI can
+  /// offer a tap-to-route action on the SnackBar.
+  Stream<ForegroundMessage> get foregroundMessages =>
       FirebaseMessaging.onMessage.map((m) {
         final n = m.notification;
-        return {'title': n?.title, 'body': n?.body};
+        return ForegroundMessage(
+          title: n?.title,
+          body: n?.body,
+          route: RouteRequest.fromFcmData(m.data),
+        );
       });
 
   /// Stream of [RouteRequest]s parsed from notification taps (background

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oly_app/l10n/generated/app_localizations.dart';
 
 class OnboardingPage extends StatefulWidget {
   final VoidCallback onFinish;
@@ -12,27 +13,26 @@ class _OnboardingPageState extends State<OnboardingPage> {
   final PageController _controller = PageController();
   int _current = 0;
 
-  static const List<_OnboardData> _pages = [
-    _OnboardData(
-      icon: Icons.calendar_today,
-      title: 'Stay Organized',
-      description: 'Manage events and deadlines in the calendar.',
-    ),
-    _OnboardData(
-      icon: Icons.swap_horiz,
-      title: 'Exchange Items',
-      description: 'Buy, sell or trade with your neighbors.',
-    ),
-    _OnboardData(
-      icon: Icons.build,
-      title: 'Request Maintenance',
-      description: 'Report issues in your room and track tickets.',
-    ),
+  // Icons stay as constants; titles/bodies are resolved per build so they
+  // pick up the active locale. Indexes 1–3 map to the onboardingTitleN /
+  // onboardingBodyN keys.
+  static const List<IconData> _icons = [
+    Icons.calendar_today,
+    Icons.swap_horiz,
+    Icons.build,
   ];
+
+  List<_OnboardData> pagesFor(AppLocalizations l) => [
+        _OnboardData(_icons[0], l.onboardingTitle1, l.onboardingBody1),
+        _OnboardData(_icons[1], l.onboardingTitle2, l.onboardingBody2),
+        _OnboardData(_icons[2], l.onboardingTitle3, l.onboardingBody3),
+      ];
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final l = AppLocalizations.of(context);
+    final pages = pagesFor(l);
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -40,10 +40,10 @@ class _OnboardingPageState extends State<OnboardingPage> {
             Expanded(
               child: PageView.builder(
                 controller: _controller,
-                itemCount: _pages.length,
+                itemCount: pages.length,
                 onPageChanged: (i) => setState(() => _current = i),
                 itemBuilder: (context, index) {
-                  final p = _pages[index];
+                  final p = pages[index];
                   return Padding(
                     padding: const EdgeInsets.all(24),
                     child: Column(
@@ -70,7 +70,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(_pages.length, (i) {
+              children: List.generate(pages.length, (i) {
                 final selected = i == _current;
                 return Container(
                   margin: const EdgeInsets.all(4),
@@ -91,11 +91,11 @@ class _OnboardingPageState extends State<OnboardingPage> {
                 children: [
                   TextButton(
                     onPressed: widget.onFinish,
-                    child: const Text('Skip'),
+                    child: Text(l.onboardingSkip),
                   ),
                   ElevatedButton(
                     onPressed: () {
-                      if (_current == _pages.length - 1) {
+                      if (_current == pages.length - 1) {
                         widget.onFinish();
                       } else {
                         _controller.nextPage(
@@ -105,7 +105,9 @@ class _OnboardingPageState extends State<OnboardingPage> {
                       }
                     },
                     child: Text(
-                      _current == _pages.length - 1 ? 'Done' : 'Next',
+                      _current == pages.length - 1
+                          ? l.onboardingDone
+                          : l.onboardingNext,
                     ),
                   ),
                 ],
@@ -122,9 +124,5 @@ class _OnboardData {
   final IconData icon;
   final String title;
   final String description;
-  const _OnboardData({
-    required this.icon,
-    required this.title,
-    required this.description,
-  });
+  const _OnboardData(this.icon, this.title, this.description);
 }

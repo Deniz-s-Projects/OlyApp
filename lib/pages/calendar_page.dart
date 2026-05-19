@@ -298,6 +298,7 @@ class _CalendarBodyState extends ConsumerState<_CalendarBody> {
             alignment: Alignment.centerRight,
             child: IconButton(
               icon: const Icon(Icons.refresh),
+              tooltip: AppLocalizations.of(context).a11yRefresh,
               onPressed: () => ref.invalidate(eventsProvider),
             ),
           ),
@@ -355,6 +356,7 @@ class _CalendarBodyState extends ConsumerState<_CalendarBody> {
           ? FloatingActionButton(
               backgroundColor: cs.secondary,
               foregroundColor: cs.onSecondary,
+              tooltip: AppLocalizations.of(context).a11yAddEvent,
               onPressed: _addEvent,
               child: const Icon(Icons.add),
             )

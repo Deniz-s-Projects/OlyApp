@@ -96,6 +96,7 @@ class _DocumentsBody extends ConsumerWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton(
+        tooltip: AppLocalizations.of(context).a11yUploadDocument,
         onPressed: () => _pickAndUpload(context, ref),
         child: const Icon(Icons.upload_file),
       ),

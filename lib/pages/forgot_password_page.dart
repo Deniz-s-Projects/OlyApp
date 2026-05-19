@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:oly_app/l10n/generated/app_localizations.dart';
 
 import '../providers/auth_providers.dart';
 import '../utils/validators.dart';
@@ -25,6 +26,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    final l = AppLocalizations.of(context);
     setState(() => _loading = true);
     try {
       await ref
@@ -32,13 +34,13 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
           .requestPasswordReset(_emailCtrl.text.trim());
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Reset email sent')),
+        SnackBar(content: Text(l.authResetEmailSent)),
       );
       Navigator.pushReplacementNamed(context, '/reset');
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Request failed: $e')),
+          SnackBar(content: Text(l.authResetRequestFailed(e.toString()))),
         );
       }
     } finally {
@@ -49,8 +51,9 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final l = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Forgot Password')),
+      appBar: AppBar(title: Text(l.authForgotTitle)),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -63,7 +66,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                 TextFormField(
                   controller: _emailCtrl,
                   decoration: InputDecoration(
-                    labelText: 'Email',
+                    labelText: l.authEmail,
                     filled: true,
                     fillColor: cs.surfaceContainerHighest,
                     prefixIcon: const Icon(Icons.email),
@@ -82,7 +85,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                             width: 16,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Text('Send reset email'),
+                        : Text(l.authSendResetEmail),
                   ),
                 ),
               ],

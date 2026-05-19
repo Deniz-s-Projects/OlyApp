@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:oly_app/l10n/generated/app_localizations.dart';
 
 import '../providers/auth_providers.dart';
 import '../utils/validators.dart';
@@ -27,6 +28,7 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    final l = AppLocalizations.of(context);
     setState(() => _loading = true);
     try {
       await ref.read(authServiceProvider).confirmPasswordReset(
@@ -35,13 +37,13 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage> {
           );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password updated')),
+        SnackBar(content: Text(l.authPasswordUpdated)),
       );
       Navigator.pop(context);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Reset failed: $e')),
+          SnackBar(content: Text(l.authResetFailed(e.toString()))),
         );
       }
     } finally {
@@ -52,8 +54,9 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final l = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Set New Password')),
+      appBar: AppBar(title: Text(l.authResetTitle)),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -66,18 +69,18 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage> {
                 TextFormField(
                   controller: _tokenCtrl,
                   decoration: InputDecoration(
-                    labelText: 'Reset token',
+                    labelText: l.authResetToken,
                     filled: true,
                     fillColor: cs.surfaceContainerHighest,
                   ),
                   validator: (v) =>
-                      v == null || v.isEmpty ? 'Token is required' : null,
+                      v == null || v.trim().isEmpty ? l.authResetTokenRequired : null,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _passwordCtrl,
                   decoration: InputDecoration(
-                    labelText: 'New password',
+                    labelText: l.authNewPassword,
                     filled: true,
                     fillColor: cs.surfaceContainerHighest,
                     prefixIcon: const Icon(Icons.lock),
@@ -87,6 +90,9 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage> {
                             ? Icons.visibility
                             : Icons.visibility_off,
                       ),
+                      tooltip: _passwordVisible
+                          ? l.a11yHidePassword
+                          : l.a11yShowPassword,
                       onPressed: () =>
                           setState(() => _passwordVisible = !_passwordVisible),
                     ),
@@ -105,7 +111,7 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage> {
                             width: 16,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Text('Set password'),
+                        : Text(l.authSetPassword),
                   ),
                 ),
               ],

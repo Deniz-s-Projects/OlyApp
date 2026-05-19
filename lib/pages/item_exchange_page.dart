@@ -94,6 +94,7 @@ class _ItemExchangeBodyState extends ConsumerState<_ItemExchangeBody> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.refresh),
+                  tooltip: AppLocalizations.of(context).a11yRefresh,
                   onPressed: () => ref.invalidate(itemsProvider),
                 ),
               ],
@@ -241,6 +242,8 @@ class _ItemExchangeBodyState extends ConsumerState<_ItemExchangeBody> {
                                 right: 0,
                                 child: IconButton(
                                   key: Key('toggleFavorite_${item.id}'),
+                                  tooltip: AppLocalizations.of(context)
+                                      .a11yToggleFavorite,
                                   icon: Icon(
                                     isFav
                                         ? Icons.star
@@ -268,6 +271,7 @@ class _ItemExchangeBodyState extends ConsumerState<_ItemExchangeBody> {
       // itself on success, so we don't need a return-value side-effect here.
       floatingActionButton: FloatingActionButton(
         heroTag: 'exchangeFab',
+        tooltip: AppLocalizations.of(context).a11yPostItem,
         onPressed: () {
           Navigator.push(
             context,

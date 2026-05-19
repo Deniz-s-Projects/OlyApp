@@ -257,11 +257,15 @@ class _BulletinBoardPageState extends ConsumerState<BulletinBoardPage> {
                                   IconButton(
                                     key: ValueKey('editPost_${p.id}'),
                                     icon: const Icon(Icons.edit),
+                                    tooltip: AppLocalizations.of(context)
+                                        .a11yEditPost,
                                     onPressed: () => _editPost(p),
                                   ),
                                   IconButton(
                                     key: ValueKey('deletePost_${p.id}'),
                                     icon: const Icon(Icons.delete),
+                                    tooltip: AppLocalizations.of(context)
+                                        .a11yDeletePost,
                                     onPressed: () => _deletePost(p.id!),
                                   ),
                                 ],
@@ -280,11 +284,15 @@ class _BulletinBoardPageState extends ConsumerState<BulletinBoardPage> {
                                       IconButton(
                                         key: ValueKey('editComment_${p.id}_${c.id}'),
                                         icon: const Icon(Icons.edit, size: 18),
+                                        tooltip: AppLocalizations.of(context)
+                                            .a11yEditComment,
                                         onPressed: () => _editComment(p.id!, c),
                                       ),
                                       IconButton(
                                         key: ValueKey('deleteComment_${p.id}_${c.id}'),
                                         icon: const Icon(Icons.delete, size: 18),
+                                        tooltip: AppLocalizations.of(context)
+                                            .a11yDeleteComment,
                                         onPressed: () => _deleteComment(p.id!, c.id!),
                                       ),
                                     ],
@@ -304,6 +312,8 @@ class _BulletinBoardPageState extends ConsumerState<BulletinBoardPage> {
                                   IconButton(
                                     key: ValueKey('sendComment_${p.id}'),
                                     icon: const Icon(Icons.send),
+                                    tooltip: AppLocalizations.of(context)
+                                        .a11ySendComment,
                                     onPressed: () => _submitComment(p.id!),
                                   ),
                                 ],
@@ -326,7 +336,11 @@ class _BulletinBoardPageState extends ConsumerState<BulletinBoardPage> {
                     ),
                   ),
                 ),
-                IconButton(icon: const Icon(Icons.send), onPressed: _submit),
+                IconButton(
+                  icon: const Icon(Icons.send),
+                  tooltip: AppLocalizations.of(context).a11ySendMessage,
+                  onPressed: _submit,
+                ),
               ],
             ),
           ),

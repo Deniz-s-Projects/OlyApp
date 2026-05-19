@@ -65,6 +65,7 @@ class _EmergencyContactsBody extends ConsumerWidget {
                   subtitle: Text(c.description ?? c.phone),
                   trailing: IconButton(
                     icon: const Icon(Icons.call),
+                    tooltip: l.a11yCallContact,
                     onPressed: () => _call(c.phone),
                   ),
                   onTap: () => _call(c.phone),

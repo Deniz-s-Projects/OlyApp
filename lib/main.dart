@@ -21,6 +21,7 @@ import 'pages/onboarding_page.dart';
 import 'pages/register_page.dart';
 import 'pages/reset_password_page.dart';
 import 'providers/locale_provider.dart';
+import 'providers/route_request_provider.dart';
 import 'services/notification_service.dart';
 import 'theme.dart';
 
@@ -132,6 +133,7 @@ class OlyAppState extends ConsumerState<OlyApp> {
   ThemeMode _themeMode = ThemeMode.system;
   bool _seenOnboarding = true;
   final List<Map<String, String?>> _notifications = [];
+  StreamSubscription<ForegroundMessage>? _foregroundMessageSub;
 
   @override
   void initState() {
@@ -157,19 +159,39 @@ class OlyAppState extends ConsumerState<OlyApp> {
     for (final n in notifBox.values.cast<NotificationRecord>()) {
       _notifications.add({'title': n.title, 'body': n.body});
     }
-    NotificationService().foregroundMessages.listen((data) {
-      if (mounted) {
-        setState(() {
-          _notifications.add({'title': data['title'], 'body': data['body']});
-        });
-        Hive.box<NotificationRecord>(
-          'notificationsBox',
-        ).add(NotificationRecord(title: data['title'], body: data['body']));
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data['title'] ?? 'Notification')),
-        );
-      }
+    _foregroundMessageSub =
+        NotificationService().foregroundMessages.listen((msg) {
+      if (!mounted) return;
+      setState(() {
+        _notifications.add({'title': msg.title, 'body': msg.body});
+      });
+      Hive.box<NotificationRecord>('notificationsBox').add(
+        NotificationRecord(title: msg.title, body: msg.body),
+      );
+      final route = msg.route;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(msg.title ?? 'Notification'),
+          // Tap-to-route: only show the action when the server included a
+          // recognised data.route. Forwards through the same
+          // routeRequestProvider channel as background/cold-start taps.
+          action: route == null
+              ? null
+              : SnackBarAction(
+                  label: AppLocalizations.of(context).commonOpen,
+                  onPressed: () => ref
+                      .read(routeRequestProvider.notifier)
+                      .state = route,
+                ),
+        ),
+      );
     });
+  }
+
+  @override
+  void dispose() {
+    _foregroundMessageSub?.cancel();
+    super.dispose();
   }
 
   Future<void> _handleLogin() async {

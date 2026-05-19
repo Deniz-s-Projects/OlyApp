@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:oly_app/l10n/generated/app_localizations.dart';
 
 /// Simple landing page with Login and Register buttons.
 class AuthHomePage extends StatelessWidget {
@@ -7,8 +8,9 @@ class AuthHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final l = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Welcome')),
+      appBar: AppBar(title: Text(l.authWelcome)),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -23,7 +25,7 @@ class AuthHomePage extends StatelessWidget {
                     backgroundColor: cs.primary,
                     foregroundColor: cs.onPrimary,
                   ),
-                  child: const Text('Login'),
+                  child: Text(l.authLogin),
                 ),
               ),
               const SizedBox(height: 16),
@@ -35,7 +37,7 @@ class AuthHomePage extends StatelessWidget {
                     backgroundColor: cs.secondary,
                     foregroundColor: cs.onSecondary,
                   ),
-                  child: const Text('Register'),
+                  child: Text(l.authRegister),
                 ),
               ),
             ],
